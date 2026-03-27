@@ -1,0 +1,122 @@
+<div class="container-fluid py-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1>Mis Propuestas</h1>
+      <p class="text-muted">Gestiona tus propuestas de Trabajos de Integración Curricular</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <button
+        class="btn btn-primary btn-lg"
+        (click)="irACrear()"
+      >
+        Nueva Propuesta
+      </button>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row aligned-items-center">
+            <div class="col-md-2">
+              <label for="filtroEstado" class="form-label">Filtrar por Estado:</label>
+            </div>
+            <div class="col-md-4">
+              <select
+                id="filtroEstado"
+                class="form-select"
+                [(ngModel)]="estadoSeleccionado"
+                (change)="onEstadoSeleccionado(estadoSeleccionado)"
+              >
+                <option value="0">Todos los estados</option>
+                <option *ngFor="let estado of estados" [value]="estado.id">
+                  {{ estado.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!cargando && propuestasFiltradas.length === 0" class="alert alert-info">
+    <p>No hay propuestas registradas</p>
+  </div>
+
+  <div *ngIf="!cargando && propuestasFiltradas.length > 0">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Título</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Actualización</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let propuesta of propuestasFiltradas">
+            <td>
+              <strong>{{ propuesta.id }}</strong>
+            </td>
+            <td>
+              <strong>{{ propuesta.titulo }}</strong>
+            </td>
+            <td>
+              <span [ngClass]="'badge ' + getEstadoBadgeClass(propuesta.estadoId)">
+                {{ propuesta.estadoNombre }}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">
+                {{ propuesta.fechaActualizacion || propuesta.fechaCreacion | date: 'dd/MM/yyyy' }}
+              </small>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  type="button"
+                  class="btn btn-outline-info"
+                  (click)="verDetalle(propuesta.id)"
+                  title="Ver detalle"
+                >
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-warning"
+                  (click)="editar(propuesta.id)"
+                  title="Editar"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="eliminar(propuesta.id)"
+                  title="Eliminar"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

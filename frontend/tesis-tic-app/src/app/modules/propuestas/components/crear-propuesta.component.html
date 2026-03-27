@@ -1,0 +1,259 @@
+<div class="container-fluid py-5">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1>{{ esEdicion ? 'Editar Propuesta' : 'Nueva Propuesta' }}</h1>
+      <p class="text-muted">Completa todos los campos requeridos para registrar tu propuesta</p>
+    </div>
+  </div>
+
+  <div *ngIf="exito" class="alert alert-success alert-dismissible fade show" role="alert">
+    Propuesta {{ esEdicion ? 'actualizada' : 'creada' }} exitosamente. Redirigiendo...
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <form [formGroup]="formularioPropuesta" (ngSubmit)="enviar()">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Datos Generales</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="docente" class="form-label">Docente <span class="text-danger">*</span></label>
+            <select
+              id="docente"
+              class="form-select"
+              formControlName="docenteId"
+              [class.is-invalid]="formularioPropuesta.get('docenteId')?.invalid && formularioPropuesta.get('docenteId')?.touched"
+            >
+              <option value="">Seleccionar docente</option>
+              <option *ngFor="let docente of docentes" [value]="docente.id">
+                {{ docente.nombre }} {{ docente.apellido }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="formularioPropuesta.get('docenteId')?.invalid && formularioPropuesta.get('docenteId')?.touched">
+              {{ obtenerErrorCampo('docenteId') }}
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="numeroParticipantes" class="form-label">Número de Participantes <span class="text-danger">*</span></label>
+            <input
+              type="number"
+              id="numeroParticipantes"
+              class="form-control"
+              formControlName="numeroParticipantes"
+              min="1"
+              [class.is-invalid]="formularioPropuesta.get('numeroParticipantes')?.invalid && formularioPropuesta.get('numeroParticipantes')?.touched"
+            />
+            <div class="invalid-feedback" *ngIf="formularioPropuesta.get('numeroParticipantes')?.invalid && formularioPropuesta.get('numeroParticipantes')?.touched">
+              {{ obtenerErrorCampo('numeroParticipantes') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="departamento" class="form-label">Departamento <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="departamento"
+              class="form-control"
+              formControlName="departamento"
+              [class.is-invalid]="formularioPropuesta.get('departamento')?.invalid && formularioPropuesta.get('departamento')?.touched"
+            />
+            <div class="invalid-feedback" *ngIf="formularioPropuesta.get('departamento')?.invalid && formularioPropuesta.get('departamento')?.touched">
+              {{ obtenerErrorCampo('departamento') }}
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="facultad" class="form-label">Facultad <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="facultad"
+              class="form-control"
+              formControlName="facultad"
+              [class.is-invalid]="formularioPropuesta.get('facultad')?.invalid && formularioPropuesta.get('facultad')?.touched"
+            />
+            <div class="invalid-feedback" *ngIf="formularioPropuesta.get('facultad')?.invalid && formularioPropuesta.get('facultad')?.touched">
+              {{ obtenerErrorCampo('facultad') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="linea" class="form-label">Línea de Investigación</label>
+            <select
+              id="linea"
+              class="form-select"
+              formControlName="lineaInvestigacionId"
+            >
+              <option value="">Sin línea de investigación</option>
+              <option *ngFor="let linea of lineasInvestigacion" [value]="linea.id">
+                {{ linea.nombre }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Descripción del Proyecto</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="titulo" class="form-label">Título del Proyecto <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            id="titulo"
+            class="form-control"
+            formControlName="titulo"
+            placeholder="Ingresar título del proyecto"
+            [class.is-invalid]="formularioPropuesta.get('titulo')?.invalid && formularioPropuesta.get('titulo')?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="formularioPropuesta.get('titulo')?.invalid && formularioPropuesta.get('titulo')?.touched">
+            {{ obtenerErrorCampo('titulo') }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+          <textarea
+            id="descripcion"
+            class="form-control"
+            formControlName="descripcion"
+            rows="4"
+            placeholder="Ingrese una descripción detallada del proyecto"
+            [class.is-invalid]="formularioPropuesta.get('descripcion')?.invalid && formularioPropuesta.get('descripcion')?.touched"
+          ></textarea>
+          <div class="invalid-feedback" *ngIf="formularioPropuesta.get('descripcion')?.invalid && formularioPropuesta.get('descripcion')?.touched">
+            {{ obtenerErrorCampo('descripcion') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Objetivo del Proyecto</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="objetivo" class="form-label">Objetivo <span class="text-danger">*</span></label>
+          <textarea
+            id="objetivo"
+            class="form-control"
+            formControlName="objetivo"
+            rows="3"
+            placeholder="Ingrese el objetivo principal del proyecto"
+            [class.is-invalid]="formularioPropuesta.get('objetivo')?.invalid && formularioPropuesta.get('objetivo')?.touched"
+          ></textarea>
+          <div class="invalid-feedback" *ngIf="formularioPropuesta.get('objetivo')?.invalid && formularioPropuesta.get('objetivo')?.touched">
+            {{ obtenerErrorCampo('objetivo') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Alcance del Proyecto</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="alcance" class="form-label">Alcance <span class="text-danger">*</span></label>
+          <textarea
+            id="alcance"
+            class="form-control"
+            formControlName="alcance"
+            rows="3"
+            placeholder="Ingrese el alcance del proyecto"
+            [class.is-invalid]="formularioPropuesta.get('alcance')?.invalid && formularioPropuesta.get('alcance')?.touched"
+          ></textarea>
+          <div class="invalid-feedback" *ngIf="formularioPropuesta.get('alcance')?.invalid && formularioPropuesta.get('alcance')?.touched">
+            {{ obtenerErrorCampo('alcance') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Componentes, Actividades y Productos</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="componentes" class="form-label">Componentes, Actividades y Productos <span class="text-danger">*</span></label>
+          <textarea
+            id="componentes"
+            class="form-control"
+            formControlName="componentesActividadesProductos"
+            rows="4"
+            placeholder="Ingrese los componentes, actividades y productos del proyecto"
+            [class.is-invalid]="formularioPropuesta.get('componentesActividadesProductos')?.invalid && formularioPropuesta.get('componentesActividadesProductos')?.touched"
+          ></textarea>
+          <small class="form-text text-muted">Incluya componentes, actividades específicas y productos entregables</small>
+          <div class="invalid-feedback" *ngIf="formularioPropuesta.get('componentesActividadesProductos')?.invalid && formularioPropuesta.get('componentesActividadesProductos')?.touched">
+            {{ obtenerErrorCampo('componentesActividadesProductos') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Asignaturas Relacionadas</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div *ngFor="let asignatura of asignaturas" class="col-md-6 mb-3">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [id]="'asignatura-' + asignatura.id"
+                [checked]="estaAsignaturaSeleccionada(asignatura.id)"
+                (change)="seleccionarAsignatura($event, asignatura.id)"
+              />
+              <label class="form-check-label" [for]="'asignatura-' + asignatura.id">
+                {{ asignatura.nombre }} ({{ asignatura.codigo }})
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <button
+          type="button"
+          class="btn btn-secondary me-2"
+          (click)="volver()"
+          [disabled]="enviando"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="enviando"
+        >
+          <span *ngIf="!enviando">{{ esEdicion ? 'Actualizar' : 'Crear' }} Propuesta</span>
+          <span *ngIf="enviando">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Enviando...
+          </span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
