@@ -7,6 +7,8 @@ yarn-error.log*
 # Angular
 /dist
 /bazel-out
+.angular/
+/frontend/tesis-tic-app/.angular/
 
 # IDEs
 .vscode/
@@ -58,6 +60,7 @@ yarn.lock
 *.swp
 *.swo
 *~
+start-dev.ps1
 .project
 .pydevproject
 .classpath

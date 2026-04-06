@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PropuestaService } from '../services/propuesta.service';
-import { Propuesta, Estado, CambiarEstadoRequest } from '../../shared/models/propuesta.model';
+import { Propuesta, Estado, CambiarEstadoRequest } from '../../../shared/models/propuesta.model';
 
 @Component({
   selector: 'app-detalle-propuesta',

@@ -4,7 +4,7 @@ using TesisTIC.Application.Services;
 using TesisTIC.Infrastructure.Persistence;
 using TesisTIC.Infrastructure.Repositories;
 
-var builder = WebApplicationBuilder.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -24,8 +24,7 @@ builder.Services.AddScoped<IAsignaturaRepository, AsignaturaRepository>();
 
 builder.Services.AddScoped<IPropuestaService, PropuestaService>();
 
-builder.Services.AddCors(options =>
-{
+builder.Services.AddCors(options => {
     options.AddPolicy("AllowAngular", policyBuilder =>
     {
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
@@ -47,8 +46,16 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<TesisTICDbContext>();
-    dbContext.Database.Migrate();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<TesisTICDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database migration failed: {ex.Message}");
+        Console.WriteLine("Continuing without database initialization...");
+    }
 }
 
 app.Run();

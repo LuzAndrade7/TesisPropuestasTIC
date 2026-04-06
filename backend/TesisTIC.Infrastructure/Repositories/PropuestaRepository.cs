@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
+using TesisTIC.Infrastructure.Persistence;
 
 namespace TesisTIC.Infrastructure.Repositories
 {
@@ -21,7 +22,8 @@ namespace TesisTIC.Infrastructure.Repositories
                 .Include(p => p.LineaInvestigacion)
                 .Include(p => p.EstudiantesAsignados)
                 .ThenInclude(pe => pe.Estudiante)
-                .Include(p => p.Asignaturas)
+                .Include(p => p.AsignaturasAsignadas)
+                .ThenInclude(pa => pa.Asignatura)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -33,7 +35,8 @@ namespace TesisTIC.Infrastructure.Repositories
                 .Include(p => p.LineaInvestigacion)
                 .Include(p => p.EstudiantesAsignados)
                 .ThenInclude(pe => pe.Estudiante)
-                .Include(p => p.Asignaturas)
+                .Include(p => p.AsignaturasAsignadas)
+                .ThenInclude(pa => pa.Asignatura)
                 .OrderByDescending(p => p.FechaCreacion)
                 .ToListAsync();
         }
@@ -47,7 +50,8 @@ namespace TesisTIC.Infrastructure.Repositories
                 .Include(p => p.LineaInvestigacion)
                 .Include(p => p.EstudiantesAsignados)
                 .ThenInclude(pe => pe.Estudiante)
-                .Include(p => p.Asignaturas)
+                .Include(p => p.AsignaturasAsignadas)
+                .ThenInclude(pa => pa.Asignatura)
                 .OrderByDescending(p => p.FechaCreacion)
                 .ToListAsync();
         }
@@ -61,7 +65,8 @@ namespace TesisTIC.Infrastructure.Repositories
                 .Include(p => p.LineaInvestigacion)
                 .Include(p => p.EstudiantesAsignados)
                 .ThenInclude(pe => pe.Estudiante)
-                .Include(p => p.Asignaturas)
+                .Include(p => p.AsignaturasAsignadas)
+                .ThenInclude(pa => pa.Asignatura)
                 .OrderByDescending(p => p.FechaCreacion)
                 .ToListAsync();
         }

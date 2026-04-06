@@ -3,6 +3,7 @@
 ## [1.0.0] - 2024
 
 ### Añadido
+
 - Estructura completa del proyecto con arquitectura en capas
 - Backend .NET 8 con ASP.NET Core Web API
 - Frontend Angular 17 con Bootstrap 5
@@ -21,6 +22,7 @@
 - Documentación completa
 
 ### Características iniciales
+
 - Gestión completa de propuestas de TIC
 - Estados de propuesta (Pendiente, Enviada, En Revisión, Aprobada, Rechazada, Observada)
 - Asignación de estudiantes a propuestas

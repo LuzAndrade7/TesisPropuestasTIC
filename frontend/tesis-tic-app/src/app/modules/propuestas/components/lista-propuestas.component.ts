@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { PropuestaService } from '../services/propuesta.service';
-import { Propuesta, Estado } from '../../shared/models/propuesta.model';
+import { Propuesta, Estado } from '../../../shared/models/propuesta.model';
 
 @Component({
   selector: 'app-lista-propuestas',

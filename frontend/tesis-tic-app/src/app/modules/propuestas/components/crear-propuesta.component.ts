@@ -9,7 +9,7 @@ import {
   CrearPropuestaRequest,
   ActualizarPropuestaRequest,
   Propuesta
-} from '../../shared/models/propuesta.model';
+} from '../../../shared/models/propuesta.model';
 
 @Component({
   selector: 'app-crear-propuesta',
@@ -42,10 +42,10 @@ export class CrearPropuestaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarDatos();
 
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params: any) => {
       if (params['id']) {
         this.esEdicion = true;
-        this.propuestaId = params['id'];
+        this.propuestaId = Number(params['id']);
         this.cargarPropuesta(this.propuestaId);
       }
     });
@@ -108,7 +108,7 @@ export class CrearPropuestaComponent implements OnInit {
       this.asignaturasSeleccionadas.push(asignaturaId);
     } else {
       this.asignaturasSeleccionadas = this.asignaturasSeleccionadas.filter(
-        id => id !== asignaturaId
+        (id: number) => id !== asignaturaId
       );
     }
   }

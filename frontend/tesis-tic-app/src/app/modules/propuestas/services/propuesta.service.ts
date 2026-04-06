@@ -11,7 +11,7 @@ import {
   DocenteInfo,
   LineaInvestigacion,
   Asignatura
-} from '../models/propuesta.model';
+} from '../../../shared/models/propuesta.model';
 
 @Injectable({
   providedIn: 'root'

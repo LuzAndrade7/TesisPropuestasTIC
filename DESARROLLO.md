@@ -7,6 +7,7 @@ Sistema web para la gestión de propuestas de Trabajos de Integración Curricula
 **Módulo Específico:** Propuestas de TIC
 
 Este módulo permite:
+
 - Registrar propuestas de proyectos de titulación by docentes
 - Enviar propuestas para revisión por la CPGIC
 - Consultar el estado de la propuesta (Pendiente, Aprobada, Rechazada)
@@ -37,6 +38,7 @@ Base de Datos (PostgreSQL 16)
 ## Tecnologías
 
 ### Backend
+
 - **.NET 8** - Framework principal
 - **ASP.NET Core Web API** - API REST
 - **Entity Framework Core 8** - ORM
@@ -44,12 +46,14 @@ Base de Datos (PostgreSQL 16)
 - **Npgsql** - Driver PostgreSQL para EF Core
 
 ### Frontend
+
 - **Angular 17** - Framework principal
 - **Bootstrap 5** - Estilos y componentes UI
 - **Reactive Forms** - Manejo de formularios
 - **RxJS** - Manejo de observables
 
 ### DevOps & Tools
+
 - **Git** - Control de versiones
 - **Docker** (opcional)
 - **Visual Studio Code** - IDE recomendado
@@ -191,17 +195,20 @@ TesisPropuestasTIC-1/
 ## Flujo de Trabajo - Git
 
 1. Crear rama de feature
+
    ```bash
    git checkout -b feature/nueva-funcionalidad
    ```
 
 2. Realizar cambios y commits
+
    ```bash
    git add .
    git commit -m "feat: descripción del cambio"
    ```
 
 3. Push a rama
+
    ```bash
    git push origin feature/nueva-funcionalidad
    ```
@@ -215,6 +222,7 @@ TesisPropuestasTIC-1/
 ### Crear una Propuesta
 
 **Request:**
+
 ```bash
 POST /api/propuestas
 Content-Type: application/json
@@ -235,6 +243,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "id": 1,
@@ -247,12 +256,14 @@ Content-Type: application/json
 ## Testing
 
 ### Backend
+
 ```bash
 # Ejecutar pruebas unitarias
 dotnet test
 ```
 
 ### Frontend
+
 ```bash
 # Ejecutar pruebas
 npm test

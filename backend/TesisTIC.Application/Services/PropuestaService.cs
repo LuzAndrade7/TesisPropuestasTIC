@@ -1,4 +1,3 @@
-using AutoMapper;
 using TesisTIC.Application.DTOs;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
@@ -13,7 +12,6 @@ namespace TesisTIC.Application.Services
         private readonly IEstadoRepository _estadoRepository;
         private readonly ILineaInvestigacionRepository _lineaRepository;
         private readonly IAsignaturaRepository _asignaturaRepository;
-        private readonly IMapper _mapper;
 
         public PropuestaService(
             IPropuestaRepository propuestaRepository,
@@ -21,8 +19,7 @@ namespace TesisTIC.Application.Services
             IEstudianteRepository estudianteRepository,
             IEstadoRepository estadoRepository,
             ILineaInvestigacionRepository lineaRepository,
-            IAsignaturaRepository asignaturaRepository,
-            IMapper mapper)
+            IAsignaturaRepository asignaturaRepository)
         {
             _propuestaRepository = propuestaRepository;
             _docenteRepository = docenteRepository;
@@ -30,7 +27,6 @@ namespace TesisTIC.Application.Services
             _estadoRepository = estadoRepository;
             _lineaRepository = lineaRepository;
             _asignaturaRepository = asignaturaRepository;
-            _mapper = mapper;
         }
 
         public async Task<PropuestaDto> CrearPropuestaAsync(CrearPropuestaDto dto)
@@ -45,7 +41,7 @@ namespace TesisTIC.Application.Services
             if (estadoPendiente == null)
                 throw new InvalidOperationException("No existe el estado predeterminado 'Pendiente'.");
 
-            var linea = dto.LineaInvestigacionId.HasValue ? 
+            var linea = dto.LineaInvestigacionId.HasValue ?
                 await _lineaRepository.ObtenerPorIdAsync(dto.LineaInvestigacionId.Value) : null;
 
             var propuesta = new Propuesta
@@ -65,14 +61,13 @@ namespace TesisTIC.Application.Services
 
             if (dto.AsignaturasIds.Any())
             {
-                var asignaturas = new List<Asignatura>();
+                // Validar que las asignaturas existan
                 foreach (var asignaturaId in dto.AsignaturasIds)
                 {
                     var asignatura = await _asignaturaRepository.ObtenerPorIdAsync(asignaturaId);
-                    if (asignatura != null)
-                        asignaturas.Add(asignatura);
+                    if (asignatura == null)
+                        throw new ArgumentException($"La asignatura con ID {asignaturaId} no existe.");
                 }
-                propuesta.Asignaturas = asignaturas;
             }
 
             var propuestaCreada = await _propuestaRepository.CrearAsync(propuesta);
@@ -133,12 +128,12 @@ namespace TesisTIC.Application.Services
 
             if (dto.AsignaturasIds.Any())
             {
-                propuesta.Asignaturas.Clear();
+                // Validar que las asignaturas existan
                 foreach (var asignaturaId in dto.AsignaturasIds)
                 {
                     var asignatura = await _asignaturaRepository.ObtenerPorIdAsync(asignaturaId);
-                    if (asignatura != null)
-                        propuesta.Asignaturas.Add(asignatura);
+                    if (asignatura == null)
+                        throw new ArgumentException($"La asignatura con ID {asignaturaId} no existe.");
                 }
             }
 
@@ -252,12 +247,12 @@ namespace TesisTIC.Application.Services
                     MatriculaEstudiante = pe.Estudiante?.Matricula,
                     FechaAsignacion = pe.FechaAsignacion
                 }).ToList(),
-                Asignaturas = propuesta.Asignaturas.Select(a => new AsignaturaDto
+                Asignaturas = propuesta.AsignaturasAsignadas?.Select(pa => new AsignaturaDto
                 {
-                    Id = a.Id,
-                    Nombre = a.Nombre,
-                    Codigo = a.Codigo
-                }).ToList()
+                    Id = pa.Asignatura?.Id ?? 0,
+                    Nombre = pa.Asignatura?.Nombre,
+                    Codigo = pa.Asignatura?.Codigo
+                }).ToList() ?? new List<AsignaturaDto>()
             };
         }
     }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
+using TesisTIC.Infrastructure.Persistence;
 
 namespace TesisTIC.Infrastructure.Repositories
 {

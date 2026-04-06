@@ -34,6 +34,7 @@ dotnet run --project TesisTIC.API/TesisTIC.API.csproj
 ```
 
 **Resultado esperado:**
+
 ```
 info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:5000
@@ -50,6 +51,7 @@ npm start
 ```
 
 **Resultado esperado:**
+
 ```
 ✔ Compiled successfully.
 
@@ -66,16 +68,19 @@ Applications are running on:
 ## Verificación de Funcionalidad
 
 ### Test 1: Listar Propuestas
+
 ```bash
 curl http://localhost:5000/api/propuestas
 ```
 
 ### Test 2: Listar Estados
+
 ```bash
 curl http://localhost:5000/api/estados
 ```
 
 ### Test 3: Crear Propuesta
+
 ```bash
 curl -X POST http://localhost:5000/api/propuestas \
   -H "Content-Type: application/json" \

@@ -16,6 +16,7 @@ namespace TesisTIC.Infrastructure.Persistence
         public DbSet<LineaInvestigacion> LineasInvestigacion { get; set; }
         public DbSet<Asignatura> Asignaturas { get; set; }
         public DbSet<PropuestaEstudiante> PropuestasEstudiantes { get; set; }
+        public DbSet<PropuestaAsignatura> PropuestasAsignaturas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,7 +67,7 @@ namespace TesisTIC.Infrastructure.Persistence
                 entity.HasKey(a => a.Id);
                 entity.Property(a => a.Nombre).IsRequired().HasMaxLength(200);
                 entity.Property(a => a.Codigo).IsRequired().HasMaxLength(20);
-                entity.HasMany(a => a.Propuestas).WithOne(p => p.Asignaturas).HasForeignKey();
+                entity.HasMany(a => a.PropuestasAsignadas).WithOne(pa => pa.Asignatura).HasForeignKey(pa => pa.AsignaturaId);
             });
 
             modelBuilder.Entity<Propuesta>(entity =>
@@ -81,6 +82,15 @@ namespace TesisTIC.Infrastructure.Persistence
                 entity.Property(p => p.Departamento).IsRequired().HasMaxLength(150);
                 entity.Property(p => p.Facultad).IsRequired().HasMaxLength(200);
                 entity.HasMany(p => p.EstudiantesAsignados).WithOne(pe => pe.Propuesta).HasForeignKey(pe => pe.PropuestaId);
+                entity.HasMany(p => p.AsignaturasAsignadas).WithOne(pa => pa.Propuesta).HasForeignKey(pa => pa.PropuestaId);
+            });
+
+            modelBuilder.Entity<PropuestaAsignatura>(entity =>
+            {
+                entity.HasKey(pa => pa.Id);
+                entity.HasOne(pa => pa.Propuesta).WithMany(p => p.AsignaturasAsignadas).HasForeignKey(pa => pa.PropuestaId);
+                entity.HasOne(pa => pa.Asignatura).WithMany(a => a.PropuestasAsignadas).HasForeignKey(pa => pa.AsignaturaId);
+                entity.HasIndex(pa => new { pa.PropuestaId, pa.AsignaturaId }).IsUnique();
             });
 
             modelBuilder.Entity<PropuestaEstudiante>(entity =>
