@@ -4,14 +4,15 @@ namespace TesisTIC.Application.Interfaces
 {
     public interface IPropuestaService
     {
-        Task<PropuestaDto> CrearPropuestaAsync(CrearPropuestaDto dto);
-        Task<PropuestaDto> ObtenerPropuestaAsync(int id);
-        Task<IEnumerable<PropuestaDto>> ObtenerTodasAsync();
-        Task<IEnumerable<PropuestaDto>> ObtenerPorDocenteAsync(int docenteId);
-        Task<IEnumerable<PropuestaDto>> ObtenerPorEstadoAsync(int estadoId);
-        Task<PropuestaDto> ActualizarPropuestaAsync(ActualizarPropuestaDto dto);
-        Task<bool> CambiarEstadoAsync(CambiarEstadoDto dto);
-        Task<bool> AsignarEstudianteAsync(AsignarEstudianteDto dto);
+        Task<PropuestaDetailDto> ObtenerPropuestaAsync(int id);
+        Task<IEnumerable<ListaPropuestasDto>> ObtenerTodasAsync();
+        Task<IEnumerable<ListaPropuestasDto>> ObtenerPorDocenteAsync(int docenteId);
+        Task<IEnumerable<ListaPropuestasDto>> ObtenerPorEstadoAsync(string estado);
+        Task<EstadisticasDto> ObtenerEstadisticasAsync(int docenteId);
+        Task<PropuestaDetailDto> CrearPropuestaAsync(GuardarPropuestaDto dto, int docenteId);
+        Task<PropuestaDetailDto> ActualizarPropuestaAsync(int id, GuardarPropuestaDto dto);
         Task<bool> EliminarPropuestaAsync(int id);
+        Task<PropuestaDetailDto> AsignarEstudiantesAsync(int id, AsignarEstudiantesDto dto);
+        Task<PropuestaDetailDto> CambiarEstadoAsync(int id, string estado);
     }
 }

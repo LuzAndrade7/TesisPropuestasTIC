@@ -24,6 +24,13 @@ namespace TesisTIC.Infrastructure.Repositories
                 .ThenInclude(pe => pe.Estudiante)
                 .Include(p => p.AsignaturasAsignadas)
                 .ThenInclude(pa => pa.Asignatura)
+                .Include(p => p.Modulos)
+                .ThenInclude(m => m.Actividades)
+                .Include(p => p.Modulos)
+                .ThenInclude(m => m.Observaciones)
+                .Include(p => p.Observaciones)
+                .Include(p => p.Rechazo)
+                .ThenInclude(r => r.Razones)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -37,6 +44,8 @@ namespace TesisTIC.Infrastructure.Repositories
                 .ThenInclude(pe => pe.Estudiante)
                 .Include(p => p.AsignaturasAsignadas)
                 .ThenInclude(pa => pa.Asignatura)
+                .Include(p => p.Modulos)
+                .ThenInclude(m => m.Actividades)
                 .OrderByDescending(p => p.FechaCreacion)
                 .ToListAsync();
         }

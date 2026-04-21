@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
-using TesisTIC.Application.Services;
+using TesisTIC.API.Services;
 using TesisTIC.Infrastructure.Persistence;
 using TesisTIC.Infrastructure.Repositories;
 
@@ -22,9 +22,10 @@ builder.Services.AddScoped<IEstadoRepository, EstadoRepository>();
 builder.Services.AddScoped<ILineaInvestigacionRepository, LineaInvestigacionRepository>();
 builder.Services.AddScoped<IAsignaturaRepository, AsignaturaRepository>();
 
-builder.Services.AddScoped<IPropuestaService, PropuestaService>();
+builder.Services.AddScoped<IPropuestaService, PropuestaServiceCompleto>();
 
-builder.Services.AddCors(options => {
+builder.Services.AddCors(options =>
+{
     options.AddPolicy("AllowAngular", policyBuilder =>
     {
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();

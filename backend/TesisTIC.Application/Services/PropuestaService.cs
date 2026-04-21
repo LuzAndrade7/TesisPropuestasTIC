@@ -4,256 +4,40 @@ using TesisTIC.Domain.Entities;
 
 namespace TesisTIC.Application.Services
 {
+    /// <summary>
+    /// DEPRECATED: Use PropuestaServiceCompleto instead.
+    /// This service is kept for backwards compatibility only.
+    /// </summary>
     public class PropuestaService : IPropuestaService
     {
-        private readonly IPropuestaRepository _propuestaRepository;
-        private readonly IDocenteRepository _docenteRepository;
-        private readonly IEstudianteRepository _estudianteRepository;
-        private readonly IEstadoRepository _estadoRepository;
-        private readonly ILineaInvestigacionRepository _lineaRepository;
-        private readonly IAsignaturaRepository _asignaturaRepository;
+        public Task<PropuestaDetailDto> ObtenerPropuestaAsync(int id)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-        public PropuestaService(
-            IPropuestaRepository propuestaRepository,
-            IDocenteRepository docenteRepository,
-            IEstudianteRepository estudianteRepository,
-            IEstadoRepository estadoRepository,
-            ILineaInvestigacionRepository lineaRepository,
-            IAsignaturaRepository asignaturaRepository)
-        {
-            _propuestaRepository = propuestaRepository;
-            _docenteRepository = docenteRepository;
-            _estudianteRepository = estudianteRepository;
-            _estadoRepository = estadoRepository;
-            _lineaRepository = lineaRepository;
-            _asignaturaRepository = asignaturaRepository;
-        }
+        public Task<IEnumerable<ListaPropuestasDto>> ObtenerTodasAsync()
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-        public async Task<PropuestaDto> CrearPropuestaAsync(CrearPropuestaDto dto)
-        {
-            ValidarCrearPropuesta(dto);
+        public Task<IEnumerable<ListaPropuestasDto>> ObtenerPorDocenteAsync(int docenteId)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            var docente = await _docenteRepository.ObtenerPorIdAsync(dto.DocenteId);
-            if (docente == null)
-                throw new ArgumentException("El docente especificado no existe.");
+        public Task<IEnumerable<ListaPropuestasDto>> ObtenerPorEstadoAsync(string estado)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            var estadoPendiente = await _estadoRepository.ObtenerPorNombreAsync("Pendiente");
-            if (estadoPendiente == null)
-                throw new InvalidOperationException("No existe el estado predeterminado 'Pendiente'.");
+        public Task<EstadisticasDto> ObtenerEstadisticasAsync(int docenteId)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            var linea = dto.LineaInvestigacionId.HasValue ?
-                await _lineaRepository.ObtenerPorIdAsync(dto.LineaInvestigacionId.Value) : null;
+        public Task<PropuestaDetailDto> CrearPropuestaAsync(GuardarPropuestaDto dto, int docenteId)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            var propuesta = new Propuesta
-            {
-                Titulo = dto.Titulo,
-                Descripcion = dto.Descripcion,
-                Objetivo = dto.Objetivo,
-                Alcance = dto.Alcance,
-                ComponentesActividadesProductos = dto.ComponentesActividadesProductos,
-                DocenteId = dto.DocenteId,
-                EstadoId = estadoPendiente.Id,
-                LineaInvestigacionId = dto.LineaInvestigacionId,
-                NumeroParticipantes = dto.NumeroParticipantes,
-                Departamento = dto.Departamento,
-                Facultad = dto.Facultad
-            };
+        public Task<PropuestaDetailDto> ActualizarPropuestaAsync(int id, GuardarPropuestaDto dto)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            if (dto.AsignaturasIds.Any())
-            {
-                // Validar que las asignaturas existan
-                foreach (var asignaturaId in dto.AsignaturasIds)
-                {
-                    var asignatura = await _asignaturaRepository.ObtenerPorIdAsync(asignaturaId);
-                    if (asignatura == null)
-                        throw new ArgumentException($"La asignatura con ID {asignaturaId} no existe.");
-                }
-            }
+        public Task<bool> EliminarPropuestaAsync(int id)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-            var propuestaCreada = await _propuestaRepository.CrearAsync(propuesta);
-            return MapearAPropuestaDto(propuestaCreada);
-        }
+        public Task<PropuestaDetailDto> AsignarEstudiantesAsync(int id, AsignarEstudiantesDto dto)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
 
-        public async Task<PropuestaDto> ObtenerPropuestaAsync(int id)
-        {
-            var propuesta = await _propuestaRepository.ObtenerPorIdAsync(id);
-            if (propuesta == null)
-                throw new KeyNotFoundException($"No existe propuesta con ID {id}.");
-
-            return MapearAPropuestaDto(propuesta);
-        }
-
-        public async Task<IEnumerable<PropuestaDto>> ObtenerTodasAsync()
-        {
-            var propuestas = await _propuestaRepository.ObtenerTodasAsync();
-            return propuestas.Select(MapearAPropuestaDto);
-        }
-
-        public async Task<IEnumerable<PropuestaDto>> ObtenerPorDocenteAsync(int docenteId)
-        {
-            var docente = await _docenteRepository.ObtenerPorIdAsync(docenteId);
-            if (docente == null)
-                throw new ArgumentException("El docente especificado no existe.");
-
-            var propuestas = await _propuestaRepository.ObtenerPorDocenteAsync(docenteId);
-            return propuestas.Select(MapearAPropuestaDto);
-        }
-
-        public async Task<IEnumerable<PropuestaDto>> ObtenerPorEstadoAsync(int estadoId)
-        {
-            var estado = await _estadoRepository.ObtenerPorIdAsync(estadoId);
-            if (estado == null)
-                throw new ArgumentException("El estado especificado no existe.");
-
-            var propuestas = await _propuestaRepository.ObtenerPorEstadoAsync(estadoId);
-            return propuestas.Select(MapearAPropuestaDto);
-        }
-
-        public async Task<PropuestaDto> ActualizarPropuestaAsync(ActualizarPropuestaDto dto)
-        {
-            var propuesta = await _propuestaRepository.ObtenerPorIdAsync(dto.Id);
-            if (propuesta == null)
-                throw new KeyNotFoundException($"No existe propuesta con ID {dto.Id}.");
-
-            propuesta.Titulo = dto.Titulo;
-            propuesta.Descripcion = dto.Descripcion;
-            propuesta.Objetivo = dto.Objetivo;
-            propuesta.Alcance = dto.Alcance;
-            propuesta.ComponentesActividadesProductos = dto.ComponentesActividadesProductos;
-            propuesta.LineaInvestigacionId = dto.LineaInvestigacionId;
-            propuesta.Observaciones = dto.Observaciones;
-            propuesta.NumeroParticipantes = dto.NumeroParticipantes;
-            propuesta.Departamento = dto.Departamento;
-            propuesta.Facultad = dto.Facultad;
-
-            if (dto.AsignaturasIds.Any())
-            {
-                // Validar que las asignaturas existan
-                foreach (var asignaturaId in dto.AsignaturasIds)
-                {
-                    var asignatura = await _asignaturaRepository.ObtenerPorIdAsync(asignaturaId);
-                    if (asignatura == null)
-                        throw new ArgumentException($"La asignatura con ID {asignaturaId} no existe.");
-                }
-            }
-
-            var propuestaActualizada = await _propuestaRepository.ActualizarAsync(propuesta);
-            return MapearAPropuestaDto(propuestaActualizada);
-        }
-
-        public async Task<bool> CambiarEstadoAsync(CambiarEstadoDto dto)
-        {
-            var propuesta = await _propuestaRepository.ObtenerPorIdAsync(dto.PropuestaId);
-            if (propuesta == null)
-                throw new KeyNotFoundException($"No existe propuesta con ID {dto.PropuestaId}.");
-
-            var nuevoEstado = await _estadoRepository.ObtenerPorIdAsync(dto.EstadoId);
-            if (nuevoEstado == null)
-                throw new ArgumentException("El estado especificado no existe.");
-
-            propuesta.EstadoId = dto.EstadoId;
-            propuesta.Observaciones = dto.Observaciones;
-
-            if (dto.EstadoId == 2)
-                propuesta.FechaEnvioPrimera = DateTime.UtcNow;
-
-            await _propuestaRepository.ActualizarAsync(propuesta);
-            return true;
-        }
-
-        public async Task<bool> AsignarEstudianteAsync(AsignarEstudianteDto dto)
-        {
-            var propuesta = await _propuestaRepository.ObtenerPorIdAsync(dto.PropuestaId);
-            if (propuesta == null)
-                throw new KeyNotFoundException($"No existe propuesta con ID {dto.PropuestaId}.");
-
-            var estudiante = await _estudianteRepository.ObtenerPorIdAsync(dto.EstudianteId);
-            if (estudiante == null)
-                throw new ArgumentException("El estudiante especificado no existe.");
-
-            var yaAsignado = propuesta.EstudiantesAsignados
-                .Any(pe => pe.EstudianteId == dto.EstudianteId);
-
-            if (yaAsignado)
-                throw new InvalidOperationException("El estudiante ya está asignado a esta propuesta.");
-
-            var propuestaEstudiante = new PropuestaEstudiante
-            {
-                PropuestaId = dto.PropuestaId,
-                EstudianteId = dto.EstudianteId,
-                FechaAsignacion = DateTime.UtcNow
-            };
-
-            propuesta.EstudiantesAsignados.Add(propuestaEstudiante);
-            await _propuestaRepository.ActualizarAsync(propuesta);
-            return true;
-        }
-
-        public async Task<bool> EliminarPropuestaAsync(int id)
-        {
-            return await _propuestaRepository.EliminarAsync(id);
-        }
-
-        private void ValidarCrearPropuesta(CrearPropuestaDto dto)
-        {
-            if (string.IsNullOrWhiteSpace(dto.Titulo))
-                throw new ArgumentException("El título es requerido.");
-
-            if (string.IsNullOrWhiteSpace(dto.Descripcion))
-                throw new ArgumentException("La descripción es requerida.");
-
-            if (string.IsNullOrWhiteSpace(dto.Objetivo))
-                throw new ArgumentException("El objetivo es requerido.");
-
-            if (string.IsNullOrWhiteSpace(dto.Alcance))
-                throw new ArgumentException("El alcance es requerido.");
-
-            if (string.IsNullOrWhiteSpace(dto.ComponentesActividadesProductos))
-                throw new ArgumentException("Los componentes, actividades y productos son requeridos.");
-
-            if (dto.NumeroParticipantes <= 0)
-                throw new ArgumentException("El número de participantes debe ser mayor a cero.");
-        }
-
-        private PropuestaDto MapearAPropuestaDto(Propuesta propuesta)
-        {
-            return new PropuestaDto
-            {
-                Id = propuesta.Id,
-                Titulo = propuesta.Titulo,
-                Descripcion = propuesta.Descripcion,
-                Objetivo = propuesta.Objetivo,
-                Alcance = propuesta.Alcance,
-                ComponentesActividadesProductos = propuesta.ComponentesActividadesProductos,
-                DocenteId = propuesta.DocenteId,
-                DocenteNombre = $"{propuesta.Docente?.Nombre} {propuesta.Docente?.Apellido}",
-                EstadoId = propuesta.EstadoId,
-                EstadoNombre = propuesta.Estado?.Nombre,
-                LineaInvestigacionId = propuesta.LineaInvestigacionId,
-                LineaInvestigacionNombre = propuesta.LineaInvestigacion?.Nombre,
-                Observaciones = propuesta.Observaciones,
-                NumeroParticipantes = propuesta.NumeroParticipantes,
-                Departamento = propuesta.Departamento,
-                Facultad = propuesta.Facultad,
-                FechaCreacion = propuesta.FechaCreacion,
-                FechaActualizacion = propuesta.FechaActualizacion,
-                FechaEnvioPrimera = propuesta.FechaEnvioPrimera,
-                EstudiantesAsignados = propuesta.EstudiantesAsignados.Select(pe => new EstudianteAsignadoDto
-                {
-                    Id = pe.Id,
-                    EstudianteId = pe.EstudianteId,
-                    NombreEstudiante = pe.Estudiante?.Nombre,
-                    ApellidoEstudiante = pe.Estudiante?.Apellido,
-                    MatriculaEstudiante = pe.Estudiante?.Matricula,
-                    FechaAsignacion = pe.FechaAsignacion
-                }).ToList(),
-                Asignaturas = propuesta.AsignaturasAsignadas?.Select(pa => new AsignaturaDto
-                {
-                    Id = pa.Asignatura?.Id ?? 0,
-                    Nombre = pa.Asignatura?.Nombre,
-                    Codigo = pa.Asignatura?.Codigo
-                }).ToList() ?? new List<AsignaturaDto>()
-            };
-        }
+        public Task<PropuestaDetailDto> CambiarEstadoAsync(int id, string estado)
+            => throw new NotImplementedException("Use PropuestaServiceCompleto instead");
     }
 }

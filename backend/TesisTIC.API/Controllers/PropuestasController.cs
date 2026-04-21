@@ -17,35 +17,23 @@ namespace TesisTIC.API.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PropuestaDto>> CrearPropuesta([FromBody] CrearPropuestaDto dto)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ListaPropuestasDto>>> ObtenerTodas()
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var propuesta = await _propuestaService.CrearPropuestaAsync(dto);
-                return CreatedAtAction(nameof(ObtenerPropuesta), new { id = propuesta.Id }, propuesta);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning($"Error de validación al crear propuesta: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
+                var propuestas = await _propuestaService.ObtenerTodasAsync();
+                return Ok(propuestas);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al crear propuesta: {ex.Message}");
+                _logger.LogError($"Error obteniendo propuestas: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PropuestaDto>> ObtenerPropuesta(int id)
+        public async Task<ActionResult<PropuestaDetailDto>> ObtenerPropuesta(int id)
         {
             try
             {
@@ -59,86 +47,74 @@ namespace TesisTIC.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al obtener propuesta: {ex.Message}");
+                _logger.LogError($"Error obteniendo propuesta: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<PropuestaDto>>> ObtenerTodas()
+        [HttpGet("estadisticas/{docenteId}")]
+        public async Task<ActionResult<EstadisticasDto>> ObtenerEstadisticas(int docenteId)
         {
             try
             {
-                var propuestas = await _propuestaService.ObtenerTodasAsync();
+                var stats = await _propuestaService.ObtenerEstadisticasAsync(docenteId);
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error obteniendo estadísticas: {ex.Message}");
+                return StatusCode(500, new { message = "Error interno del servidor" });
+            }
+        }
+
+        [HttpGet("estado/{estado}")]
+        public async Task<ActionResult<IEnumerable<ListaPropuestasDto>>> ObtenerPorEstado(string estado)
+        {
+            try
+            {
+                var propuestas = await _propuestaService.ObtenerPorEstadoAsync(estado);
                 return Ok(propuestas);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al obtener propuestas: {ex.Message}");
+                _logger.LogError($"Error obteniendo propuestas por estado: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }
 
-        [HttpGet("docente/{docenteId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<PropuestaDto>>> ObtenerPorDocente(int docenteId)
+        [HttpPost]
+        public async Task<ActionResult<PropuestaDetailDto>> CrearPropuesta([FromBody] GuardarPropuestaDto dto)
         {
             try
             {
-                var propuestas = await _propuestaService.ObtenerPorDocenteAsync(docenteId);
-                return Ok(propuestas);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                // Usar ID de docente 1 como predeterminado (en producción, obtenerlo del usuario autenticado)
+                var propuesta = await _propuestaService.CrearPropuestaAsync(dto, docenteId: 1);
+                return CreatedAtAction(nameof(ObtenerPropuesta), new { id = propuesta.Id }, propuesta);
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning($"Error al obtener propuestas del docente: {ex.Message}");
+                _logger.LogWarning($"Error de validación: {ex.Message}");
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al obtener propuestas por docente: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor" });
-            }
-        }
-
-        [HttpGet("estado/{estadoId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<PropuestaDto>>> ObtenerPorEstado(int estadoId)
-        {
-            try
-            {
-                var propuestas = await _propuestaService.ObtenerPorEstadoAsync(estadoId);
-                return Ok(propuestas);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning($"Error al obtener propuestas por estado: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al obtener propuestas por estado: {ex.Message}");
+                _logger.LogError($"Error creando propuesta: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PropuestaDto>> ActualizarPropuesta(int id, [FromBody] ActualizarPropuestaDto dto)
+        public async Task<ActionResult<PropuestaDetailDto>> ActualizarPropuesta(int id, [FromBody] GuardarPropuestaDto dto)
         {
             try
             {
-                if (id != dto.Id)
-                    return BadRequest(new { message = "El ID de la URL no coincide con el ID del objeto." });
-
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var propuesta = await _propuestaService.ActualizarPropuestaAsync(dto);
+                var propuesta = await _propuestaService.ActualizarPropuestaAsync(id, dto);
                 return Ok(propuesta);
             }
             catch (KeyNotFoundException ex)
@@ -146,101 +122,66 @@ namespace TesisTIC.API.Controllers
                 _logger.LogWarning($"Propuesta no encontrada: {ex.Message}");
                 return NotFound(new { message = ex.Message });
             }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning($"Error de validación al actualizar: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al actualizar propuesta: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor" });
-            }
-        }
-
-        [HttpPatch("{id}/estado")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<object>> CambiarEstado(int id, [FromBody] CambiarEstadoDto dto)
-        {
-            try
-            {
-                if (id != dto.PropuestaId)
-                    return BadRequest(new { message = "El ID de la URL no coincide con el ID de la propuesta." });
-
-                await _propuestaService.CambiarEstadoAsync(dto);
-                return Ok(new { message = "Estado actualizado correctamente." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning($"Propuesta no encontrada: {ex.Message}");
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning($"Error de validación: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al cambiar estado: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor" });
-            }
-        }
-
-        [HttpPost("{id}/estudiantes")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<object>> AsignarEstudiante(int id, [FromBody] AsignarEstudianteDto dto)
-        {
-            try
-            {
-                if (id != dto.PropuestaId)
-                    return BadRequest(new { message = "El ID de la URL no coincide con el ID de la propuesta." });
-
-                await _propuestaService.AsignarEstudianteAsync(dto);
-                return Ok(new { message = "Estudiante asignado correctamente." });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning($"Recurso no encontrado: {ex.Message}");
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning($"Error de validación: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning($"Operación inválida: {ex.Message}");
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al asignar estudiante: {ex.Message}");
+                _logger.LogError($"Error actualizando propuesta: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<object>> EliminarPropuesta(int id)
+        public async Task<IActionResult> EliminarPropuesta(int id)
         {
             try
             {
-                var eliminada = await _propuestaService.EliminarPropuestaAsync(id);
-                if (!eliminada)
-                    return NotFound(new { message = $"No existe propuesta con ID {id}." });
+                var resultado = await _propuestaService.EliminarPropuestaAsync(id);
+                if (!resultado)
+                    return NotFound(new { message = "Propuesta no encontrada" });
 
-                return Ok(new { message = "Propuesta eliminada correctamente." });
+                return Ok(new { message = "Propuesta eliminada exitosamente" });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al eliminar propuesta: {ex.Message}");
+                _logger.LogError($"Error eliminando propuesta: {ex.Message}");
+                return StatusCode(500, new { message = "Error interno del servidor" });
+            }
+        }
+
+        [HttpPost("{id}/asignar-estudiantes")]
+        public async Task<ActionResult<PropuestaDetailDto>> AsignarEstudiantes(int id, [FromBody] AsignarEstudiantesDto dto)
+        {
+            try
+            {
+                var propuesta = await _propuestaService.AsignarEstudiantesAsync(id, dto);
+                return Ok(propuesta);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error asignando estudiantes: {ex.Message}");
+                return StatusCode(500, new { message = "Error interno del servidor" });
+            }
+        }
+
+        [HttpPatch("{id}/cambiar-estado")]
+        public async Task<ActionResult<PropuestaDetailDto>> CambiarEstado(int id, [FromBody] dynamic data)
+        {
+            try
+            {
+                string estado = data.estado;
+                var propuesta = await _propuestaService.CambiarEstadoAsync(id, estado);
+                return Ok(propuesta);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error cambiando estado: {ex.Message}");
                 return StatusCode(500, new { message = "Error interno del servidor" });
             }
         }

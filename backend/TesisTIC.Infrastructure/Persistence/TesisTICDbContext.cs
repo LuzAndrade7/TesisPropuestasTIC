@@ -17,6 +17,12 @@ namespace TesisTIC.Infrastructure.Persistence
         public DbSet<Asignatura> Asignaturas { get; set; }
         public DbSet<PropuestaEstudiante> PropuestasEstudiantes { get; set; }
         public DbSet<PropuestaAsignatura> PropuestasAsignaturas { get; set; }
+        public DbSet<Modulo> Modulos { get; set; }
+        public DbSet<Actividad> Actividades { get; set; }
+        public DbSet<ObservacionPropuesta> ObservacionesPropuestas { get; set; }
+        public DbSet<ObservacionModulo> ObservacionesModulos { get; set; }
+        public DbSet<RechazoPropuesta> RechazoPropuestas { get; set; }
+        public DbSet<RechazoRazon> RechazoRazones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,12 +83,13 @@ namespace TesisTIC.Infrastructure.Persistence
                 entity.Property(p => p.Descripcion).IsRequired();
                 entity.Property(p => p.Objetivo).IsRequired();
                 entity.Property(p => p.Alcance).IsRequired();
-                entity.Property(p => p.ComponentesActividadesProductos).IsRequired();
-                entity.Property(p => p.Observaciones).HasMaxLength(1000);
                 entity.Property(p => p.Departamento).IsRequired().HasMaxLength(150);
                 entity.Property(p => p.Facultad).IsRequired().HasMaxLength(200);
                 entity.HasMany(p => p.EstudiantesAsignados).WithOne(pe => pe.Propuesta).HasForeignKey(pe => pe.PropuestaId);
                 entity.HasMany(p => p.AsignaturasAsignadas).WithOne(pa => pa.Propuesta).HasForeignKey(pa => pa.PropuestaId);
+                entity.HasMany(p => p.Modulos).WithOne(m => m.Propuesta).HasForeignKey(m => m.PropuestaId);
+                entity.HasMany(p => p.Observaciones).WithOne(o => o.Propuesta).HasForeignKey(o => o.PropuestaId);
+                entity.HasOne(p => p.Rechazo).WithOne(r => r.Propuesta).HasForeignKey<RechazoPropuesta>(r => r.PropuestaId);
             });
 
             modelBuilder.Entity<PropuestaAsignatura>(entity =>
@@ -99,6 +106,56 @@ namespace TesisTIC.Infrastructure.Persistence
                 entity.HasOne(pe => pe.Propuesta).WithMany(p => p.EstudiantesAsignados).HasForeignKey(pe => pe.PropuestaId);
                 entity.HasOne(pe => pe.Estudiante).WithMany(e => e.PropuestasAsignadas).HasForeignKey(pe => pe.EstudianteId);
                 entity.HasIndex(pe => new { pe.PropuestaId, pe.EstudianteId }).IsUnique();
+            });
+
+            modelBuilder.Entity<Modulo>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+                entity.Property(m => m.Nombre).IsRequired().HasMaxLength(200);
+                entity.Property(m => m.Descripcion).IsRequired();
+                entity.Property(m => m.Productos).IsRequired();
+                entity.HasOne(m => m.Propuesta).WithMany(p => p.Modulos).HasForeignKey(m => m.PropuestaId);
+                entity.HasMany(m => m.Actividades).WithOne(a => a.Modulo).HasForeignKey(a => a.ModuloId);
+                entity.HasMany(m => m.Observaciones).WithOne(o => o.Modulo).HasForeignKey(o => o.ModuloId);
+            });
+
+            modelBuilder.Entity<Actividad>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Descripcion).IsRequired().HasMaxLength(300);
+                entity.HasOne(a => a.Modulo).WithMany(m => m.Actividades).HasForeignKey(a => a.ModuloId);
+            });
+
+            modelBuilder.Entity<ObservacionPropuesta>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Autor).IsRequired().HasMaxLength(200);
+                entity.Property(o => o.Texto).IsRequired();
+                entity.HasOne(o => o.Propuesta).WithMany(p => p.Observaciones).HasForeignKey(o => o.PropuestaId);
+            });
+
+            modelBuilder.Entity<ObservacionModulo>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Autor).IsRequired().HasMaxLength(200);
+                entity.Property(o => o.Texto).IsRequired();
+                entity.HasOne(o => o.Modulo).WithMany(m => m.Observaciones).HasForeignKey(o => o.ModuloId);
+            });
+
+            modelBuilder.Entity<RechazoPropuesta>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Autor).IsRequired().HasMaxLength(200);
+                entity.Property(r => r.Recomendacion).IsRequired();
+                entity.HasOne(r => r.Propuesta).WithOne(p => p.Rechazo).HasForeignKey<RechazoPropuesta>(r => r.PropuestaId);
+                entity.HasMany(r => r.Razones).WithOne(rz => rz.RechazoPropuesta).HasForeignKey(rz => rz.RechazoPropuestaId);
+            });
+
+            modelBuilder.Entity<RechazoRazon>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Razon).IsRequired();
+                entity.HasOne(r => r.RechazoPropuesta).WithMany(rp => rp.Razones).HasForeignKey(r => r.RechazoPropuestaId);
             });
 
             ConfiguracionesPredeterminadas(modelBuilder);

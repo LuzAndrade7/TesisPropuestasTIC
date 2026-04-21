@@ -1,0 +1,172 @@
+<div style="min-height: calc(100vh - 52px); padding: 20px 14px; background: var(--g50);">
+  <div style="max-width: 940px; margin: 0 auto;">
+    <!-- Encabezado -->
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 19px; font-weight: 700; color: var(--navy);">Mis propuestas</div>
+        <div style="font-size: 10px; color: var(--g600); margin-top: 2px;">Formulario F_AA_233A — Trabajo de Integración Curricular</div>
+      </div>
+      <button class="btn btn-gold" routerLink="/crear-propuesta">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva propuesta
+      </button>
+    </div>
+
+    <!-- Estadísticas -->
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-bottom: 18px;">
+      <div *ngFor="let estado of estados" 
+           class="stat-btn" 
+           [class.active]="filtroActivo === estado"
+           (click)="aplicarFiltro(estado)"
+           [style.border-color]="filtroActivo === estado ? obtenerColorEstado(estado) : '#e5e7eb'"
+           [style.background-color]="filtroActivo === estado ? obtenerIntensidadColor(estado) : '#fff'">
+        <div class="stat-num" [style.color]="obtenerColorEstado(estado)">
+          {{ estadisticas[estado] || 0 }}
+        </div>
+        <div class="stat-lbl" [style.color]="obtenerColorEstado(estado)">{{ estado }}</div>
+      </div>
+    </div>
+
+    <!-- Tabla de propuestas -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
+        <p>Cargando propuestas...</p>
+      </div>
+      <div *ngIf="!isLoading && propuestasFiltradas.length === 0" style="text-align: center; padding: 40px; color: var(--g400); font-size: 12px;">
+        No hay propuestas con estado "{{ filtroActivo }}"
+      </div>
+      <table class="dtable" *ngIf="!isLoading && propuestasFiltradas.length > 0">
+        <thead>
+          <tr>
+            <th style="width: 38px;">N°</th>
+            <th>Título del proyecto</th>
+            <th style="width: 175px;">Estado</th>
+            <th style="width: 108px;">Actualización</th>
+            <th style="width: 120px; text-align: center;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prop of propuestasFiltradas; let i = index">
+            <td style="font-size: 10px; font-weight: 600; color: #9CA3AF;">{{ i + 1 }}</td>
+            <td style="font-weight: 600; font-size: 12px;">{{ prop.titulo }}</td>
+            <td>
+              <span [ngClass]="'badge b-' + (prop.estado | lowercase)">{{ prop.estado }}</span>
+            </td>
+            <td style="font-size: 10px; color: var(--g600); font-weight: 500;">{{ prop.fecha | date:'dd/MM/yyyy' }}</td>
+            <td style="text-align: center;">
+              <button class="ibtn" [routerLink]="['/detalle', prop.id]" title="Ver">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+              <button class="ibtn" [routerLink]="['/editar', prop.id]" title="Editar" *ngIf="prop.estado === 'Borrador' || prop.estado === 'Observada'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Estilos inline específicos del dashboard -->
+<style>
+  .stat-btn {
+    background: var(--w);
+    border: 2px solid var(--g100);
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .stat-btn:hover {
+    border-color: var(--navy);
+    background: #eef3fb;
+  }
+
+  .stat-btn.active {
+    background: #eef3fb;
+  }
+
+  .stat-num {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .b-borrador {
+    background: #F1F3F5;
+    color: #444;
+    border: 1px solid var(--g200);
+  }
+
+  .b-borrador::before { background: var(--g400); }
+
+  .b-pendiente {
+    background: #EBF3FC;
+    color: #0E4A8C;
+    border: 1px solid var(--blue);
+  }
+
+  .b-pendiente::before { background: var(--blue); }
+
+  .b-observada {
+    background: #FEF9EC;
+    color: #8B5E00;
+    border: 1px solid var(--gold);
+  }
+
+  .b-observada::before { background: var(--gold); }
+
+  .b-aprobada {
+    background: var(--grn-bg);
+    color: var(--grn-t);
+    border: 1px solid var(--grn-b);
+  }
+
+  .b-aprobada::before { background: #10B981; }
+
+  .b-rechazada {
+    background: var(--rej-bg);
+    color: var(--rej-t);
+    border: 1px solid var(--rej-b);
+  }
+
+  .b-rechazada::before { background: var(--red); }
+</style>
