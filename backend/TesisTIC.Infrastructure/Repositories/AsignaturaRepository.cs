@@ -1,27 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
-using TesisTIC.Infrastructure.Persistence;
+using TesisTIC.Infrastructure.Data;
 
-namespace TesisTIC.Infrastructure.Repositories
+namespace TesisTIC.Infrastructure.Repositories;
+
+/// <summary>
+/// Repositorio específico para operaciones con Asignaturas
+/// </summary>
+public class AsignaturaRepository : GenericRepository<Asignatura>, IAsignaturaRepository
 {
-    public class AsignaturaRepository : IAsignaturaRepository
+    public AsignaturaRepository(TesisTicDbContext context) : base(context)
     {
-        private readonly TesisTICDbContext _context;
+    }
 
-        public AsignaturaRepository(TesisTICDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<Asignatura> ObtenerPorIdAsync(int id)
-        {
-            return await _context.Asignaturas.FirstOrDefaultAsync(a => a.Id == id);
-        }
-
-        public async Task<IEnumerable<Asignatura>> ObtenerTodosAsync()
-        {
-            return await _context.Asignaturas.OrderBy(a => a.Nombre).ToListAsync();
-        }
+    /// <summary>
+    /// Obtiene una asignatura por su código único
+    /// </summary>
+    public async Task<Asignatura?> GetByCodigoAsync(string codigo)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Codigo == codigo);
     }
 }

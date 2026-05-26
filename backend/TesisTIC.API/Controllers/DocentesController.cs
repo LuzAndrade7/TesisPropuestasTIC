@@ -2,73 +2,148 @@ using Microsoft.AspNetCore.Mvc;
 using TesisTIC.Application.DTOs;
 using TesisTIC.Application.Interfaces;
 
-namespace TesisTIC.API.Controllers
+namespace TesisTIC.API.Controllers;
+
+/// <summary>
+/// Controller para operaciones REST de Docentes
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+public class DocentesController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class DocentesController : ControllerBase
+    private readonly IDocenteService _service;
+    private readonly ILogger<DocentesController> _logger;
+
+    public DocentesController(
+        IDocenteService service,
+        ILogger<DocentesController> logger)
     {
-        private readonly IDocenteRepository _docenteRepository;
-        private readonly ILogger<DocentesController> _logger;
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-        public DocentesController(IDocenteRepository docenteRepository, ILogger<DocentesController> logger)
+    /// <summary>
+    /// Obtiene todos los docentes
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DocenteDto>>> GetAll()
+    {
+        try
         {
-            _docenteRepository = docenteRepository;
-            _logger = logger;
+            var docentes = await _service.GetAllAsync();
+            return Ok(docentes);
         }
-
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<DocenteDto>>> ObtenerTodos()
+        catch (Exception ex)
         {
-            try
-            {
-                var docentes = await _docenteRepository.ObtenerTodosAsync();
-                var docentesDto = docentes.Select(d => new DocenteDto
-                {
-                    Id = d.Id,
-                    Nombre = d.Nombre,
-                    Apellido = d.Apellido,
-                    CorreoInstitucional = d.CorreoInstitucional,
-                    Departamento = d.Departamento,
-                    Activo = d.Activo
-                });
-                return Ok(docentesDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al obtener docentes: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor" });
-            }
+            _logger.LogError(ex, "Error al obtener docentes");
+            return StatusCode(500, new { message = "Error interno del servidor" });
         }
+    }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DocenteDto>> ObtenerPorId(int id)
+    /// <summary>
+    /// Obtiene un docente por ID
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DocenteDto>> GetById(int id)
+    {
+        try
         {
-            try
-            {
-                var docente = await _docenteRepository.ObtenerPorIdAsync(id);
-                if (docente == null)
-                    return NotFound(new { message = $"No existe docente con ID {id}." });
+            var docente = await _service.GetByIdAsync(id);
+            if (docente == null)
+                return NotFound(new { message = $"Docente con ID {id} no encontrado" });
 
-                var docenteDto = new DocenteDto
-                {
-                    Id = docente.Id,
-                    Nombre = docente.Nombre,
-                    Apellido = docente.Apellido,
-                    CorreoInstitucional = docente.CorreoInstitucional,
-                    Departamento = docente.Departamento,
-                    Activo = docente.Activo
-                };
-                return Ok(docenteDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al obtener docente: {ex.Message}");
-                return StatusCode(500, new { message = "Error interno del servidor" });
-            }
+            return Ok(docente);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener docente {docenteId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    /// <summary>
+    /// Crea un nuevo docente
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<DocenteDto>> Create([FromBody] CreateUpdateDocenteDto dto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var docente = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = docente.Id }, docente);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear docente");
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    /// <summary>
+    /// Actualiza un docente existente
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<DocenteDto>> Update(int id, [FromBody] CreateUpdateDocenteDto dto)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var docente = await _service.UpdateAsync(id, dto);
+            return Ok(docente);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar docente {docenteId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    /// <summary>
+    /// Elimina un docente
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Delete(int id)
+    {
+        try
+        {
+            var resultado = await _service.DeleteAsync(id);
+            if (!resultado)
+                return NotFound(new { message = $"Docente con ID {id} no encontrado" });
+
+            return Ok(new { message = "Docente eliminado exitosamente" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar docente {docenteId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
         }
     }
 }

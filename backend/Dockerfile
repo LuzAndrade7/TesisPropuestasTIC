@@ -1,24 +1,43 @@
+# Multi-stage build para optimización
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
 
+WORKDIR /source
+
+# Copiar archivos de proyecto
 COPY ["TesisTIC.API/TesisTIC.API.csproj", "TesisTIC.API/"]
 COPY ["TesisTIC.Application/TesisTIC.Application.csproj", "TesisTIC.Application/"]
 COPY ["TesisTIC.Domain/TesisTIC.Domain.csproj", "TesisTIC.Domain/"]
 COPY ["TesisTIC.Infrastructure/TesisTIC.Infrastructure.csproj", "TesisTIC.Infrastructure/"]
 
+# Restaurar dependencias
 RUN dotnet restore "TesisTIC.API/TesisTIC.API.csproj"
 
-COPY . .
+# Copiar código fuente
+COPY ["TesisTIC.API/", "TesisTIC.API/"]
+COPY ["TesisTIC.Application/", "TesisTIC.Application/"]
+COPY ["TesisTIC.Domain/", "TesisTIC.Domain/"]
+COPY ["TesisTIC.Infrastructure/", "TesisTIC.Infrastructure/"]
+
+# Build
 RUN dotnet build "TesisTIC.API/TesisTIC.API.csproj" -c Release -o /app/build
 
-FROM build AS publish
+# Publish
 RUN dotnet publish "TesisTIC.API/TesisTIC.API.csproj" -c Release -o /app/publish
 
+# Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
+
 WORKDIR /app
-COPY --from=publish /app/publish .
 
-EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
+# Copiar archivos publicados desde build stage
+COPY --from=build /app/publish .
 
+# Exponer puertos
+EXPOSE 5000 5001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Punto de entrada
 ENTRYPOINT ["dotnet", "TesisTIC.API.dll"]

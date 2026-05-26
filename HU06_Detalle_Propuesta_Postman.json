@@ -1,0 +1,121 @@
+{
+  "info": {
+    "_postman_id": "hu06-detalle-propuesta",
+    "name": "HU06 - Detalle Completo de Propuesta",
+    "description": "Endpoints para consultar detalle completo de propuesta con histórico y observaciones",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. GET Detalle Completo - Propuesta OBSERVADA",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/propuestas/1/detalle",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "propuestas", "1", "detalle"]
+        },
+        "description": "HU06 T17: Obtiene el detalle completo de una propuesta.\n\nRetorna:\n- Datos básicos (id, nombre, descripción, objetivo, alcance)\n- Estado actual\n- Profesor proponente (nombres, correo, título académico)\n- Asignaturas asociadas (código, nombre)\n- Observaciones CPGIC (ordenadas DESC por fecha)\n- Histórico de cambios de estado (ordenado ASC)\n- Permisos de acciones según estado\n\nCódigos de respuesta:\n- 200: Propuesta encontrada\n- 404: Propuesta no encontrada\n- 500: Error interno del servidor"
+      },
+      "response": []
+    },
+    {
+      "name": "2. GET Detalle Completo - Propuesta PENDIENTE",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/propuestas/2/detalle",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "propuestas", "2", "detalle"]
+        },
+        "description": "Obtiene propuesta en estado PENDIENTE (sin observaciones, no editable)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. GET Detalle Completo - Propuesta APROBADA",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/propuestas/3/detalle",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "propuestas", "3", "detalle"]
+        },
+        "description": "Obtiene propuesta en estado APROBADA (lectura solamente)"
+      },
+      "response": []
+    },
+    {
+      "name": "4. GET Detalle - Propuesta No Existe (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/propuestas/99999/detalle",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "propuestas", "99999", "detalle"]
+        },
+        "description": "Intenta obtener propuesta que no existe.\n\nEsperado: 404 Not Found"
+      },
+      "response": []
+    },
+    {
+      "name": "5. GET Detalle - ID Inválido (400)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/propuestas/abc/detalle",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "propuestas", "abc", "detalle"]
+        },
+        "description": "Intenta obtener con ID no numérico.\n\nEsperado: 400 Bad Request (depende de routing de ASP.NET)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api"
+    }
+  ]
+}

@@ -1,50 +1,38 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
-using TesisTIC.Infrastructure.Persistence;
+using TesisTIC.Infrastructure.Data;
 
-namespace TesisTIC.Infrastructure.Repositories
+namespace TesisTIC.Infrastructure.Repositories;
+
+/// <summary>
+/// Repositorio específico para operaciones con Docentes
+/// </summary>
+public class DocenteRepository : GenericRepository<Docente>, IDocenteRepository
 {
-    public class DocenteRepository : IDocenteRepository
+    public DocenteRepository(TesisTicDbContext context) : base(context)
     {
-        private readonly TesisTICDbContext _context;
+    }
 
-        public DocenteRepository(TesisTICDbContext context)
-        {
-            _context = context;
-        }
+    /// <summary>
+    /// Obtiene un docente por su correo
+    /// </summary>
+    public async Task<Docente?> GetByCorreoAsync(string correo)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Correo == correo);
+    }
 
-        public async Task<Docente> ObtenerPorIdAsync(int id)
-        {
-            return await _context.Docentes.FirstOrDefaultAsync(d => d.Id == id);
-        }
-
-        public async Task<IEnumerable<Docente>> ObtenerTodosAsync()
-        {
-            return await _context.Docentes
-                .Where(d => d.Activo)
-                .OrderBy(d => d.Apellido)
-                .ThenBy(d => d.Nombre)
-                .ToListAsync();
-        }
-
-        public async Task<Docente> ObtenerPorCorreoAsync(string correo)
-        {
-            return await _context.Docentes.FirstOrDefaultAsync(d => d.CorreoInstitucional == correo);
-        }
-
-        public async Task<Docente> CrearAsync(Docente docente)
-        {
-            docente.FechaCreacion = DateTime.UtcNow;
-            docente.Activo = true;
-            var resultado = await _context.Docentes.AddAsync(docente);
-            await GuardarCambiosAsync();
-            return resultado.Entity;
-        }
-
-        public async Task<int> GuardarCambiosAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
+    /// <summary>
+    /// Obtiene todos los docentes que tienen propuestas asignadas
+    /// </summary>
+    public async Task<IEnumerable<Docente>> GetConPropuestasAsync()
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Include(d => d.Propuestas)
+            .Where(d => d.Propuestas.Any())
+            .ToListAsync();
     }
 }

@@ -1,0 +1,177 @@
+<!-- HU06 T18: Vista Detalle Completo de Propuesta -->
+<div class="container-detalle">
+  <!-- LOADING STATE -->
+  <div *ngIf="cargando" class="estado-cargando">
+    <div class="spinner"></div>
+    <p>Cargando detalle de propuesta...</p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="error && !cargando" class="alerta alerta-error">
+    <strong>❌ Error:</strong> {{ error }}
+    <button class="btn-cerrar-alerta" (click)="volverAlTablero()">Volver</button>
+  </div>
+
+  <!-- DETALLE CONTENT -->
+  <div *ngIf="detalle && !cargando" class="detalle-contenido">
+    <!-- HEADER CON ESTADO -->
+    <div class="header-detalle">
+      <div class="titulo-estado">
+        <h1>{{ detalle.nombreProyecto }}</h1>
+        <div class="badge-estado" [style.backgroundColor]="getColorEstado(detalle.estado)">
+          {{ detalle.estado }}
+        </div>
+      </div>
+      <button class="btn-volver" (click)="volverAlTablero()">← Volver</button>
+    </div>
+
+    <!-- INFORMACIÓN BÁSICA -->
+    <div class="seccion-datos-basicos">
+      <h2>📋 Información Básica</h2>
+      <div class="grid-datos">
+        <div class="card-dato">
+          <label>Descripción</label>
+          <p>{{ detalle.descripcion }}</p>
+        </div>
+        <div class="card-dato">
+          <label>Objetivo</label>
+          <p>{{ detalle.objetivo }}</p>
+        </div>
+        <div class="card-dato">
+          <label>Alcance</label>
+          <p>{{ detalle.alcance }}</p>
+        </div>
+        <div class="card-dato">
+          <label>Número de Participantes</label>
+          <p class="numero">{{ detalle.numeroParticipantes }}</p>
+        </div>
+      </div>
+
+      <!-- FECHAS -->
+      <div class="fechas-info">
+        <div class="fecha-item">
+          <span class="label">📅 Creación:</span>
+          <span class="valor">{{ formatearFecha(detalle.fechaCreacion) }}</span>
+        </div>
+        <div *ngIf="detalle.fechaEnvioRevision" class="fecha-item">
+          <span class="label">📤 Enviado a Revisión:</span>
+          <span class="valor">{{ formatearFecha(detalle.fechaEnvioRevision) }}</span>
+        </div>
+        <div *ngIf="detalle.fechaActualizacion" class="fecha-item">
+          <span class="label">✏️ Última Actualización:</span>
+          <span class="valor">{{ formatearFecha(detalle.fechaActualizacion) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFESOR -->
+    <div class="seccion-profesor" *ngIf="detalle.profesor">
+      <h2>👨‍🏫 Profesor Proponente</h2>
+      <div class="card-profesor">
+        <div class="dato-profesor">
+          <label>Nombre:</label>
+          <p>{{ detalle.profesor.nombre }}</p>
+        </div>
+        <div class="dato-profesor">
+          <label>Correo:</label>
+          <p>
+            <a [href]="'mailto:' + detalle.profesor.correo" target="_blank">
+              {{ detalle.profesor.correo }}
+            </a>
+          </p>
+        </div>
+        <div *ngIf="detalle.profesor.tituloAcademico" class="dato-profesor">
+          <label>Título Académico:</label>
+          <p>{{ detalle.profesor.tituloAcademico }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASIGNATURAS -->
+    <div class="seccion-asignaturas" *ngIf="detalle.asignaturas && detalle.asignaturas.length > 0">
+      <h2>📚 Asignaturas Asociadas</h2>
+      <div class="lista-asignaturas">
+        <div class="asignatura-item" *ngFor="let asignatura of detalle.asignaturas">
+          <div class="asignatura-codigo">{{ asignatura.codigo }}</div>
+          <div class="asignatura-info">
+            <p class="asignatura-nombre">{{ asignatura.nombre }}</p>
+            <p *ngIf="asignatura.descripcion" class="asignatura-desc">{{ asignatura.descripcion }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBSERVACIONES CPGIC -->
+    <div class="seccion-observaciones" *ngIf="detalle.observaciones && detalle.observaciones.length > 0">
+      <h2>⚠️ Observaciones CPGIC ({{ detalle.totalObservaciones }})</h2>
+      <div class="lista-observaciones">
+        <div class="tarjeta-observacion" *ngFor="let obs of detalle.observaciones">
+          <div class="cabecera-obs">
+            <span class="quien">{{ obs.realizadoPor }}</span>
+            <span class="cuando">{{ formatearFecha(obs.fechaObservacion) }}</span>
+          </div>
+          <div class="contenido-obs">
+            <p>{{ obs.observacion }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO DE CAMBIOS DE ESTADO -->
+    <div class="seccion-historial" *ngIf="detalle.historial && detalle.historial.length > 0">
+      <h2>📜 Histórico de Estados ({{ detalle.totalCambiosEstado }})</h2>
+      <div class="timeline-historial">
+        <div class="timeline-item" *ngFor="let item of detalle.historial; let last = last">
+          <div class="timeline-point" [style.backgroundColor]="getColorEstado(item.estadoNuevo)"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="estado-badge" [style.backgroundColor]="getColorEstado(item.estadoNuevo)">
+                {{ getEstadoAnterior(item.estadoAnterior) }} → {{ item.estadoNuevo }}
+              </span>
+              <span class="fecha-timeline">{{ formatearFecha(item.fechaCambio) }}</span>
+            </div>
+            <div class="timeline-body">
+              <p *ngIf="item.motivo" class="motivo">{{ item.motivo }}</p>
+              <p *ngIf="item.realizadoPor" class="quien-cambio">Por: {{ item.realizadoPor }}</p>
+            </div>
+          </div>
+          <div class="timeline-line" *ngIf="!last"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN -->
+    <div class="grupo-botones-acciones">
+      <button *ngIf="puedeEditar" class="btn btn-primary" (click)="irAEditar()">
+        ✏️ Editar Propuesta
+      </button>
+      <button *ngIf="detalle.estado === 'BORRADOR'" class="btn btn-success" (click)="enviarARevision()">
+        📤 Enviar a Revisión
+      </button>
+      <button *ngIf="puedeReenviar" class="btn btn-warning" (click)="reenviarPropuesta()">
+        🔄 Reenviar Corregida
+      </button>
+      <!-- HU07 T24: Botón para asignar estudiantes -->
+      <button *ngIf="puedeAsignarEstudiantes" class="btn btn-info" (click)="abrirModalAsignarEstudiantes()">
+        👥 Asignar Estudiantes
+      </button>
+      <!-- HU07 T25: Botón para solicitar nueva aprobación -->
+      <button *ngIf="puedeSolicitarNuevaAprobacion" class="btn btn-secondary" (click)="solicitarNuevaAprobacion()">
+        📋 Solicitar Nueva Aprobación
+      </button>
+      <button *ngIf="puedeEliminar" class="btn btn-danger" (click)="eliminarPropuesta()">
+        🗑️ Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HU07 T21: Modal para asignar estudiantes -->
+<app-asignar-estudiantes
+  *ngIf="mostrarModalAsignarEstudiantes"
+  [propuestaId]="propuestaId"
+  [estadoPropuesta]="detalle?.estado"
+  [estudiantesActuales]="estudiantesAsignados"
+  (asignacionCompleta)="onAsignacionCompleta($event)"
+  (cerrar)="cerrarModalAsignarEstudiantes()">
+</app-asignar-estudiantes>

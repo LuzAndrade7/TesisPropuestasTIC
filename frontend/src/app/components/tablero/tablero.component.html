@@ -1,0 +1,158 @@
+<!--
+T05: Template Tablero - Visualizar propuestas (HU02)
+Ubicación: src/app/components/tablero/tablero.component.html
+
+Estructura del prototipo:
+- Encabezado con título y botón "Nueva propuesta"
+- Estadísticas por estado (6 botones: TODOS + 5 estados)
+- Tabla con propuestas (N°, Título, Estado, Actualización, Acciones)
+- Mensaje vacío si no hay propuestas
+-->
+
+<div class="tablero-container">
+  <!-- ENCABEZADO -->
+  <div class="tablero-encabezado">
+    <div>
+      <h2 class="tablero-titulo">Mis propuestas</h2>
+      <p class="tablero-subtitulo">Formulario F_AA_233A — Trabajo de Integración Curricular</p>
+    </div>
+    <button class="btn-nueva-propuesta" (click)="crearNuevaPropuesta()">
+      <span class="icono">+</span>
+      Nueva propuesta
+    </button>
+  </div>
+
+  <!-- ESTADÍSTICAS POR ESTADO -->
+  <div class="stats-row">
+    <!-- Botón TODOS -->
+    <button 
+      class="stat-btn"
+      [class.active]="estadoActivo === null"
+      (click)="filtrarPorEstado(null)">
+      <div class="stat-num">{{ estadisticas.total }}</div>
+      <div class="stat-lbl">TODOS</div>
+    </button>
+
+    <!-- Botones por cada estado -->
+    <button 
+      *ngFor="let estado of estados"
+      class="stat-btn"
+      [class.active]="estadoActivo === estado"
+      (click)="filtrarPorEstado(estado)">
+      <div class="stat-num">{{ obtenerNumeroEstado(estado) }}</div>
+      <div class="stat-lbl">{{ obtenerEtiquetaEstado(estado) | uppercase }}</div>
+    </button>
+  </div>
+
+  <!-- MENSAJE DE ERROR O VACÍO -->
+  <div *ngIf="mensaje" class="mensaje-alerta">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 9v2m0 4v2m8.364-15.536a9 9 0 11-12.728 0"></path>
+    </svg>
+    <span>{{ mensaje }}</span>
+  </div>
+
+  <!-- INDICADOR DE CARGA -->
+  <div *ngIf="cargando" class="indicador-carga">
+    <div class="spinner"></div>
+    <p>Cargando propuestas...</p>
+  </div>
+
+  <!-- TABLA DE PROPUESTAS -->
+  <div *ngIf="!cargando && propuestasFiltradas.length > 0" class="tabla-card">
+    <table class="tabla-propuestas">
+      <thead>
+        <tr>
+          <th class="col-numero">N°</th>
+          <th class="col-titulo">Título del proyecto</th>
+          <th class="col-estado">Estado</th>
+          <th class="col-fecha">Actualización</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let propuesta of propuestasFiltradas; let i = index">
+          <!-- Número -->
+          <td class="col-numero">
+            <span class="numero">{{ i + 1 }}</span>
+          </td>
+
+          <!-- Título del proyecto -->
+          <td class="col-titulo">
+            <div class="titulo-contenedor">
+              <div class="titulo-texto">{{ propuesta.nombreProyecto }}</div>
+              <div class="profesor-info" *ngIf="propuesta.profesor">
+                <small>Por: {{ propuesta.profesor.nombreCompleto }}</small>
+              </div>
+            </div>
+          </td>
+
+          <!-- Estado (Badge coloreado) -->
+          <td class="col-estado">
+            <span [class]="'badge ' + obtenerClaseBadge(propuesta.estado)">
+              <span class="badge-punto"></span>
+              {{ obtenerEtiquetaEstado(propuesta.estado) }}
+            </span>
+          </td>
+
+          <!-- Fecha de Actualización -->
+          <td class="col-fecha">
+            <span class="fecha">{{ formatearFecha(propuesta.fechaActualizacion) }}</span>
+          </td>
+
+          <!-- Acciones -->
+          <td class="col-acciones">
+            <div class="acciones-group">
+              <button 
+                class="btn-accion btn-ver"
+                title="Ver detalle"
+                (click)="verDetalle(propuesta.id)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+              <button 
+                class="btn-accion btn-editar"
+                title="Editar"
+                (click)="editarPropuesta(propuesta.id)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              </button>
+              <button 
+                class="btn-accion btn-eliminar"
+                title="Eliminar"
+                (click)="eliminarPropuesta(propuesta.id)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLA VACÍA (sin propuestas) -->
+  <div *ngIf="!cargando && propuestasFiltradas.length === 0" class="tabla-vacia">
+    <div class="vacia-icono">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M9 12h6m-6 4h6M5 20h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v13a2 2 0 002 2z"></path>
+      </svg>
+    </div>
+    <div class="vacia-titulo">No hay propuestas</div>
+    <div class="vacia-texto">
+      Crea tu primera propuesta para empezar
+    </div>
+    <button class="btn-nueva-propuesta-vacia" (click)="crearNuevaPropuesta()">
+      <span class="icono">+</span>
+      Nueva propuesta
+    </button>
+  </div>
+
+</div>

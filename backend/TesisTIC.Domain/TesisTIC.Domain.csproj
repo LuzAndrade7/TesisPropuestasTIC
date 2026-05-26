@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <!-- Carpetas para organizar entidades -->
+  <ItemGroup>
+    <Folder Include="Entities\" />
+  </ItemGroup>
 
 </Project>

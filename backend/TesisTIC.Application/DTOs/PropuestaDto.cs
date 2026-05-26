@@ -1,27 +1,58 @@
-namespace TesisTIC.Application.DTOs
+namespace TesisTIC.Application.DTOs;
+
+/// <summary>
+/// DTO para mostrar información de una propuesta con relaciones
+/// </summary>
+public class PropuestaDto
 {
-    public class PropuestaDto
-    {
-        public int Id { get; set; }
-        public string Titulo { get; set; }
-        public string Descripcion { get; set; }
-        public string Objetivo { get; set; }
-        public string Alcance { get; set; }
-        public string ComponentesActividadesProductos { get; set; }
-        public int DocenteId { get; set; }
-        public string DocenteNombre { get; set; }
-        public int EstadoId { get; set; }
-        public string EstadoNombre { get; set; }
-        public int? LineaInvestigacionId { get; set; }
-        public string? LineaInvestigacionNombre { get; set; }
-        public string? Observaciones { get; set; }
-        public int NumeroParticipantes { get; set; }
-        public string Departamento { get; set; }
-        public string Facultad { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public DateTime? FechaActualizacion { get; set; }
-        public DateTime? FechaEnvioPrimera { get; set; }
-        public List<EstudianteAsignadoDto> EstudiantesAsignados { get; set; } = new List<EstudianteAsignadoDto>();
-        public List<AsignaturaDto> Asignaturas { get; set; } = new List<AsignaturaDto>();
-    }
+    public int Id { get; set; }
+    public string NombreProyecto { get; set; } = string.Empty;
+    public int NumeroParticipantes { get; set; }
+    public int ProfesorId { get; set; }
+    public string Descripcion { get; set; } = string.Empty;
+    public string Objetivo { get; set; } = string.Empty;
+    public string Alcance { get; set; } = string.Empty;
+    public string Estado { get; set; } = string.Empty;
+    public DateTime FechaCreacion { get; set; }
+    public DateTime FechaActualizacion { get; set; }
+    public DateTime? FechaEnvioRevision { get; set; }
+
+    // Relaciones
+    public DocenteDto? Profesor { get; set; }
+    public List<AsignaturaDto> Asignaturas { get; set; } = new();
+}
+
+/// <summary>
+/// DTO para crear una propuesta
+/// </summary>
+public class CreatePropuestaDto
+{
+    public string NombreProyecto { get; set; } = string.Empty;
+    public int NumeroParticipantes { get; set; }
+    public int ProfesorId { get; set; }
+    public string Descripcion { get; set; } = string.Empty;
+    public string Objetivo { get; set; } = string.Empty;
+    public string Alcance { get; set; } = string.Empty;
+    public List<int>? AsignaturaIds { get; set; } = new();
+}
+
+/// <summary>
+/// DTO para actualizar una propuesta
+/// </summary>
+public class UpdatePropuestaDto
+{
+    public string? NombreProyecto { get; set; }
+    public int? NumeroParticipantes { get; set; }
+    public string? Descripcion { get; set; }
+    public string? Objetivo { get; set; }
+    public string? Alcance { get; set; }
+    public List<int>? AsignaturaIds { get; set; }
+}
+
+/// <summary>
+/// DTO para cambiar el estado de una propuesta
+/// </summary>
+public class UpdateEstadoPropuestaDto
+{
+    public string Estado { get; set; } = string.Empty;
 }

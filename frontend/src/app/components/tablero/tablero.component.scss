@@ -1,0 +1,635 @@
+/**
+ * T05: Estilos del Tablero (HU02)
+ * Ubicación: src/app/components/tablero/tablero.component.scss
+ * 
+ * Colores del prototipo EPN:
+ * - Navy: #0E2240
+ * - Gold: #F3BD46
+ * - Red: #E31D1A
+ * - Blue: #77A4DC
+ */
+
+// Colores prototipo
+$navy: #0E2240;
+$navy2: #1a3a60;
+$gold: #F3BD46;
+$blue: #77A4DC;
+$red: #E31D1A;
+$g50: #F7F8FA;
+$g100: #EAECF0;
+$g200: #D1D5DB;
+$g400: #9CA3AF;
+$g600: #6B7280;
+$g800: #1F2937;
+$white: #fff;
+
+// Estados
+$color-borrador: #F1F3F5;
+$color-borrador-text: #444;
+$color-borrador-border: $g200;
+$color-borrador-dot: $g400;
+
+$color-pendiente: #EBF3FC;
+$color-pendiente-text: #0E4A8C;
+$color-pendiente-border: $blue;
+$color-pendiente-dot: $blue;
+
+$color-observada: #FEF9EC;
+$color-observada-text: #8B5E00;
+$color-observada-border: $gold;
+$color-observada-dot: $gold;
+
+$color-aprobada: #ECFDF5;
+$color-aprobada-text: #065F46;
+$color-aprobada-border: #6EE7B7;
+$color-aprobada-dot: #10B981;
+
+$color-rechazada: #FEF2F2;
+$color-rechazada-text: #991B1B;
+$color-rechazada-border: #FCA5A5;
+$color-rechazada-dot: $red;
+
+.tablero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 14px;
+}
+
+// ═══════════════════════════════════════════════════
+// ENCABEZADO
+// ═══════════════════════════════════════════════════
+
+.tablero-encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tablero-titulo {
+  font-size: 19px;
+  font-weight: 700;
+  color: $navy;
+  margin: 0 0 4px;
+}
+
+.tablero-subtitulo {
+  font-size: 10px;
+  color: $g600;
+  margin: 0;
+  font-weight: 500;
+}
+
+.btn-nueva-propuesta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: $gold;
+  color: $navy;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.15s ease;
+
+  .icono {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  &:hover {
+    background-color: darken($gold, 5%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 640px) {
+    padding: 8px 14px;
+    font-size: 11px;
+    gap: 6px;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ESTADÍSTICAS
+// ═══════════════════════════════════════════════════
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+  margin-bottom: 18px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-btn {
+  background: $white;
+  border: 2px solid $g100;
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Montserrat', sans-serif;
+
+  &:hover {
+    border-color: $navy;
+    background-color: #eef3fb;
+  }
+
+  &.active {
+    background-color: #eef3fb;
+    border-color: $navy;
+  }
+}
+
+.stat-num {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: $navy;
+}
+
+.stat-lbl {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 2px;
+  color: $g600;
+}
+
+// ═══════════════════════════════════════════════════
+// MENSAJE ALERTA
+// ═══════════════════════════════════════════════════
+
+.mensaje-alerta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background-color: #EBF3FC;
+  border: 1px solid $blue;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #0E4A8C;
+
+  svg {
+    flex-shrink: 0;
+    color: $blue;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// INDICADOR CARGA
+// ═══════════════════════════════════════════════════
+
+.indicador-carga {
+  text-align: center;
+  padding: 60px 20px;
+
+  .spinner {
+    border: 4px solid $g100;
+    border-top: 4px solid $navy;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  p {
+    color: $g600;
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TABLA
+// ═══════════════════════════════════════════════════
+
+.tabla-card {
+  background: $white;
+  border: 1px solid $g100;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tabla-propuestas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  thead tr {
+    background: $navy;
+  }
+
+  th {
+    padding: 10px 12px;
+    font-weight: 700;
+    font-size: 10px;
+    color: $white;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid $g100;
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background-color: #eef3fb;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+// Columnas de tabla
+.col-numero {
+  width: 38px;
+}
+
+.col-titulo {
+  flex: 1;
+}
+
+.col-estado {
+  width: 175px;
+}
+
+.col-fecha {
+  width: 108px;
+}
+
+.col-acciones {
+  width: 120px;
+  text-align: center;
+}
+
+.numero {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 4px;
+  background-color: $g100;
+  color: $g600;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.titulo-contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.titulo-texto {
+  font-weight: 600;
+  color: $g800;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.profesor-info {
+  font-size: 11px;
+  color: $g600;
+  font-weight: 400;
+
+  small {
+    display: block;
+  }
+}
+
+.fecha {
+  font-size: 11px;
+  color: $g600;
+  white-space: nowrap;
+}
+
+// ═══════════════════════════════════════════════════
+// BADGES DE ESTADO
+// ═══════════════════════════════════════════════════
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+
+  .badge-punto {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.badge-borrador {
+    background-color: $color-borrador;
+    color: $color-borrador-text;
+    border-color: $color-borrador-border;
+
+    .badge-punto {
+      background-color: $color-borrador-dot;
+    }
+  }
+
+  &.badge-pendiente {
+    background-color: $color-pendiente;
+    color: $color-pendiente-text;
+    border-color: $color-pendiente-border;
+
+    .badge-punto {
+      background-color: $color-pendiente-dot;
+    }
+  }
+
+  &.badge-observada {
+    background-color: $color-observada;
+    color: $color-observada-text;
+    border-color: $color-observada-border;
+
+    .badge-punto {
+      background-color: $color-observada-dot;
+    }
+  }
+
+  &.badge-aprobada {
+    background-color: $color-aprobada;
+    color: $color-aprobada-text;
+    border-color: $color-aprobada-border;
+
+    .badge-punto {
+      background-color: $color-aprobada-dot;
+    }
+  }
+
+  &.badge-rechazada {
+    background-color: $color-rechazada;
+    color: $color-rechazada-text;
+    border-color: $color-rechazada-border;
+
+    .badge-punto {
+      background-color: $color-rechazada-dot;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// ACCIONES (BOTONES)
+// ═══════════════════════════════════════════════════
+
+.acciones-group {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  color: $g400;
+  padding: 5px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    background-color: $g100;
+    color: $navy;
+  }
+
+  &.btn-editar:hover {
+    background-color: #EBF3FC;
+    color: #0E4A8C;
+  }
+
+  &.btn-eliminar:hover {
+    background-color: #FEF2F2;
+    color: $red;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TABLA VACÍA
+// ═══════════════════════════════════════════════════
+
+.tabla-vacia {
+  background: $white;
+  border: 2px dashed $g200;
+  border-radius: 12px;
+  padding: 60px 20px;
+  text-align: center;
+
+  .vacia-icono {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: $g400;
+
+    svg {
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  .vacia-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: $g800;
+    margin-bottom: 8px;
+  }
+
+  .vacia-texto {
+    font-size: 13px;
+    color: $g600;
+    margin-bottom: 20px;
+  }
+}
+
+.btn-nueva-propuesta-vacia {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: $gold;
+  color: $navy;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.15s ease;
+
+  .icono {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  &:hover {
+    background-color: darken($gold, 5%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// RESPONSIVE
+// ═══════════════════════════════════════════════════
+
+@media (max-width: 768px) {
+  .tablero-encabezado {
+    flex-direction: column;
+    gap: 12px;
+
+    .btn-nueva-propuesta {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .tabla-propuestas {
+    font-size: 11px;
+
+    th {
+      padding: 8px 10px;
+      font-size: 9px;
+    }
+
+    td {
+      padding: 8px 10px;
+    }
+  }
+
+  .col-numero {
+    width: 30px;
+  }
+
+  .col-estado {
+    width: 130px;
+  }
+
+  .col-fecha {
+    width: 100px;
+  }
+
+  .col-acciones {
+    width: 100px;
+  }
+
+  .titulo-texto {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .stat-num {
+    font-size: 16px;
+  }
+
+  .stat-lbl {
+    font-size: 7px;
+  }
+
+  .tabla-propuestas {
+    font-size: 10px;
+
+    th {
+      padding: 6px 8px;
+      font-size: 8px;
+    }
+
+    td {
+      padding: 6px 8px;
+    }
+  }
+
+  .col-numero {
+    width: 25px;
+  }
+
+  .col-estado {
+    width: 100px;
+  }
+
+  .col-fecha {
+    width: 80px;
+  }
+
+  .col-acciones {
+    width: 80px;
+  }
+
+  .acciones-group {
+    gap: 2px;
+  }
+
+  .btn-accion {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}

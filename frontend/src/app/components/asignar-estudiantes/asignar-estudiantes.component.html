@@ -1,0 +1,147 @@
+<!-- HU07 T21: Modal para asignación de estudiantes -->
+<div class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-contenedor" (click)="$event.stopPropagation()">
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>👥 Asignar Estudiantes</h2>
+      <button class="btn-cerrar" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="modal-body">
+      <!-- Advertencia si hay cambios desde APROBADA -->
+      <div *ngIf="mostrarAdvertencia" class="alerta alerta-advertencia">
+        <span class="icono">⚠️</span>
+        <span class="texto">
+          <strong>Cambios detectados:</strong> Esta propuesta estaba APROBADA. 
+          Si cambias los estudiantes, se requerirá nueva evaluación (PENDIENTE).
+          Por favor, indica el motivo de los cambios.
+        </span>
+      </div>
+
+      <!-- Mensajes de error -->
+      <div *ngIf="mensajeError" class="alerta alerta-error">
+        <span class="icono">✗</span>
+        <span class="texto">{{ mensajeError }}</span>
+      </div>
+
+      <!-- Mensajes de éxito -->
+      <div *ngIf="mensajeExito" class="alerta alerta-exito">
+        <span class="icono">✓</span>
+        <span class="texto">{{ mensajeExito }}</span>
+      </div>
+
+      <!-- Estado de cargando -->
+      <div *ngIf="cargando" class="estado-cargando">
+        <div class="spinner"></div>
+        <p>Cargando estudiantes...</p>
+      </div>
+
+      <!-- Contenido principal -->
+      <div *ngIf="!cargando" class="contenido-principal">
+        <!-- Campo de búsqueda -->
+        <div class="grupo-campo">
+          <label class="etiqueta">
+            Buscar y Agregar Estudiantes
+            <span class="requerido">(máximo {{ MAX_ESTUDIANTES }})</span>
+          </label>
+          <div class="contenedor-busqueda">
+            <input
+              type="text"
+              formControlName="busqueda"
+              class="campo-busqueda"
+              placeholder="Escribe nombre, apellido o correo..."
+              (focus)="mostrandoBusqueda = true"
+              autocomplete="off">
+            <span *ngIf="buscando" class="spinner-pequeno"></span>
+          </div>
+
+          <!-- Dropdown de resultados -->
+          <div *ngIf="mostrandoBusqueda && !cargando" class="dropdown-resultados">
+            <div *ngIf="estudiantesFiltrados.length > 0" class="lista-estudiantes-disponibles">
+              <div
+                *ngFor="let est of estudiantesFiltrados"
+                class="item-estudiante"
+                [class.seleccionado]="estaSeleccionado(est.id)"
+                (click)="agregarEstudiante(est)">
+                <div class="info-estudiante">
+                  <p class="nombre">{{ getNombreCompleto(est) }}</p>
+                  <p class="detalle">{{ est.correo }}</p>
+                </div>
+                <div *ngIf="estaSeleccionado(est.id)" class="checkmark">✓</div>
+              </div>
+            </div>
+            <div *ngIf="estudiantesFiltrados.length === 0" class="sin-resultados">
+              Sin resultados
+            </div>
+          </div>
+        </div>
+
+        <!-- Estudiantes seleccionados -->
+        <div class="grupo-estudiantes-seleccionados">
+          <label class="etiqueta">
+            Estudiantes Seleccionados
+            <span class="contador">({{ totalSeleccionados }}/{{ MAX_ESTUDIANTES }})</span>
+          </label>
+
+          <div *ngIf="totalSeleccionados > 0" class="lista-chips">
+            <div *ngFor="let est of estudiantesSeleccionados" class="chip-estudiante">
+              <span class="nombre-chip">{{ getNombreCompleto(est) }}</span>
+              <button
+                type="button"
+                class="btn-remover"
+                (click)="removerEstudiante(est.id)"
+                title="Remover estudiante">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="totalSeleccionados === 0" class="sin-seleccion">
+            No hay estudiantes seleccionados
+          </div>
+        </div>
+
+        <!-- Campo de motivo (si hay cambios) -->
+        <div *ngIf="mostrarAdvertencia" class="grupo-campo">
+          <label for="motivo" class="etiqueta">
+            Motivo del Cambio *
+            <span class="requerido">(requerido)</span>
+          </label>
+          <textarea
+            id="motivo"
+            formControlName="motivo"
+            class="campo"
+            [class.campo-invalido]="formulario.get('motivo')?.invalid && formulario.get('motivo')?.touched"
+            placeholder="Explica por qué se están cambiando los estudiantes asignados..."
+            rows="3"
+            maxlength="500">
+          </textarea>
+          <div *ngIf="formulario.get('motivo')?.invalid && formulario.get('motivo')?.touched" class="error-mensaje">
+            El motivo es requerido
+          </div>
+          <div class="contador-caracteres">
+            {{ formulario.get('motivo')?.value?.length || 0 }} / 500 caracteres
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER CON BOTONES -->
+    <div class="modal-footer">
+      <button
+        class="btn btn-secondary"
+        (click)="cerrarModal()"
+        [disabled]="guardando">
+        Cancelar
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="guardar()"
+        [disabled]="guardando || totalSeleccionados === 0 || cargando">
+        <span *ngIf="!guardando">✓ Asignar Estudiantes</span>
+        <span *ngIf="guardando">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>

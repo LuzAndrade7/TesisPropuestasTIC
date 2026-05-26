@@ -1,0 +1,155 @@
+{
+  "info": {
+    "name": "TesisTIC - Sprint 1: HU01 - Propuestas",
+    "description": "Colección de endpoints para gestión de propuestas de TIC. Sprint 1: Registro y guardado en estado BORRADOR",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "api_url",
+      "value": "{{base_url}}/api",
+      "type": "string"
+    },
+    {
+      "key": "propuesta_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "docente_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Propuestas",
+      "item": [
+        {
+          "name": "GET - Obtener todas las propuestas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/propuestas?docenteId={{docente_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["propuestas"],
+              "query": [
+                {
+                  "key": "docenteId",
+                  "value": "{{docente_id}}"
+                }
+              ]
+            },
+            "description": "Obtiene todas las propuestas, opcionalmente filtradas por docente"
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Obtener propuesta por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/propuestas/{{propuesta_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["propuestas", "{{propuesta_id}}"]
+            },
+            "description": "Obtiene los detalles de una propuesta específica"
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Crear nueva propuesta (BORRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreProyecto\": \"Sistema de gestión académica TIC\",\n  \"numeroParticipantes\": 3,\n  \"profesorId\": 1,\n  \"descripcion\": \"Actualmente, el proceso de titulación en la Facultad de Ingeniería en Sistemas se gestiona de forma manual. Los estudiantes y profesores interactúan en diversas fases del proceso mediante formularios físicos y correo electrónico, sin visibilidad centralizada del estado de cada propuesta. La principal dificultad radica en que no se cuenta con un aplicativo para la gestión de los Trabajos de Integración Curricular.\",\n  \"objetivo\": \"Desarrollar un aplicativo web para la gestión de las propuestas de Trabajos de Integración Curricular en la Facultad de Ingeniería en Sistemas, con el fin de optimizar el proceso mediante la automatización de tareas manuales y una plataforma centralizada.\",\n  \"alcance\": \"Este proyecto abarca desde el análisis de funcionalidades requeridas, diseño de los prototipos de pantalla, diseño arquitectónico, el desarrollo del aplicativo web que involucra el frontend, backend y base de datos, guiado por metodología ágil SCRUM.\",\n  \"asignaturasIds\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/propuestas",
+              "host": ["{{api_url}}"],
+              "path": ["propuestas"]
+            },
+            "description": "Crea una nueva propuesta en estado BORRADOR (endpoint principal de HU01)"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Actualizar propuesta (BORRADOR/OBSERVADA)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreProyecto\": \"Sistema de gestión académica TIC - Versión Actualizada\",\n  \"numeroParticipantes\": 3,\n  \"profesorId\": 1,\n  \"descripcion\": \"Descripción actualizada del proyecto...\",\n  \"objetivo\": \"Objetivo actualizado...\",\n  \"alcance\": \"Alcance actualizado...\",\n  \"asignaturasIds\": [1, 2, 3, 4]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/propuestas/{{propuesta_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["propuestas", "{{propuesta_id}}"]
+            },
+            "description": "Actualiza una propuesta existente (solo si está en BORRADOR o OBSERVADA)"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - Eliminar propuesta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/propuestas/{{propuesta_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["propuestas", "{{propuesta_id}}"]
+            },
+            "description": "Elimina una propuesta (solo si está en estado BORRADOR)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para gestión de propuestas en Sprint 1"
+    }
+  ]
+}

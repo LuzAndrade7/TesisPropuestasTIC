@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TesisTIC Documentation Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0E2240 0%, #1a3a5c 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #0E2240;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #F3BD46;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .version {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #F3BD46;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card h2 {
+            color: #0E2240;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+        
+        .card-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #0E2240;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            background: #1a3a5c;
+        }
+        
+        .btn-secondary {
+            background: #F3BD46;
+            color: #0E2240;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0a63f;
+        }
+        
+        section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        section h2 {
+            color: #0E2240;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #F3BD46;
+            padding-bottom: 10px;
+        }
+        
+        section h3 {
+            color: #1a3a5c;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .doc-table thead {
+            background: #f5f5f5;
+        }
+        
+        .doc-table th,
+        .doc-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .doc-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .status-done {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-planning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .quick-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .quick-links a {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #0E2240;
+            transition: background 0.3s;
+            border-left: 3px solid #F3BD46;
+            font-size: 0.9em;
+        }
+        
+        .quick-links a:hover {
+            background: #e0e0e0;
+        }
+        
+        footer {
+            background: #0E2240;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+        
+        footer p {
+            margin: 5px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            color: #F3BD46;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-links {
+                flex-direction: column;
+            }
+            
+            .quick-links a {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 TesisTIC Documentation Portal</h1>
+            <p class="subtitle">Sistema de Gestión de Propuestas de Trabajos de Titulación</p>
+            <div>
+                <span class="status">✅ PRODUCTION READY</span>
+                <span class="version">v1.0</span>
+            </div>
+        </header>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <h2>Resumen General</h2>
+                <p>Visión general del proyecto, stack tecnológico e historias de usuario implementadas.</p>
+                <a href="README.md" class="btn">Ir a README</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🏗️</div>
+                <h2>Arquitectura</h2>
+                <p>Arquitectura limpia en 4 capas, patrones de diseño y flujos de datos del sistema.</p>
+                <a href="arquitectura/README.md" class="btn">Ver Arquitectura</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔌</div>
+                <h2>Endpoints API</h2>
+                <p>Documentación completa de todos los endpoints, códigos HTTP y ejemplos.</p>
+                <a href="endpoints/README.md" class="btn">Ver Endpoints</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🗄️</div>
+                <h2>Base de Datos</h2>
+                <p>Esquema ER, definición de tablas, índices y cascadas automáticas.</p>
+                <a href="base-datos/README.md" class="btn">Ver Schema</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔄</div>
+                <h2>Flujos de Estado</h2>
+                <p>Máquina de estados, transiciones permitidas y flujos por historia de usuario.</p>
+                <a href="flujos/README.md" class="btn">Ver Flujos</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔐</div>
+                <h2>Seguridad</h2>
+                <p>Validaciones, protecciones contra vulnerabilidades y recomendaciones.</p>
+                <a href="seguridad/README.md" class="btn">Ver Seguridad</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🧪</div>
+                <h2>Testing</h2>
+                <p>Guía completa de testing, 25+ casos de prueba y checklist de validación.</p>
+                <a href="guias/TESTING.md" class="btn">Ver Testing</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📖</div>
+                <h2>Guías de Uso</h2>
+                <p>Workflow rápidos, setup local, uso de Postman y troubleshooting.</p>
+                <a href="guias/README.md" class="btn">Ver Guías</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📡</div>
+                <h2>Postman Collection</h2>
+                <p>Colección con 42+ endpoints, test scripts y ejemplos.</p>
+                <a href="../postman/TesisTIC_Collection.json" class="btn btn-secondary">Descargar JSON</a>
+            </div>
+        </div>
+        
+        <section>
+            <h2>📊 Estadísticas del Proyecto</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Historias de Usuario</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">42+</div>
+                    <div class="stat-label">Endpoints API</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">25+</div>
+                    <div class="stat-label">Casos de Prueba</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">7100+</div>
+                    <div class="stat-label">Líneas Documentación</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Errores Compilación</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Funcionalidad</div>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>🎯 Historias de Usuario Implementadas</h2>
+            
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>HU</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>HU01</strong></td>
+                        <td>Registro</td>
+                        <td>Crear propuestas en estado BORRADOR</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU02</strong></td>
+                        <td>Tablero</td>
+                        <td>Listar y filtrar propuestas por estado</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU03</strong></td>
+                        <td>Envío a Revisión</td>
+                        <td>Cambiar estado BORRADOR → PENDIENTE</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU04</strong></td>
+                        <td>Observaciones</td>
+                        <td>Ciclo de feedback CPGIC</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU05</strong></td>
+                        <td>Edición</td>
+                        <td>Editar propuestas en BORRADOR/OBSERVADA</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU06</strong></td>
+                        <td>Detalle Completo</td>
+                        <td>Ver información completa + histórico</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU07</strong></td>
+                        <td>Asignación Estudiantes</td>
+                        <td>Asignar máximo 5 estudiantes</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HU08</strong></td>
+                        <td>Eliminación</td>
+                        <td>Eliminar propuestas en BORRADOR</td>
+                        <td><span class="status-badge status-done">✅ Completa</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section>
+            <h2>🚀 Quick Start</h2>
+            
+            <h3>Backend (ASP.NET Core 8.0)</h3>
+            <pre><code>cd backend
+dotnet build                    # Compilar
+dotnet run                      # Ejecutar en http://localhost:5000</code></pre>
+            
+            <h3>Frontend (Angular 17)</h3>
+            <pre><code>cd frontend
+npm install                     # Primera vez
+npm start                       # Ejecutar en http://localhost:4200</code></pre>
+            
+            <h3>Accesos</h3>
+            <div class="quick-links">
+                <a href="http://localhost:5000/swagger" target="_blank">🔗 API Swagger (localhost:5000/swagger)</a>
+                <a href="http://localhost:4200" target="_blank">🔗 Frontend (localhost:4200)</a>
+                <a href="../postman/TesisTIC_Collection.json">📡 Postman Collection</a>
+            </div>
+        </section>
+        
+        <section>
+            <h2>📋 Para Diferentes Roles</h2>
+            
+            <h3>👨‍💻 Desarrolladores</h3>
+            <p>Comienza con <a href="arquitectura/README.md">arquitectura</a> para entender la estructura, luego <a href="endpoints/README.md">endpoints</a> para ver las APIs.</p>
+            
+            <h3>🧪 QA / Testing</h3>
+            <p>Ve a <a href="guias/TESTING.md">TESTING.md</a> para el plan completo, luego usa <a href="../postman/TesisTIC_Collection.json">Postman Collection</a>.</p>
+            
+            <h3>⚙️ DevOps / Infraestructura</h3>
+            <p>Revisa <a href="seguridad/README.md">seguridad</a> y <a href="base-datos/README.md">base de datos</a> para deployment.</p>
+            
+            <h3>📊 Product / Gestión</h3>
+            <p>Lee <a href="README.md">README</a> y <a href="flujos/README.md">flujos</a> para entender capacidades del sistema.</p>
+        </section>
+        
+        <section>
+            <h2>✨ Características Principales</h2>
+            <ul style="margin-left: 20px; line-height: 2;">
+                <li>✅ Máquina de Estados Completa (BORRADOR → PENDIENTE → OBSERVADA/APROBADA)</li>
+                <li>✅ Validaciones Multinivel (Frontend + Backend + BD)</li>
+                <li>✅ Auditoría Automática (Histórico de cambios)</li>
+                <li>✅ Cascadas de Eliminación (ON DELETE CASCADE)</li>
+                <li>✅ Error Handling (400, 403, 404, 500)</li>
+                <li>✅ Documentación Profesional (7100+ líneas)</li>
+                <li>✅ Colección Postman (42+ endpoints)</li>
+                <li>✅ Testing Completo (25+ casos)</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>📦 Contenido de Entrega</h2>
+            <h3>Código</h3>
+            <ul style="margin-left: 20px;">
+                <li>✅ Backend: ASP.NET Core 8.0 (0 errores)</li>
+                <li>✅ Frontend: Angular 17 (build exitoso)</li>
+                <li>✅ BD: PostgreSQL 16 (todas las tablas)</li>
+            </ul>
+            
+            <h3>Documentación</h3>
+            <ul style="margin-left: 20px;">
+                <li>✅ README principal + arquitectura</li>
+                <li>✅ Endpoints + BD schema</li>
+                <li>✅ Flujos + Seguridad</li>
+                <li>✅ Testing + Guías de uso</li>
+            </ul>
+            
+            <h3>Testing</h3>
+            <ul style="margin-left: 20px;">
+                <li>✅ Postman collection (42+ endpoints)</li>
+                <li>✅ 25+ casos de prueba</li>
+                <li>✅ Test scripts automáticos</li>
+            </ul>
+        </section>
+        
+        <section>
+            <h2>🔄 Flujo de Estados (Diagrama Simplificado)</h2>
+            <pre><code>BORRADOR
+   ↓ [Enviar revisión]
+PENDIENTE
+   ├─ [Revisar OK] → APROBADA
+   │              ├─ [Asignar estudiantes] → PENDIENTE (nueva revisión)
+   │              └─ [Solicitar nueva aprobación] → PENDIENTE
+   │
+   └─ [Observación] → OBSERVADA
+                      ├─ [Editar] → OBSERVADA
+                      └─ [Reenviar] → PENDIENTE
+
+BORRADOR → Eliminar ✅ (permitido)
+Otros estados → Eliminar ❌ (prohibido)</code></pre>
+        </section>
+        
+        <footer>
+            <p><strong>TesisTIC v1.0</strong> - Gestión de Propuestas de Trabajos de Titulación</p>
+            <p>Estado: <strong>PRODUCTION READY</strong> | Actualización: Mayo 25, 2026</p>
+            <p>© 2026 TesisTIC Team. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+</body>
+</html>

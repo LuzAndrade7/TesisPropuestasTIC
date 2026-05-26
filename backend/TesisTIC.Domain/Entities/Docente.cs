@@ -1,19 +1,41 @@
-namespace TesisTIC.Domain.Entities
-{
-    public class Docente
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Apellido { get; set; }
-        public string CorreoInstitucional { get; set; }
-        public string CorreoPersonal { get; set; }
-        public string Cedula { get; set; }
-        public string NumeroEmpleado { get; set; }
-        public string Departamento { get; set; }
-        public bool Activo { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public DateTime? FechaAtualizacion { get; set; }
+namespace TesisTIC.Domain.Entities;
 
-        public ICollection<Propuesta> Propuestas { get; set; } = new List<Propuesta>();
-    }
+/// <summary>
+/// Entidad que representa un docente de la Escuela Politécnica Nacional
+/// Mapea la tabla public.docentes
+/// </summary>
+public class Docente
+{
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Nombres del docente
+    /// </summary>
+    public string Nombres { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Apellidos del docente
+    /// </summary>
+    public string Apellidos { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Email de contacto del docente
+    /// </summary>
+    public string? Correo { get; set; }
+
+    /// <summary>
+    /// Título académico del docente (Ej: Ingeniero, Master, Doctor)
+    /// </summary>
+    public string? TituloAcademico { get; set; }
+
+    /// <summary>
+    /// Fecha de creación del registro
+    /// </summary>
+    public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+
+    // Relaciones
+    /// <summary>
+    /// Propuestas que ha creado este docente
+    /// </summary>
+    public ICollection<Propuesta> Propuestas { get; set; } = new List<Propuesta>();
 }

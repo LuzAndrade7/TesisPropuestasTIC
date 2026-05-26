@@ -1,0 +1,377 @@
+<!--
+T02: Template del Formulario de Propuesta
+Ubicación: src/app/components/formulario-propuesta/formulario-propuesta.component.html
+
+Estructura:
+- Título
+- Alertas (error/éxito)
+- Formulario con validaciones
+- Botones (Guardar borrador, Enviar, Cancelar)
+-->
+
+<div class="contenedor-formulario">
+  <div class="cabecera">
+    <h2>{{ esNuevo() ? 'Nueva Propuesta TIC' : 'Editar Propuesta TIC' }}</h2>
+    <p class="subtitulo">Registra tu propuesta para la Escuela Politécnica Nacional</p>
+  </div>
+
+  <!-- Mensajes de error -->
+  <div *ngIf="mensajeError" class="alerta alerta-error">
+    <span class="icono">✗</span>
+    <span class="texto">{{ mensajeError }}</span>
+  </div>
+
+  <!-- Mensajes de éxito -->
+  <div *ngIf="mensajeExito" class="alerta alerta-exito">
+    <span class="icono">✓</span>
+    <span class="texto">{{ mensajeExito }}</span>
+  </div>
+
+  <!-- HU05 T15: Advertencia si no se puede editar -->
+  <div *ngIf="noEditable" class="alerta alerta-no-editable">
+    <span class="icono">🔒</span>
+    <span class="texto">
+      Esta propuesta está en estado <strong>{{ estadoPropuesta }}</strong> y no se puede editar. 
+      Solo se pueden editar propuestas en estado BORRADOR u OBSERVADA.
+    </span>
+  </div>
+
+  <!-- HU04 T11: Banner de observaciones CPGIC -->
+  <div *ngIf="tieneObservaciones" class="alerta alerta-observaciones">
+    <span class="icono">⚠️</span>
+    <span class="texto">
+      Esta propuesta tiene <strong>{{ observaciones.length }}</strong> observación(es) de CPGIC que requieren corrección
+    </span>
+  </div>
+
+  <!-- HU04 T11: Tarjetas de observaciones en diseño amarillo -->
+  <div *ngIf="tieneObservaciones" class="seccion-observaciones">
+    <h3 class="titulo-observaciones">📋 Observaciones CPGIC</h3>
+    
+    <div *ngFor="let obs of observaciones" class="tarjeta-observacion">
+      <div class="cabecera-obs">
+        <span class="realizador">{{ obs.realizadoPor || 'CPGIC' }}</span>
+        <span class="fecha">{{ obs.fechaObservacion | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <div class="contenido-obs">
+        <p>{{ obs.observacion }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="cargando" class="indicador-carga">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Formulario -->
+  <form [formGroup]="formulario" class="formulario" *ngIf="!cargando">
+    
+    <!-- Sección 1: Información Básica -->
+    <fieldset class="seccion">
+      <legend>Información Básica</legend>
+
+      <!-- Nombre del Proyecto -->
+      <div class="grupo-campo">
+        <label for="nombreProyecto" class="etiqueta">
+          Nombre del Proyecto *
+          <span class="requerido">(mínimo 10 caracteres, máximo 250)</span>
+        </label>
+        <input
+          type="text"
+          id="nombreProyecto"
+          formControlName="nombreProyecto"
+          class="campo"
+          [class.campo-invalido]="campoInvalido('nombreProyecto')"
+          placeholder="Ej: Sistema de Gestión de Propuestas TIC"
+          maxlength="250">
+        <div *ngIf="campoInvalido('nombreProyecto')" class="error-mensaje">
+          {{ obtenerErrorCampo('nombreProyecto') }}
+        </div>
+        <div class="contador-caracteres">
+          {{ formulario.get('nombreProyecto')?.value?.length || 0 }} / 250 caracteres
+        </div>
+      </div>
+
+      <!-- Número de Participantes -->
+      <div class="grupo-campo">
+        <label for="numeroParticipantes" class="etiqueta">
+          Número de Participantes *
+          <span class="requerido">(máximo 5 estudiantes)</span>
+        </label>
+        <input
+          type="number"
+          id="numeroParticipantes"
+          formControlName="numeroParticipantes"
+          class="campo"
+          [class.campo-invalido]="campoInvalido('numeroParticipantes')"
+          min="1"
+          max="5">
+        <div *ngIf="campoInvalido('numeroParticipantes')" class="error-mensaje">
+          {{ obtenerErrorCampo('numeroParticipantes') }}
+        </div>
+      </div>
+
+      <!-- Profesor -->
+      <div class="grupo-campo">
+        <label for="profesorId" class="etiqueta">
+          Profesor Proponente *
+        </label>
+        <select
+          id="profesorId"
+          formControlName="profesorId"
+          class="campo"
+          [class.campo-invalido]="campoInvalido('profesorId')">
+          <option *ngFor="let docente of docentes" [value]="docente.id" [selected]="docente.id === 1">
+            {{ docente.nombres }} {{ docente.apellidos }}
+            <span *ngIf="docente.tituloAcademico"> ({{ docente.tituloAcademico }})</span>
+          </option>
+        </select>
+        <div *ngIf="campoInvalido('profesorId')" class="error-mensaje">
+          {{ obtenerErrorCampo('profesorId') }}
+        </div>
+      </div>
+
+    </fieldset>
+
+    <!-- Sección 2: Descripción Detallada -->
+    <fieldset class="seccion">
+      <legend>Descripción Detallada</legend>
+
+      <!-- Descripción -->
+      <div class="grupo-campo">
+        <label for="descripcion" class="etiqueta">
+          Descripción del Proyecto *
+          <span class="requerido">(mínimo 20 caracteres)</span>
+        </label>
+        <textarea
+          id="descripcion"
+          formControlName="descripcion"
+          class="campo campo-textarea"
+          [class.campo-invalido]="campoInvalido('descripcion')"
+          placeholder="Describe brevemente tu propuesta..."
+          rows="4"
+          maxlength="2000"></textarea>
+        <div *ngIf="campoInvalido('descripcion')" class="error-mensaje">
+          {{ obtenerErrorCampo('descripcion') }}
+        </div>
+        <div class="contador-caracteres">
+          {{ formulario.get('descripcion')?.value?.length || 0 }} / 2000 caracteres
+        </div>
+      </div>
+
+      <!-- Objetivo -->
+      <div class="grupo-campo">
+        <label for="objetivo" class="etiqueta">
+          Objetivo Principal *
+          <span class="requerido">(mínimo 20 caracteres)</span>
+        </label>
+        <textarea
+          id="objetivo"
+          formControlName="objetivo"
+          class="campo campo-textarea"
+          [class.campo-invalido]="campoInvalido('objetivo')"
+          placeholder="¿Cuál es el objetivo principal de tu propuesta?"
+          rows="4"
+          maxlength="2000"></textarea>
+        <div *ngIf="campoInvalido('objetivo')" class="error-mensaje">
+          {{ obtenerErrorCampo('objetivo') }}
+        </div>
+        <div class="contador-caracteres">
+          {{ formulario.get('objetivo')?.value?.length || 0 }} / 2000 caracteres
+        </div>
+      </div>
+
+      <!-- Alcance -->
+      <div class="grupo-campo">
+        <label for="alcance" class="etiqueta">
+          Alcance del Proyecto *
+          <span class="requerido">(mínimo 20 caracteres)</span>
+        </label>
+        <textarea
+          id="alcance"
+          formControlName="alcance"
+          class="campo campo-textarea"
+          [class.campo-invalido]="campoInvalido('alcance')"
+          placeholder="Define el alcance del proyecto..."
+          rows="4"
+          maxlength="2000"></textarea>
+        <div *ngIf="campoInvalido('alcance')" class="error-mensaje">
+          {{ obtenerErrorCampo('alcance') }}
+        </div>
+        <div class="contador-caracteres">
+          {{ formulario.get('alcance')?.value?.length || 0 }} / 2000 caracteres
+        </div>
+      </div>
+
+    </fieldset>
+
+    <!-- Sección 3: Asignaturas Relacionadas -->
+    <fieldset class="seccion">
+      <legend>Asignaturas Relacionadas</legend>
+
+      <div class="grupo-campo">
+        <label class="etiqueta">
+          Selecciona una o más asignaturas *
+        </label>
+        <div class="lista-asignaturas">
+          <div *ngFor="let asignatura of asignaturas" class="item-asignatura">
+            <input
+              type="checkbox"
+              [id]="'asignatura-' + asignatura.id"
+              [value]="asignatura.id"
+              (change)="toggleAsignatura(asignatura.id, $any($event).target.checked)"
+              [checked]="formulario.get('asignaturaIds')?.value?.includes(asignatura.id)">
+            <label [for]="'asignatura-' + asignatura.id" class="etiqueta-check">
+              <strong>{{ asignatura.codigo }}</strong> - {{ asignatura.nombre }}
+            </label>
+          </div>
+        </div>
+        <div *ngIf="campoInvalido('asignaturaIds')" class="error-mensaje">
+          {{ obtenerErrorCampo('asignaturaIds') }}
+        </div>
+        <p class="ayuda-texto">
+          Selecciona las asignaturas a las que está relacionada esta propuesta
+        </p>
+      </div>
+
+    </fieldset>
+
+    <!-- Botones de acción -->
+    <div class="grupo-botones">
+      <button
+        type="button"
+        class="boton boton-secundario"
+        (click)="cancelar()"
+        [disabled]="guardando || enviando || formulario.disabled">
+        ✕ Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="boton boton-principal"
+        (click)="guardarBorrador()"
+        [disabled]="guardando || enviando || formulario.disabled"
+        [class.cargando]="guardando">
+        <span *ngIf="!guardando">💾 Guardar como Borrador</span>
+        <span *ngIf="guardando">Guardando...</span>
+      </button>
+
+      <!-- HU03 T08: Botón Enviar a Revisión mejorado -->
+      <button
+        type="button"
+        class="boton boton-exito"
+        (click)="enviarPropuesta()"
+        [disabled]="formulario.invalid || guardando || enviando || formulario.disabled"
+        [class.cargando]="enviando"
+        [title]="formulario.disabled ? 'Esta propuesta no puede editarse (está en revisión)' : 'Enviar propuesta a revisión'">
+        <span *ngIf="!enviando">📤 Enviar a Revisión</span>
+        <span *ngIf="enviando">Enviando...</span>
+      </button>
+    </div>
+
+    <!-- Estado de la propuesta (HU03 T09) -->
+    <div *ngIf="estadoPropuesta !== 'BORRADOR'" class="estado-propuesta">
+      <p><strong>Estado actual:</strong> {{ estadoPropuesta }}</p>
+      <p class="aviso">⚠️ Esta propuesta está en revisión y no puede editarse</p>
+    </div>
+
+    <!-- HU04 T12: Botón de Reenviar propuesta después de correcciones -->
+    <div *ngIf="estadoPropuesta === 'OBSERVADA' && tieneObservaciones" class="grupo-botones-reenvio">
+      <button
+        type="button"
+        class="boton boton-reenvio"
+        (click)="reenviarPropuesta()"
+        [disabled]="reEnviando"
+        [class.cargando]="reEnviando">
+        <span *ngIf="!reEnviando">📤 Reenviar Propuesta Corregida</span>
+        <span *ngIf="reEnviando">Reenviando...</span>
+      </button>
+      <p class="ayuda-reenvio">Al reenviar se limpiarán las observaciones y la propuesta volverá a estar en revisión</p>
+    </div>
+
+  </form>
+
+  <!-- HU03 T08: Modal de confirmación para envío a revisión -->
+  <div *ngIf="mostrarModalConfirmacion" class="modal-overlay">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>Confirmar Envío a Revisión</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas enviar esta propuesta a revisión?</p>
+        <p class="advertencia">
+          <strong>⚠️ Advertencia:</strong> Una vez enviada, no podrás editar los campos de la propuesta.
+        </p>
+        <div class="resumen-propuesta">
+          <p><strong>Proyecto:</strong> {{ formulario.get('nombreProyecto')?.value }}</p>
+          <p><strong>Participantes:</strong> {{ formulario.get('numeroParticipantes')?.value }}</p>
+          <p><strong>Asignaturas:</strong> {{ formulario.get('asignaturaIds')?.value?.length || 0 }} seleccionadas</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="boton boton-secundario"
+          (click)="cancelarEnvio()"
+          [disabled]="enviando">
+          ✕ Cancelar
+        </button>
+        
+        <button
+          type="button"
+          class="boton boton-exito"
+          (click)="confirmarEnvioRevision()"
+          [disabled]="enviando"
+          [class.cargando]="enviando">
+          <span *ngIf="!enviando">✓ Confirmar Envío</span>
+          <span *ngIf="enviando">Enviando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HU04 T12: Modal de confirmación para reenvío después de observaciones -->
+  <div *ngIf="mostrarModalReenvio" class="modal-overlay">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>Confirmar Reenvío de Propuesta</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas reenviar esta propuesta después de las correcciones?</p>
+        <p class="advertencia">
+          <strong>⚠️ Información:</strong> Las observaciones se limpiarán y la propuesta volverá a estar en revisión.
+        </p>
+        <div class="resumen-reenvio">
+          <p><strong>Observaciones a limpiar:</strong> {{ observaciones.length }}</p>
+          <p><strong>Estado actual:</strong> OBSERVADA → PENDIENTE</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="boton boton-secundario"
+          (click)="cancelarReenvio()"
+          [disabled]="reEnviando">
+          ✕ Cancelar
+        </button>
+        
+        <button
+          type="button"
+          class="boton boton-reenvio"
+          (click)="confirmarReenvio()"
+          [disabled]="reEnviando"
+          [class.cargando]="reEnviando">
+          <span *ngIf="!reEnviando">✓ Confirmar Reenvío</span>
+          <span *ngIf="reEnviando">Reenviando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
