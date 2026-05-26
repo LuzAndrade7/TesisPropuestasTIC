@@ -3,6 +3,7 @@
 ## Documentación Disponible
 
 ### 1. [Guía Completa de Testing](./TESTING.md)
+
 - Orden recomendado de pruebas por HU
 - Casos de prueba detallados (25+ casos)
 - Datos de ejemplo
@@ -14,6 +15,7 @@
 ---
 
 ### 2. [Colección Postman](../postman/TesisTIC_Collection.json)
+
 - Todos los endpoints (42+) organizados por HU
 - Request/Response examples
 - Test scripts automáticos
@@ -24,6 +26,7 @@
 ---
 
 ### 3. [Documentación de Flujos](../flujos/README.md)
+
 - Diagrama textual de estados
 - Flujos por Historia de Usuario
 - Matrices de transiciones
@@ -34,6 +37,7 @@
 ---
 
 ### 4. [Documentación de Seguridad](../seguridad/README.md)
+
 - Endpoints públicos vs protegidos
 - Validaciones por estado
 - Protecciones contra XSS, SQL Injection, CORS
@@ -129,6 +133,7 @@
 ### Auto-guardar IDs
 
 Después de crear propuesta:
+
 ```
 1. Se ejecuta test script automático
 2. Guarda "propuestaId" en variable
@@ -153,6 +158,7 @@ Después de crear propuesta:
 **Causa**: Backend no está ejecutándose
 
 **Solución**:
+
 ```bash
 cd backend
 dotnet run
@@ -166,6 +172,7 @@ dotnet run
 **Causa**: Intentas editar propuesta que ya envió a revisión
 
 **Solución**:
+
 - Si necesita cambios → espera a que sea OBSERVADA
 - O crea propuesta nueva
 
@@ -176,6 +183,7 @@ dotnet run
 **Causa**: Excediste límite de 5 estudiantes
 
 **Solución**:
+
 - Selecciona máximo 5 estudiantes
 - Postman muestra error 400 con mensaje claro
 
@@ -186,6 +194,7 @@ dotnet run
 **Causa**: Solo BORRADOR puede eliminarse
 
 **Solución**:
+
 - Una vez enviada a revisión no se puede eliminar
 - Considera si realmente deseas eliminar (Postman tiene test que previene error)
 
@@ -203,12 +212,12 @@ dotnet run
 
 Después de completar testing:
 
-| Métrica | Objetivo | Fórmula |
-|---------|----------|---------|
-| **Cobertura de Casos** | 100% | Casos pasados / Total casos |
-| **Performance GET** | < 500ms | Promedio respuestas GET |
-| **Performance POST** | < 500ms | Promedio respuestas POST |
-| **Tasa de Error** | 0% | Errores inesperados / Total |
+| Métrica                | Objetivo | Fórmula                     |
+| ---------------------- | -------- | --------------------------- |
+| **Cobertura de Casos** | 100%     | Casos pasados / Total casos |
+| **Performance GET**    | < 500ms  | Promedio respuestas GET     |
+| **Performance POST**   | < 500ms  | Promedio respuestas POST    |
+| **Tasa de Error**      | 0%       | Errores inesperados / Total |
 
 ---
 
@@ -238,7 +247,7 @@ Después de completar testing:
 **¿Problemas con la API?** → Ver [Documentación de Endpoints](../endpoints/README.md)  
 **¿No entiendes un flujo?** → Ver [Flujos del Sistema](../flujos/README.md)  
 **¿Dudas de seguridad?** → Ver [Seguridad](../seguridad/README.md)  
-**¿Error en testing?** → Ver sección "Errores Comunes" arriba  
+**¿Error en testing?** → Ver sección "Errores Comunes" arriba
 
 ---
 

@@ -79,32 +79,33 @@ Configurar variable: baseUrl = http://localhost:5000/api
 
 ### Docentes (Usar los que ya existen en BD)
 
-| ID | Nombre | Correo | Título |
-|----|--------|--------|--------|
-| 1 | Dr. Juan Pérez | juan@epn.edu.ec | PhD Ingeniería |
-| 2 | Ing. María García | maria@epn.edu.ec | MSc Computación |
+| ID  | Nombre            | Correo           | Título          |
+| --- | ----------------- | ---------------- | --------------- |
+| 1   | Dr. Juan Pérez    | juan@epn.edu.ec  | PhD Ingeniería  |
+| 2   | Ing. María García | maria@epn.edu.ec | MSc Computación |
 
 ### Asignaturas (Usar las que ya existen en BD)
 
-| ID | Código | Nombre | Créditos |
-|----|--------|--------|----------|
-| 1 | ING101 | Programación I | 4 |
-| 2 | ING102 | Bases de Datos | 4 |
-| 3 | ING201 | Desarrollo Web | 4 |
+| ID  | Código | Nombre         | Créditos |
+| --- | ------ | -------------- | -------- |
+| 1   | ING101 | Programación I | 4        |
+| 2   | ING102 | Bases de Datos | 4        |
+| 3   | ING201 | Desarrollo Web | 4        |
 
 ### Estudiantes (Serán creados automáticamente en BD)
 
-| ID | Nombre | Correo | Carrera |
-|----|--------|--------|---------|
-| 1 | Carlos López | carlos@example.com | Ingeniería Sistemas |
-| 2 | Ana Rodríguez | ana@example.com | Ingeniería Sistemas |
-| 3 | Pedro Martínez | pedro@example.com | Ingeniería Sistemas |
+| ID  | Nombre         | Correo             | Carrera             |
+| --- | -------------- | ------------------ | ------------------- |
+| 1   | Carlos López   | carlos@example.com | Ingeniería Sistemas |
+| 2   | Ana Rodríguez  | ana@example.com    | Ingeniería Sistemas |
+| 3   | Pedro Martínez | pedro@example.com  | Ingeniería Sistemas |
 
 ---
 
 ## HU01: Registro de Propuestas (T01-T05)
 
 ### Objetivo
+
 Crear propuestas en estado BORRADOR con información básica.
 
 ### Casos de Prueba
@@ -125,6 +126,7 @@ POST /api/propuestas
 ```
 
 **Validaciones**:
+
 - [ ] Status 201 Created
 - [ ] Response tiene `id`
 - [ ] Estado es `BORRADOR`
@@ -132,6 +134,7 @@ POST /api/propuestas
 - [ ] Guardar ID en variable de Postman
 
 **Resultado Esperado**:
+
 ```json
 {
   "id": 42,
@@ -155,6 +158,7 @@ POST /api/propuestas
 ```
 
 **Validaciones**:
+
 - [ ] Status 400 Bad Request
 - [ ] Mensaje de error incluye "título"
 
@@ -169,9 +173,11 @@ POST /api/propuestas
 ```
 
 **Validaciones**:
+
 - [ ] Status 404 Not Found
 
 ### Checklist HU01
+
 - [ ] Crear 3 propuestas diferentes
 - [ ] Una en español, una en inglés (validar UTF-8)
 - [ ] Con diferentes números de participantes (1, 3, 5)
@@ -184,6 +190,7 @@ POST /api/propuestas
 ## HU02: Tablero (T06-T09)
 
 ### Objetivo
+
 Listar propuestas filtradas por estado.
 
 ### Casos de Prueba
@@ -195,6 +202,7 @@ GET /api/propuestas
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Response es Array
 - [ ] Mínimo 3 propuestas de HU01
@@ -206,6 +214,7 @@ GET /api/propuestas?estado=BORRADOR
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Todas tienen `estado: "BORRADOR"`
 - [ ] Solo las de BORRADOR aparecen
@@ -217,6 +226,7 @@ GET /api/propuestas?estado=PENDIENTE
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Array vacío (porque aún no enviamos a revisión)
 
@@ -229,6 +239,7 @@ GET /api/propuestas?estado=PENDIENTE
 5. Click en filtro "PENDIENTE" (debe estar vacío)
 
 ### Checklist HU02
+
 - [ ] Listar todas retorna >= 3 propuestas
 - [ ] Filtro BORRADOR funciona
 - [ ] Filtro PENDIENTE retorna vacío
@@ -240,6 +251,7 @@ GET /api/propuestas?estado=PENDIENTE
 ## HU03: Envío a Revisión (T10)
 
 ### Objetivo
+
 Cambiar estado BORRADOR → PENDIENTE.
 
 ### Casos de Prueba
@@ -252,6 +264,7 @@ POST /api/propuestas/{propuestaId}/enviar-revision
 
 **Dato**: Usar `propuestaId` de HU01  
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Estado cambió a `PENDIENTE`
 - [ ] `fechaEnvioRevision` se completó
@@ -263,6 +276,7 @@ POST /api/propuestas/{propuestaId}/enviar-revision
 ```
 
 **Validaciones**:
+
 - [ ] Status 403 Forbidden
 - [ ] Mensaje: "No se puede enviar a revisión"
 
@@ -275,6 +289,7 @@ POST /api/propuestas/{propuestaId}/enviar-revision
 5. Botón debe desaparecer
 
 ### Checklist HU03
+
 - [ ] Propuesta cambió a PENDIENTE
 - [ ] Fecha de envío se registró
 - [ ] No se puede editar después de enviar
@@ -286,6 +301,7 @@ POST /api/propuestas/{propuestaId}/enviar-revision
 ## HU04: Observaciones (T11-T15)
 
 ### Objetivo
+
 Ciclo completo de feedback: crear observaciones, cambiar a OBSERVADA, reenviar.
 
 ### Casos de Prueba
@@ -302,6 +318,7 @@ POST /api/observaciones
 ```
 
 **Validaciones**:
+
 - [ ] Status 201 Created
 - [ ] Propuesta cambió a `OBSERVADA`
 - [ ] Observación tiene fecha
@@ -315,6 +332,7 @@ GET /api/observaciones/propuesta/{propuestaId}
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Array contiene observación de CP4.1
 - [ ] Incluye descripción, tipo, fecha
@@ -326,6 +344,7 @@ POST /api/propuestas/{propuestaId}/reenviar-despues-observaciones
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Estado cambió a `PENDIENTE`
 - [ ] Observaciones siguen en histórico (no se eliminan)
@@ -340,6 +359,7 @@ POST /api/propuestas/{propuestaId}/reenviar-despues-observaciones
 6. Vuelve a PENDIENTE
 
 ### Checklist HU04
+
 - [ ] Observación se creó
 - [ ] Propuesta cambió a OBSERVADA automáticamente
 - [ ] Se pueden crear múltiples observaciones
@@ -351,6 +371,7 @@ POST /api/propuestas/{propuestaId}/reenviar-despues-observaciones
 ## HU05: Edición (T16-T17)
 
 ### Objetivo
+
 Editar propuestas en BORRADOR u OBSERVADA.
 
 ### Casos de Prueba
@@ -368,6 +389,7 @@ PUT /api/propuestas/{propuestaId}
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Cambios aplicados
 - [ ] Sigue en BORRADOR
@@ -383,6 +405,7 @@ PUT /api/propuestas/{propuestaId}
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Cambios aplicados
 - [ ] Sigue en OBSERVADA
@@ -391,6 +414,7 @@ PUT /api/propuestas/{propuestaId}
 #### ❌ CP5.3 - Intentar Editar PENDIENTE (Error 403)
 
 **Validaciones**:
+
 - [ ] Status 403 Forbidden
 - [ ] Mensaje: "No puede editarse en este estado"
 
@@ -404,6 +428,7 @@ PUT /api/propuestas/{propuestaId}
 6. Debe mostrar error o deshabilitar form
 
 ### Checklist HU05
+
 - [ ] Editar BORRADOR funciona
 - [ ] Editar OBSERVADA funciona
 - [ ] No se puede editar PENDIENTE, APROBADA, RECHAZADA
@@ -415,6 +440,7 @@ PUT /api/propuestas/{propuestaId}
 ## HU06: Detalle Completo (T18-T19)
 
 ### Objetivo
+
 Visualizar información completa con profesor, asignaturas, observaciones, estudiantes, histórico.
 
 ### Casos de Prueba
@@ -426,6 +452,7 @@ GET /api/propuestas/{propuestaId}/detalle
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Incluye `profesor` con datos
 - [ ] Incluye `asignaturas` array
@@ -435,6 +462,7 @@ GET /api/propuestas/{propuestaId}/detalle
 - [ ] Fechas en formato ISO 8601
 
 **Response Esperado**:
+
 ```json
 {
   "id": 42,
@@ -480,6 +508,7 @@ GET /api/propuestas/{propuestaId}/detalle
 4. Hacer scroll completo
 
 ### Checklist HU06
+
 - [ ] Detalle carga todas las secciones
 - [ ] Información de profesor correcta
 - [ ] Asignaturas listadas completas
@@ -493,11 +522,13 @@ GET /api/propuestas/{propuestaId}/detalle
 ## HU07: Asignación de Estudiantes (T20-T25)
 
 ### Objetivo
+
 Asignar máximo 5 estudiantes a propuesta APROBADA/PENDIENTE.
 
 ### Pre-requisito para HU07
 
 La propuesta debe estar en **APROBADA**. Para esto:
+
 1. Crear propuesta (HU01)
 2. Enviar a revisión (HU03)
 3. NO agregar observaciones
@@ -519,6 +550,7 @@ GET /api/estudiantes
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Array contiene >= 3 estudiantes
 - [ ] Cada uno tiene: id, nombre, apellido, correo
@@ -530,6 +562,7 @@ GET /api/estudiantes/buscar?searchTerm=Juan
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Retorna estudiantes con "Juan" en nombre/apellido/correo
 - [ ] Case-insensitive (busca "juan", "JUAN", "Juan")
@@ -541,6 +574,7 @@ GET /api/estudiantes/disponibles/{propuestaId}
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Retorna estudiantes NO asignados a propuesta
 - [ ] Array vacío si todos están asignados
@@ -557,6 +591,7 @@ POST /api/estudiantes/{propuestaId}/asignar
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Propuesta cambió a `PENDIENTE` (si estaba APROBADA)
 - [ ] Retorna lista de estudiantes asignados
@@ -573,6 +608,7 @@ POST /api/estudiantes/{propuestaId}/asignar
 ```
 
 **Validaciones**:
+
 - [ ] Status 400 Bad Request
 - [ ] Mensaje: "No se pueden asignar más de 5"
 
@@ -586,6 +622,7 @@ POST /api/propuestas/{propuestaId}/solicitar-nueva-aprobacion
 ```
 
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Estado cambió a `PENDIENTE`
 - [ ] Histórico registra cambio
@@ -609,6 +646,7 @@ POST /api/propuestas/{propuestaId}/solicitar-nueva-aprobacion
 10. Propuesta vuelve a PENDIENTE
 
 ### Checklist HU07
+
 - [ ] Búsqueda de estudiantes funciona
 - [ ] Se pueden asignar 1-5 estudiantes
 - [ ] No permite > 5 estudiantes
@@ -623,6 +661,7 @@ POST /api/propuestas/{propuestaId}/solicitar-nueva-aprobacion
 ## HU08: Eliminación (T26-T28)
 
 ### Objetivo
+
 Eliminar propuestas en estado BORRADOR ÚNICAMENTE.
 
 ### Casos de Prueba
@@ -635,6 +674,7 @@ DELETE /api/propuestas/{propuestaId}
 
 **Datos**: Usar propuesta nueva en BORRADOR (crear con HU01)  
 **Validaciones**:
+
 - [ ] Status 200 OK
 - [ ] Response: `{ message: "Propuesta eliminada...", propuestaId: 42 }`
 - [ ] Propuesta ya no existe en BD
@@ -652,6 +692,7 @@ GET /api/historial_estados?propuesta_id={propuestaId}
 ```
 
 **Validaciones**:
+
 - [ ] Todos retornan arrays vacíos
 - [ ] Cascada eliminó automáticamente datos relacionados
 
@@ -663,12 +704,14 @@ DELETE /api/propuestas/{propuestaId}
 
 **Datos**: Usar propuesta en PENDIENTE  
 **Validaciones**:
+
 - [ ] Status 403 Forbidden
 - [ ] Mensaje: "Solo se pueden eliminar propuestas en BORRADOR"
 
 #### ❌ CP8.4 - Intentar Eliminar APROBADA (Error 403)
 
 **Validaciones**:
+
 - [ ] Status 403 Forbidden
 
 #### ❌ CP8.5 - Eliminar ID No Existe (Error 404)
@@ -678,6 +721,7 @@ DELETE /api/propuestas/99999
 ```
 
 **Validaciones**:
+
 - [ ] Status 404 Not Found
 
 ### Frontend Testing (HU08)
@@ -695,6 +739,7 @@ DELETE /api/propuestas/99999
 8. Propuesta ya no aparece en listado
 
 ### Checklist HU08
+
 - [ ] Botón eliminar solo visible para BORRADOR
 - [ ] Confirmación antes de eliminar
 - [ ] Elimina propuesta de BD
@@ -709,16 +754,16 @@ DELETE /api/propuestas/99999
 
 Después de todas las pruebas:
 
-| HU | Estado Final | Estudiantes | Observaciones |
-|----|--------------|-------------|---------------|
-| HU01 | BORRADOR | No | No |
-| HU02 | BORRADOR | No | No |
-| HU03 | PENDIENTE | No | No |
-| HU04 | OBSERVADA → PENDIENTE | No | Sí |
-| HU05 | OBSERVADA/BORRADOR | No | Posibles |
-| HU06 | Cualquiera | Posibles | Posibles |
-| HU07 | PENDIENTE | 3-5 | Posibles |
-| HU08 | ❌ ELIMINADA | N/A | N/A |
+| HU   | Estado Final          | Estudiantes | Observaciones |
+| ---- | --------------------- | ----------- | ------------- |
+| HU01 | BORRADOR              | No          | No            |
+| HU02 | BORRADOR              | No          | No            |
+| HU03 | PENDIENTE             | No          | No            |
+| HU04 | OBSERVADA → PENDIENTE | No          | Sí            |
+| HU05 | OBSERVADA/BORRADOR    | No          | Posibles      |
+| HU06 | Cualquiera            | Posibles    | Posibles      |
+| HU07 | PENDIENTE             | 3-5         | Posibles      |
+| HU08 | ❌ ELIMINADA          | N/A         | N/A           |
 
 ---
 
@@ -726,13 +771,13 @@ Después de todas las pruebas:
 
 ### Tiempos Esperados (< 2 segundos)
 
-| Operación | Tiempo |
-|-----------|--------|
-| GET /propuestas | < 500ms |
-| GET /propuestas/{id}/detalle | < 1s |
-| POST /propuestas | < 500ms |
-| PUT /propuestas/{id} | < 500ms |
-| DELETE /propuestas/{id} | < 300ms |
+| Operación                    | Tiempo  |
+| ---------------------------- | ------- |
+| GET /propuestas              | < 500ms |
+| GET /propuestas/{id}/detalle | < 1s    |
+| POST /propuestas             | < 500ms |
+| PUT /propuestas/{id}         | < 500ms |
+| DELETE /propuestas/{id}      | < 300ms |
 
 ### Pruebas de Carga (Opcional)
 
@@ -750,6 +795,7 @@ done
 ## Checklist Final
 
 ### Backend
+
 - [ ] `dotnet build` sin errores
 - [ ] `dotnet run` inicia sin excepciones
 - [ ] Swagger UI accesible (`http://localhost:5000/swagger`)
@@ -757,6 +803,7 @@ done
 - [ ] Logs muestran operaciones
 
 ### Frontend
+
 - [ ] `npm start` sin errores
 - [ ] Página carga en `http://localhost:4200`
 - [ ] Tablero muestra propuestas
@@ -764,13 +811,15 @@ done
 - [ ] Responsive en mobile (768px)
 
 ### Datos
-- [ ] >= 3 propuestas creadas
+
+- [ ] > = 3 propuestas creadas
 - [ ] Docentes existen
 - [ ] Asignaturas existen
 - [ ] Estudiantes existen
 - [ ] Histórico de estados se registra
 
 ### Validaciones
+
 - [ ] Todos los casos de prueba pasados
 - [ ] Errores 400/403/404/500 retornan correctamente
 - [ ] Mensajes de error son claros
@@ -787,22 +836,28 @@ Crear archivo `TEST_REPORT.md`:
 # Reporte de Pruebas - TesisTIC
 
 ## Fecha: 2026-05-25
+
 ## Tester: [Nombre]
+
 ## Ambiente: Development
 
 ### Resumen
+
 - Total Casos: 25+
 - Pasados: 25
 - Fallidos: 0
 - Tasa Éxito: 100%
 
 ### Detalles
+
 [Copiar checklist con ✅ o ❌]
 
 ### Issues Encontrados
+
 [Listar cualquier problema]
 
 ### Conclusión
+
 Sistema listo para producción.
 ```
 

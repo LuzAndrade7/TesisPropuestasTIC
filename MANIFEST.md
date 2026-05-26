@@ -14,7 +14,7 @@ Se ha completado la implementación de **8 Historias de Usuario** del sistema **
 ✅ **Frontend**: Angular 17 Standalone (build exitoso)  
 ✅ **BD**: PostgreSQL 16 con cascadas automáticas  
 ✅ **Documentación**: 7100+ líneas en 8 documentos  
-✅ **Testing**: Colección Postman con 42+ endpoints  
+✅ **Testing**: Colección Postman con 42+ endpoints
 
 ---
 
@@ -23,6 +23,7 @@ Se ha completado la implementación de **8 Historias de Usuario** del sistema **
 ### 1. CÓDIGO FUENTE
 
 #### Backend (`/backend/`)
+
 ```
 TesisTIC.sln                        Solución completa
 ├── TesisTIC.API/
@@ -47,6 +48,7 @@ TesisTIC.sln                        Solución completa
 **Status**: ✅ Compila sin errores
 
 #### Frontend (`/frontend/`)
+
 ```
 src/app/
 ├── components/
@@ -65,6 +67,7 @@ src/app/
 **Status**: ✅ Build exitoso
 
 #### BD (`/database/`)
+
 ```
 sprint1_init.sql                    Schema + datos iniciales
 ```
@@ -76,6 +79,7 @@ sprint1_init.sql                    Schema + datos iniciales
 ### 2. DOCUMENTACIÓN
 
 #### 📖 Principal
+
 - **[documentation/README.md](documentation/README.md)** (400+ líneas)
   - Overview del proyecto
   - Stack tecnológico
@@ -83,6 +87,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Roadmap
 
 #### 🏗️ Arquitectura
+
 - **[documentation/arquitectura/README.md](documentation/arquitectura/README.md)** (1200+ líneas)
   - Patrón Clean Architecture (4 capas)
   - Componentes principales
@@ -90,6 +95,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Diagrama ASCII
 
 #### 🔌 Endpoints
+
 - **[documentation/endpoints/README.md](documentation/endpoints/README.md)** (700+ líneas)
   - Convenciones REST
   - Códigos HTTP
@@ -97,6 +103,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Validaciones
 
 #### 🗄️ Base de Datos
+
 - **[documentation/base-datos/README.md](documentation/base-datos/README.md)** (1000+ líneas)
   - Diagrama ER (ASCII)
   - Definición de tablas
@@ -104,6 +111,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Cascadas de eliminación
 
 #### 🔄 Flujos
+
 - **[documentation/flujos/README.md](documentation/flujos/README.md)** (500+ líneas)
   - Transiciones de estado
   - Flujos por HU
@@ -111,6 +119,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Secuencias temporales
 
 #### 🔐 Seguridad
+
 - **[documentation/seguridad/README.md](documentation/seguridad/README.md)** (400+ líneas)
   - Validaciones por estado
   - Protecciones XSS/SQL Injection
@@ -118,6 +127,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Recomendaciones pre-producción
 
 #### 🧪 Testing
+
 - **[documentation/guias/TESTING.md](documentation/guias/TESTING.md)** (1500+ líneas)
   - Orden de pruebas
   - 25+ casos de prueba
@@ -125,6 +135,7 @@ sprint1_init.sql                    Schema + datos iniciales
   - Checklist final
 
 #### 📖 Guías
+
 - **[documentation/guias/README.md](documentation/guias/README.md)** (400+ líneas)
   - Workflows rápidos
   - Cómo usar Postman
@@ -136,6 +147,7 @@ sprint1_init.sql                    Schema + datos iniciales
 ### 3. POSTMAN COLLECTION
 
 #### 📡 [postman/TesisTIC_Collection.json](postman/TesisTIC_Collection.json)
+
 - **42+ endpoints** organizados por HU
 - **HU01**: 5 endpoints (Crear)
 - **HU02**: 3 endpoints (Listar/Filtrar)
@@ -147,6 +159,7 @@ sprint1_init.sql                    Schema + datos iniciales
 - **HU08**: 2 endpoints (Eliminar)
 
 **Características**:
+
 - ✅ Variables de entorno
 - ✅ Test scripts automáticos
 - ✅ Ejemplos completos
@@ -182,21 +195,22 @@ npm start                       # Ejecutar (puerto 4200)
 
 ## 📊 Métricas
 
-| Métrica | Valor |
-|---------|-------|
+| Métrica                                | Valor      |
+| -------------------------------------- | ---------- |
 | **Historias de Usuario Implementadas** | 8/8 (100%) |
-| **Endpoints Implementados** | 42+ |
-| **Líneas de Código Backend** | ~2900 |
-| **Líneas de Código Frontend** | ~1200 |
-| **Líneas de Documentación** | 7100+ |
-| **Casos de Prueba** | 25+ |
-| **Errores de Compilación** | 0 |
+| **Endpoints Implementados**            | 42+        |
+| **Líneas de Código Backend**           | ~2900      |
+| **Líneas de Código Frontend**          | ~1200      |
+| **Líneas de Documentación**            | 7100+      |
+| **Casos de Prueba**                    | 25+        |
+| **Errores de Compilación**             | 0          |
 
 ---
 
 ## ✅ Checklist de Entrega
 
 ### Código
+
 - [x] Backend compila sin errores
 - [x] Frontend build sin errores
 - [x] BD con todas las tablas
@@ -205,6 +219,7 @@ npm start                       # Ejecutar (puerto 4200)
 - [x] Manejo de errores (400/403/404)
 
 ### Documentación
+
 - [x] README principal
 - [x] Arquitectura
 - [x] Endpoints
@@ -215,12 +230,14 @@ npm start                       # Ejecutar (puerto 4200)
 - [x] Guías de uso
 
 ### Testing
+
 - [x] Postman collection
 - [x] Casos de prueba (25+)
 - [x] Ejemplos de datos
 - [x] Scripts de validación
 
 ### Calidad
+
 - [x] Clean Architecture implementada
 - [x] DTOs para seguridad
 - [x] Repositorio Pattern
@@ -233,6 +250,7 @@ npm start                       # Ejecutar (puerto 4200)
 ## 🔐 Seguridad - Estado Actual
 
 ### ✅ Implementado
+
 - SQL Injection: Prevenido (EF Core)
 - XSS: Prevenido (Angular DomSanitizer)
 - CORS: Configurado (localhost:4200)
@@ -240,6 +258,7 @@ npm start                       # Ejecutar (puerto 4200)
 - Auditoría: Histórico de cambios
 
 ### ⏳ Futuro (Pre-Producción)
+
 - [ ] Autenticación JWT/OAuth2
 - [ ] Autorización (Roles)
 - [ ] HTTPS
@@ -251,16 +270,19 @@ npm start                       # Ejecutar (puerto 4200)
 ## 📖 Guías de Referencia Rápida
 
 ### Para Desarrolladores
+
 - Iniciar sistema → [TESTING.md](documentation/guias/TESTING.md#pre-requisitos)
 - Ver arquitectura → [arquitectura/README.md](documentation/arquitectura/README.md)
 - Flujo de estados → [flujos/README.md](documentation/flujos/README.md)
 
 ### Para QA/Testing
+
 - Plan de testing → [TESTING.md](documentation/guias/TESTING.md)
 - Postman setup → [guias/README.md](documentation/guias/README.md#cómo-usar-la-colección-postman)
 - Casos de prueba → [TESTING.md](documentation/guias/TESTING.md#hu01-registro-de-propuestas)
 
 ### Para Ops/DevOps
+
 - Seguridad → [seguridad/README.md](documentation/seguridad/README.md)
 - BD → [base-datos/README.md](documentation/base-datos/README.md)
 - Endpoints → [endpoints/README.md](documentation/endpoints/README.md)
@@ -270,27 +292,35 @@ npm start                       # Ejecutar (puerto 4200)
 ## 🎓 Historias de Usuario Implementadas
 
 ### HU01: Registro ✅
+
 Permitir que profesores creen propuestas de trabajos en estado BORRADOR.
 
 ### HU02: Tablero ✅
+
 Listar y filtrar propuestas por estado.
 
 ### HU03: Envío a Revisión ✅
+
 Cambiar estado BORRADOR → PENDIENTE.
 
 ### HU04: Observaciones ✅
+
 CPGIC agrega observaciones, propuesta cambia a OBSERVADA.
 
 ### HU05: Edición ✅
+
 Editar propuestas en BORRADOR u OBSERVADA.
 
 ### HU06: Detalle Completo ✅
+
 Ver toda la información: profesor, asignaturas, observaciones, estudiantes, histórico.
 
 ### HU07: Asignación de Estudiantes ✅
+
 Asignar máximo 5 estudiantes a propuesta APROBADA.
 
 ### HU08: Eliminación ✅
+
 Eliminar propuestas ÚNICAMENTE en estado BORRADOR.
 
 ---
@@ -334,11 +364,13 @@ Otros estados → Eliminar ❌ (prohibido)
 ## 🎯 Próximos Pasos Recomendados
 
 ### Inmediato (QA - 1-2 días)
+
 1. Ejecutar testing según [TESTING.md](documentation/guias/TESTING.md)
 2. Validar endpoints con Postman
 3. Verificar UI en navegador
 
 ### Corto Plazo (Pre-Producción - 1-2 semanas)
+
 1. Implementar autenticación OAuth2
 2. Configurar HTTPS
 3. Implementar Rate Limiting
@@ -346,6 +378,7 @@ Otros estados → Eliminar ❌ (prohibido)
 5. Load testing
 
 ### Mediano Plazo (Producción)
+
 1. Deploy a staging
 2. User acceptance testing (UAT)
 3. Deploy a producción
@@ -388,23 +421,23 @@ TesisPropuestasTIC-1/
 
 ## 💬 Contacto y Soporte
 
-| Rol | Documento |
-|-----|-----------|
-| **Developers** | [arquitectura/README.md](documentation/arquitectura/README.md) + [endpoints/README.md](documentation/endpoints/README.md) |
-| **QA/Testing** | [guias/TESTING.md](documentation/guias/TESTING.md) + [postman/TesisTIC_Collection.json](postman/TesisTIC_Collection.json) |
-| **DevOps** | [seguridad/README.md](documentation/seguridad/README.md) + [base-datos/README.md](documentation/base-datos/README.md) |
-| **Product Managers** | [flujos/README.md](documentation/flujos/README.md) + [README.md](documentation/README.md) |
+| Rol                  | Documento                                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Developers**       | [arquitectura/README.md](documentation/arquitectura/README.md) + [endpoints/README.md](documentation/endpoints/README.md) |
+| **QA/Testing**       | [guias/TESTING.md](documentation/guias/TESTING.md) + [postman/TesisTIC_Collection.json](postman/TesisTIC_Collection.json) |
+| **DevOps**           | [seguridad/README.md](documentation/seguridad/README.md) + [base-datos/README.md](documentation/base-datos/README.md)     |
+| **Product Managers** | [flujos/README.md](documentation/flujos/README.md) + [README.md](documentation/README.md)                                 |
 
 ---
 
 ## 📅 Control de Versiones
 
-| Versión | Fecha | Cambios |
-|---------|-------|---------|
-| **1.0** | Mayo 25, 2026 | Release inicial, 8 HUs completas |
-| **1.1** | Planned | Autenticación OAuth2 |
-| **1.2** | Planned | RBAC (Roles y permisos) |
-| **2.0** | Planned | Notificaciones, reportes, exportación PDF |
+| Versión | Fecha         | Cambios                                   |
+| ------- | ------------- | ----------------------------------------- |
+| **1.0** | Mayo 25, 2026 | Release inicial, 8 HUs completas          |
+| **1.1** | Planned       | Autenticación OAuth2                      |
+| **1.2** | Planned       | RBAC (Roles y permisos)                   |
+| **2.0** | Planned       | Notificaciones, reportes, exportación PDF |
 
 ---
 
@@ -417,7 +450,7 @@ TesisPropuestasTIC-1/
 ✅ **Documentación Profesional**: 7100+ líneas  
 ✅ **Colección Postman**: 42+ endpoints con ejemplos  
 ✅ **Testing Completo**: 25+ casos de prueba  
-✅ **Error Handling**: 400, 403, 404, 500 adecuados  
+✅ **Error Handling**: 400, 403, 404, 500 adecuados
 
 ---
 
@@ -425,7 +458,7 @@ TesisPropuestasTIC-1/
 
 **Sistema listo para QA y testing.**  
 **Documentación completa y profesional.**  
-**Colección Postman lista para usar.**  
+**Colección Postman lista para usar.**
 
 ---
 

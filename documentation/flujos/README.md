@@ -81,6 +81,7 @@ PROFESOR PROPONE PROYECTO
 ```
 
 **Transiciones Posibles desde BORRADOR**:
+
 - ✅ → PENDIENTE (enviar-revision)
 - ✅ → BORRADOR (editar)
 - ✅ → ❌ ELIMINADA [HU08] (delete)
@@ -140,6 +141,7 @@ NOTA: Puede haber ciclo OBSERVADA ↔ PENDIENTE múltiples veces
 ```
 
 **Transiciones desde OBSERVADA**:
+
 - ✅ → PENDIENTE (reenviar-despues-observaciones)
 - ✅ → BORRADOR (editar)
 - ✅ → ❌ ELIMINADA [HU08 NO PERMITE - solo BORRADOR]
@@ -250,6 +252,7 @@ NOTA: Ciclo puede ser:
 ```
 
 **Transiciones desde APROBADA**:
+
 - ✅ → PENDIENTE (asignar estudiantes → automático)
 - ✅ → PENDIENTE (solicitar-nueva-aprobacion)
 - ✅ → RECHAZADA (si CPGIC rechaza)
@@ -311,9 +314,11 @@ Intenta eliminar con ID inválido
 ```
 
 **Estados que PERMITEN eliminación**:
+
 - ✅ BORRADOR
 
 **Estados que NO PERMITEN eliminación**:
+
 - ❌ PENDIENTE (403 Forbidden)
 - ❌ OBSERVADA (403 Forbidden)
 - ❌ APROBADA (403 Forbidden)
@@ -399,6 +404,7 @@ Total: ~1-2 semanas de ciclo completo
 **Regla**: Si hay cambios en propuesta APROBADA, vuelve a revisión.
 
 **Justificación**:
+
 - Asignar estudiantes es un cambio significativo
 - CPGIC necesita validar que los estudiantes son apropiados
 - Evita aprobaciones "endurecidas" en APROBADA
@@ -408,6 +414,7 @@ Total: ~1-2 semanas de ciclo completo
 **Regla**: Solo BORRADOR y OBSERVADA son editables.
 
 **Justificación**:
+
 - PENDIENTE = "bajo revisión de CPGIC"
 - Cambios durante revisión crean confusión
 - Si hay cambios necesarios → agregar observaciones
@@ -418,6 +425,7 @@ Total: ~1-2 semanas de ciclo completo
 **Regla**: BORRADOR = "borrador privado, no revisado"
 
 **Justificación**:
+
 - PENDIENTE+ = "en proceso/aprobadas", no se deben eliminar
 - Integridad de histórico CPGIC
 - Auditoría: todo debe quedar registrado
