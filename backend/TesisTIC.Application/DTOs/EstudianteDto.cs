@@ -6,9 +6,7 @@ namespace TesisTIC.Application.DTOs;
 public class EstudianteDto
 {
     public int Id { get; set; }
-    public string Nombres { get; set; } = string.Empty;
-    public string Apellidos { get; set; } = string.Empty;
-    public string? Correo { get; set; }
+    public string NombresEstudiante { get; set; } = string.Empty;
     public DateTime FechaCreacion { get; set; }
 }
 
@@ -17,7 +15,5 @@ public class EstudianteDto
 /// </summary>
 public class CreateUpdateEstudianteDto
 {
-    public string Nombres { get; set; } = string.Empty;
-    public string Apellidos { get; set; } = string.Empty;
-    public string? Correo { get; set; }
+    public string NombresEstudiante { get; set; } = string.Empty;
 }

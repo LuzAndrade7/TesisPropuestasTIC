@@ -118,18 +118,18 @@ CREATE TABLE propuestas (
   objetivo TEXT NOT NULL,
   alcance TEXT NOT NULL,
   numero_participantes INT NOT NULL CHECK (numero_participantes > 0),
-  
+
   -- Estados: BORRADOR, PENDIENTE, OBSERVADA, APROBADA, RECHAZADA
   estado VARCHAR(50) NOT NULL DEFAULT 'BORRADOR',
-  
+
   -- FK
   docente_id INT NOT NULL REFERENCES docentes(id) ON DELETE CASCADE,
-  
+
   -- Fechas
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   fecha_envio_revision TIMESTAMP,
   fecha_actualizacion TIMESTAMP,
-  
+
   -- Índices
   UNIQUE(titulo),
   INDEX idx_propuestas_estado (estado),
@@ -138,6 +138,7 @@ CREATE TABLE propuestas (
 ```
 
 **Estados Posibles**:
+
 - `BORRADOR` - Editable, no visible en tablero de revisión
 - `PENDIENTE` - Esperando revisión CPGIC
 - `OBSERVADA` - Requiere correcciones
@@ -145,6 +146,7 @@ CREATE TABLE propuestas (
 - `RECHAZADA` - Rechazada definitivamente
 
 **Ciclo de Vida**:
+
 ```
 BORRADOR  →[enviar]→  PENDIENTE
    ↑                      ↓
@@ -169,12 +171,13 @@ CREATE TABLE docentes (
   correo VARCHAR(255) NOT NULL UNIQUE,
   titulo_academico VARCHAR(100),
   departamento VARCHAR(100),
-  
+
   INDEX idx_docentes_correo (correo)
 );
 ```
 
 **Relaciones**:
+
 - 1:N → PROPUESTAS (un docente puede tener múltiples propuestas)
 
 ---
@@ -189,12 +192,13 @@ CREATE TABLE asignaturas (
   descripcion TEXT,
   creditos INT,
   semestre INT,
-  
+
   INDEX idx_asignaturas_codigo (codigo)
 );
 ```
 
 **Relaciones**:
+
 - N:N → PROPUESTAS (a través de PROPUESTA_ASIGNATURAS)
 
 ---
@@ -206,17 +210,18 @@ CREATE TABLE propuesta_asignaturas (
   propuesta_id INT NOT NULL,
   asignatura_id INT NOT NULL,
   horas_dedicacion INT,
-  
+
   PRIMARY KEY (propuesta_id, asignatura_id),
   FOREIGN KEY (propuesta_id) REFERENCES propuestas(id) ON DELETE CASCADE,
   FOREIGN KEY (asignatura_id) REFERENCES asignaturas(id) ON DELETE CASCADE,
-  
+
   INDEX idx_pa_propuesta (propuesta_id),
   INDEX idx_pa_asignatura (asignatura_id)
 );
 ```
 
 **Validaciones**:
+
 - UNIQUE(propuesta_id, asignatura_id) - No duplicadas
 - CASCADE elimina automáticamente cuando propuesta se elimina
 
@@ -232,7 +237,7 @@ CREATE TABLE estudiantes (
   correo VARCHAR(255) NOT NULL UNIQUE,
   carrera VARCHAR(200),
   semestre INT,
-  
+
   INDEX idx_estudiantes_correo (correo),
   INDEX idx_estudiantes_nombre (nombre),
   INDEX idx_estudiantes_apellido (apellido)
@@ -240,6 +245,7 @@ CREATE TABLE estudiantes (
 ```
 
 **Relaciones**:
+
 - N:N → PROPUESTAS (a través de PROPUESTA_ESTUDIANTES)
 
 ---
@@ -251,17 +257,17 @@ CREATE TABLE propuesta_estudiantes (
   id SERIAL PRIMARY KEY,
   propuesta_id INT NOT NULL,
   estudiante_id INT NOT NULL,
-  
+
   -- Metadatos
   fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   asignado_por VARCHAR(255),
   estado VARCHAR(50) DEFAULT 'ACTIVO',  -- ACTIVO, INACTIVO, COMPLETADO
-  
+
   -- Constraints
   UNIQUE(propuesta_id, estudiante_id),  -- Max 1 asignación por estudiante
   FOREIGN KEY (propuesta_id) REFERENCES propuestas(id) ON DELETE CASCADE,
   FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
-  
+
   -- Índices
   INDEX idx_pe_propuesta (propuesta_id),
   INDEX idx_pe_estudiante (estudiante_id),
@@ -270,6 +276,7 @@ CREATE TABLE propuesta_estudiantes (
 ```
 
 **Limitaciones**:
+
 - Máximo 5 estudiantes por propuesta (validado en servicio)
 - UNIQUE garantiza no duplicar estudiante en misma propuesta
 
@@ -283,17 +290,18 @@ CREATE TABLE observaciones_cpgic (
   propuesta_id INT NOT NULL,
   descripcion TEXT NOT NULL,
   tipo_observacion VARCHAR(100),  -- Técnica, Formato, Alcance, etc
-  
+
   -- Auditoría
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   usuario_creador VARCHAR(255),
-  
+
   FOREIGN KEY (propuesta_id) REFERENCES propuestas(id) ON DELETE CASCADE,
   INDEX idx_oc_propuesta (propuesta_id)
 );
 ```
 
 **Efecto**: Cuando se crea observación:
+
 1. Propuesta cambia: PENDIENTE → OBSERVADA
 2. Observación se registra en histórico
 
@@ -307,12 +315,12 @@ CREATE TABLE historial_estados (
   propuesta_id INT NOT NULL,
   estado_anterior VARCHAR(50),
   estado_nuevo VARCHAR(50) NOT NULL,
-  
+
   -- Metadatos
   fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   motivo VARCHAR(500),
   usuario VARCHAR(255),
-  
+
   FOREIGN KEY (propuesta_id) REFERENCES propuestas(id) ON DELETE CASCADE,
   INDEX idx_he_propuesta (propuesta_id),
   INDEX idx_he_fecha (fecha_cambio)
@@ -326,17 +334,18 @@ CREATE TABLE historial_estados (
 
 ## Cascadas ON DELETE
 
-| Tabla Padre | Tabla Hija | Acción |
-|-------------|-----------|--------|
-| PROPUESTAS | PROPUESTA_ASIGNATURAS | CASCADE |
-| PROPUESTAS | PROPUESTA_ESTUDIANTES | CASCADE |
-| PROPUESTAS | OBSERVACIONES_CPGIC | CASCADE |
-| PROPUESTAS | HISTORIAL_ESTADOS | CASCADE |
-| DOCENTES | PROPUESTAS | CASCADE |
+| Tabla Padre | Tabla Hija            | Acción  |
+| ----------- | --------------------- | ------- |
+| PROPUESTAS  | PROPUESTA_ASIGNATURAS | CASCADE |
+| PROPUESTAS  | PROPUESTA_ESTUDIANTES | CASCADE |
+| PROPUESTAS  | OBSERVACIONES_CPGIC   | CASCADE |
+| PROPUESTAS  | HISTORIAL_ESTADOS     | CASCADE |
+| DOCENTES    | PROPUESTAS            | CASCADE |
 | ASIGNATURAS | PROPUESTA_ASIGNATURAS | CASCADE |
 | ESTUDIANTES | PROPUESTA_ESTUDIANTES | CASCADE |
 
 **Implicación**: Cuando se elimina propuesta:
+
 ```
 DELETE propuestas WHERE id = 42
   → Automático: DELETE propuesta_asignaturas WHERE propuesta_id = 42
@@ -386,7 +395,7 @@ CREATE INDEX idx_asignaturas_codigo ON asignaturas(codigo);
 
 ```sql
 -- Frontend Tablero (HU02)
-SELECT * FROM propuestas 
+SELECT * FROM propuestas
 WHERE estado = 'PENDIENTE'
 ORDER BY fecha_creacion DESC;
 ```
@@ -420,8 +429,8 @@ ORDER BY fecha_creacion DESC;
 -- Estudiantes NO asignados a propuesta 42
 SELECT e.* FROM estudiantes e
 WHERE e.id NOT IN (
-  SELECT DISTINCT estudiante_id 
-  FROM propuesta_estudiantes 
+  SELECT DISTINCT estudiante_id
+  FROM propuesta_estudiantes
   WHERE propuesta_id = 42 AND estado = 'ACTIVO'
 )
 ORDER BY e.apellido, e.nombre;
@@ -529,6 +538,7 @@ psql -h HOST -U USER -d DATABASE < backup.sql
 ## Conclusión
 
 La base de datos implementa un modelo relacional completo con:
+
 - ✅ Integridad referencial (FK + CASCADE)
 - ✅ Validaciones a nivel BD (CHECK, UNIQUE)
 - ✅ Índices para performance

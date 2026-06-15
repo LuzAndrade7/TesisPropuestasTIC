@@ -13,7 +13,7 @@ $danger-color: #dc3545;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: $text-color;
   background-color: #fafafa;
 }
@@ -24,23 +24,10 @@ body {
   min-height: 100vh;
 }
 
-.app-header {
-  background-color: $primary-color;
-  color: white;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h1 {
-    font-size: 24px;
-    font-weight: 600;
-  }
-}
-
 .app-main {
   flex: 1;
+  margin: 0;
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
 }
 

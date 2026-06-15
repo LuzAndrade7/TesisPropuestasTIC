@@ -14,13 +14,16 @@ namespace TesisTIC.API.Controllers;
 public class PropuestasController : ControllerBase
 {
     private readonly IPropuestaService _service;
+    private readonly IPropuestaDetalleService _detalleService;
     private readonly ILogger<PropuestasController> _logger;
 
     public PropuestasController(
         IPropuestaService service,
+        IPropuestaDetalleService detalleService,
         ILogger<PropuestasController> logger)
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
+        _detalleService = detalleService ?? throw new ArgumentNullException(nameof(detalleService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -112,6 +115,36 @@ public class PropuestasController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener propuesta {propuestaId}", id);
+            return StatusCode(500, new { message = "Error interno del servidor" });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene el detalle completo de una propuesta para la vista de consulta.
+    /// </summary>
+    /// <param name="id">ID de la propuesta</param>
+    /// <returns>Detalle completo de la propuesta</returns>
+    [HttpGet("{id}/detalle")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PropuestaDetalleDto>> GetDetalle(int id)
+    {
+        try
+        {
+            var detalle = await _detalleService.ObtenerDetalleCompletoAsync(id);
+            return Ok(detalle);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener detalle de propuesta {propuestaId}", id);
             return StatusCode(500, new { message = "Error interno del servidor" });
         }
     }
@@ -428,14 +461,14 @@ public class PropuestasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PropuestaDto>> SolicitarNuevaAprobacion(int id, [FromBody] SolicitarNuevaAprobacionRequest dto)
+    public async Task<ActionResult<PropuestaDto>> SolicitarNuevaAprobacion(int id, [FromBody] SolicitarNuevaAprobacionDto dto)
     {
         try
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Motivo))
                 return BadRequest(new { message = "Debe proporcionar un motivo para solicitar nueva aprobación" });
 
-            var propuesta = await _service.SolicitarNuevaAprobacionAsync(id, dto.Motivo);
+            var propuesta = await _service.SolicitarNuevaAprobacionAsync(id, dto);
             _logger.LogInformation("✅ HU07 T23: Solicitud nueva aprobación propuesta {propuestaId}. Motivo: {motivo}", id, dto.Motivo);
             return Ok(propuesta);
         }

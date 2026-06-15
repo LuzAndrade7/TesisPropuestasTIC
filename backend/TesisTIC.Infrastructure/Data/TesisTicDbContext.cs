@@ -98,6 +98,15 @@ public class TesisTicDbContext : DbContext
             entity.ToTable("propuestas", "public");
             entity.HasKey(p => p.Id);
 
+            entity.Ignore(p => p.UnidadAcademica);
+            entity.Ignore(p => p.Carrera);
+            entity.Ignore(p => p.LineaInvestigacionId);
+            entity.Ignore(p => p.LineaInvestigacion);
+            entity.Ignore(p => p.DepartmentId);
+            entity.Ignore(p => p.Department);
+            entity.Ignore(p => p.FechaAprobacion);
+            entity.Ignore(p => p.FechaRechazo);
+
             entity.Property(p => p.NombreProyecto)
                 .IsRequired()
                 .HasMaxLength(250);
@@ -174,21 +183,14 @@ public class TesisTicDbContext : DbContext
             entity.ToTable("estudiantes", "public");
             entity.HasKey(e => e.Id);
 
-            entity.Property(e => e.Nombres)
+            entity.Property(e => e.NombresEstudiante)
+                .HasColumnName("nombres_estudiante")
                 .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(e => e.Apellidos)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(e => e.Correo)
-                .HasMaxLength(150);
+                .HasMaxLength(200);
 
             entity.Property(e => e.FechaCreacion)
+                .HasColumnName("fecha_creacion")
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            entity.HasIndex(e => e.Correo);
         });
 
         // ===== TABLA COMPONENTES =====
@@ -225,7 +227,7 @@ public class TesisTicDbContext : DbContext
             entity.ToTable("actividades", "public");
             entity.HasKey(a => a.Id);
 
-            entity.Property(a => a.ComponenteId).IsRequired();
+            entity.Property(a => a.ComponenteId).HasColumnName("componente_id").IsRequired();
             entity.Property(a => a.Numero).IsRequired();
             entity.Property(a => a.Descripcion).IsRequired();
             entity.Property(a => a.Horas).IsRequired();
@@ -244,7 +246,7 @@ public class TesisTicDbContext : DbContext
             entity.ToTable("productos_esperados", "public");
             entity.HasKey(pe => pe.Id);
 
-            entity.Property(pe => pe.ComponenteId).IsRequired();
+            entity.Property(pe => pe.ComponenteId).HasColumnName("componente_id").IsRequired();
             entity.Property(pe => pe.Descripcion).IsRequired();
 
             // Relación con Componente
@@ -283,7 +285,11 @@ public class TesisTicDbContext : DbContext
 
             entity.Property(a => a.PropuestaId).IsRequired();
             entity.Property(a => a.Resolucion).HasMaxLength(int.MaxValue);
-            entity.Property(a => a.PresidenteCpgic).HasMaxLength(150);
+            entity.Property(a => a.PresidenteCpgic)
+                .HasColumnName("miembro_cpgic")
+                .HasMaxLength(150);
+            entity.Ignore(a => a.FirmaDirector);
+            entity.Ignore(a => a.FirmaPresidente);
             entity.Property(a => a.EstadoAprobacion).HasMaxLength(50);
 
             // Relación con Propuesta (1:1)

@@ -54,7 +54,7 @@ public interface IPropuestaService
     Task<PropuestaDto> CambiarEstadoAsync(int id, UpdateEstadoPropuestaDto dto);
     Task<PropuestaDto> EnviarARevisionAsync(int id, EnviarARevisionDto dto); // HU03 T07
     Task<PropuestaDto> ReenviarDespuesDeObservacionesAsync(int id); // HU04 T12 - Limpiar observaciones y cambiar estado
-    Task<PropuestaDto> SolicitarNuevaAprobacionAsync(int id, string motivo); // HU07 T23
+    Task<PropuestaDto> SolicitarNuevaAprobacionAsync(int id, SolicitarNuevaAprobacionDto dto); // HU07 T23
 
     // ASIGNATURAS
     Task<bool> AsignarAsignaturaAsync(int propuestaId, int asignaturaId);

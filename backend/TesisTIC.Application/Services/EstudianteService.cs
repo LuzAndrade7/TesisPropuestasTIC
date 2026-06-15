@@ -39,15 +39,14 @@ public class EstudianteService : IEstudianteService
         if (dto == null)
             throw new ArgumentNullException(nameof(dto));
 
-        if (string.IsNullOrWhiteSpace(dto.Nombres) || string.IsNullOrWhiteSpace(dto.Apellidos))
-            throw new ArgumentException("Nombres y apellidos son requeridos");
+        var nombreEstudiante = dto.NombresEstudiante.Trim();
+
+        if (string.IsNullOrWhiteSpace(nombreEstudiante))
+            throw new ArgumentException("El nombre del estudiante es requerido");
 
         var estudiante = new Estudiante
         {
-            Nombres = dto.Nombres,
-            Apellidos = dto.Apellidos,
-            Correo = dto.Correo,
-            FechaCreacion = DateTime.UtcNow
+            NombresEstudiante = nombreEstudiante
         };
 
         var creado = await _repository.CreateAsync(estudiante);
@@ -65,9 +64,7 @@ public class EstudianteService : IEstudianteService
         if (estudiante == null)
             throw new InvalidOperationException($"Estudiante con ID {id} no encontrado");
 
-        estudiante.Nombres = dto.Nombres;
-        estudiante.Apellidos = dto.Apellidos;
-        estudiante.Correo = dto.Correo;
+        estudiante.NombresEstudiante = dto.NombresEstudiante.Trim();
 
         var actualizado = await _repository.UpdateAsync(estudiante);
         return _mapper.Map<EstudianteDto>(actualizado);

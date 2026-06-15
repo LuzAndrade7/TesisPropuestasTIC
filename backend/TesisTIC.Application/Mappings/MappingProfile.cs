@@ -18,6 +18,10 @@ public class PropuestaMappingProfile : Profile
             .ForMember(dest => dest.Asignaturas,
                 opt => opt.MapFrom(src => src.PropuestasAsignaturas
                     .Select(pa => pa.Asignatura)
+                    .ToList()))
+            .ForMember(dest => dest.Componentes,
+                opt => opt.MapFrom(src => src.Componentes
+                    .OrderBy(c => c.Orden)
                     .ToList()));
 
         // T04: Propuesta -> PropuestaResumenDto (para tablero HU02)
@@ -80,7 +84,8 @@ public class EstudianteMappingProfile : Profile
     public EstudianteMappingProfile()
     {
         CreateMap<Estudiante, EstudianteDto>();
-        CreateMap<CreateUpdateEstudianteDto, Estudiante>();
+        CreateMap<CreateUpdateEstudianteDto, Estudiante>()
+            .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore());
     }
 }
 

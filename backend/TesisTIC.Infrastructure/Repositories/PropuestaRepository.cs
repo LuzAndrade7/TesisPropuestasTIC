@@ -1,142 +1,148 @@
 using Microsoft.EntityFrameworkCore;
 using TesisTIC.Application.Interfaces;
+using TesisTIC.Application.Services;
 using TesisTIC.Domain.Entities;
 using TesisTIC.Infrastructure.Data;
 
-namespace TesisTIC.Infrastructure.Repositories;
-
-/// <summary>
-/// Repositorio específico para operaciones con Propuestas
-/// Extiende el repositorio genérico con consultas personalizadas
-/// </summary>
-public class PropuestaRepository : GenericRepository<Propuesta>, IPropuestaRepository
+namespace TesisTIC.Infrastructure.Repositories
 {
-    public PropuestaRepository(TesisTicDbContext context) : base(context)
+    public class PropuestaRepository : IPropuestaRepository
     {
-    }
+        private readonly TesisTicDbContext _context;
 
-    /// <summary>
-    /// Obtiene propuestas con filtros opcionales (estado, profesor)
-    /// </summary>
-    public async Task<IEnumerable<Propuesta>> GetPropuestasAsync(
-        string? estado = null,
-        int? profesorId = null)
-    {
-        var query = _dbSet.AsNoTracking();
+        public PropuestaRepository(TesisTicDbContext context)
+        {
+            _context = context;
+        }
 
-        if (!string.IsNullOrWhiteSpace(estado))
-            query = query.Where(p => p.Estado == estado);
+        // IReadRepository<Propuesta> methods
+        public async Task<IEnumerable<Propuesta>> GetAllAsync()
+        {
+            return await _context.Propuestas
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .ThenInclude(pa => pa.Asignatura)
+                .Include(p => p.Observaciones)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ToListAsync();
+        }
 
-        if (profesorId.HasValue)
-            query = query.Where(p => p.ProfesorId == profesorId);
+        public async Task<Propuesta?> GetByIdAsync(int id)
+        {
+            return await _context.Propuestas
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .ThenInclude(pa => pa.Asignatura)
+                .Include(p => p.Observaciones)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
 
-        return await query
-            .Include(p => p.Profesor)
-            .Include(p => p.PropuestasAsignaturas)
-            .ThenInclude(pa => pa.Asignatura)
-            .OrderByDescending(p => p.FechaCreacion)
-            .ToListAsync();
-    }
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Propuestas.CountAsync();
+        }
 
-    /// <summary>
-    /// Obtiene una propuesta con todas sus relaciones cargadas
-    /// </summary>
-    public async Task<Propuesta?> GetPropuestaFullAsync(int id)
-    {
-        return await _dbSet
-            .Include(p => p.Profesor)
-            .Include(p => p.PropuestasAsignaturas)
-            .ThenInclude(pa => pa.Asignatura)
-            .Include(p => p.Componentes)
-            .ThenInclude(c => c.Actividades)
-            .Include(p => p.Componentes)
-            .ThenInclude(c => c.ProductosEsperados)
-            .Include(p => p.Componentes)
-            .ThenInclude(c => c.Estudiante)
-            .Include(p => p.Observaciones)
-            .Include(p => p.AprobacionCpgic)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
+        // IWriteRepository<Propuesta> methods
+        public async Task<Propuesta> CreateAsync(Propuesta entity)
+        {
+            entity.FechaCreacion = FechaEcuador.Ahora();
+            var resultado = await _context.Propuestas.AddAsync(entity);
+            await SaveChangesAsync();
+            return resultado.Entity;
+        }
 
-    /// <summary>
-    /// Obtiene todas las propuestas de un profesor específico
-    /// </summary>
-    public async Task<IEnumerable<Propuesta>> GetPropuestasPorProfesorAsync(int profesorId)
-    {
-        return await _dbSet
-            .AsNoTracking()
-            .Where(p => p.ProfesorId == profesorId)
-            .Include(p => p.PropuestasAsignaturas)
-            .ThenInclude(pa => pa.Asignatura)
-            .OrderByDescending(p => p.FechaCreacion)
-            .ToListAsync();
-    }
+        public async Task<Propuesta> UpdateAsync(Propuesta entity)
+        {
+            entity.FechaActualizacion = FechaEcuador.Ahora();
+            _context.Propuestas.Update(entity);
+            await SaveChangesAsync();
+            return entity;
+        }
 
-    /// <summary>
-    /// Actualiza una propuesta existente y recarga las relaciones
-    /// </summary>
-    public override async Task<Propuesta> UpdateAsync(Propuesta entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var propuesta = await _context.Propuestas.FindAsync(id);
+            if (propuesta == null)
+                return false;
 
-        _dbSet.Update(entity);
-        await SaveChangesAsync();
+            _context.Propuestas.Remove(propuesta);
+            await SaveChangesAsync();
+            return true;
+        }
 
-        // Recargar con todas las relaciones después de actualizar
-        return await GetPropuestaFullAsync(entity.Id) ?? entity;
-    }
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
 
-    /// <summary>
-    /// Crea una propuesta existente y recarga las relaciones
-    /// </summary>
-    public override async Task<Propuesta> CreateAsync(Propuesta entity)
-    {
-        if (entity == null)
-            throw new ArgumentNullException(nameof(entity));
+        // IPropuestaRepository specific methods
+        public async Task<IEnumerable<Propuesta>> GetPropuestasAsync(string? estado = null, int? profesorId = null)
+        {
+            var query = _context.Propuestas.AsQueryable();
 
-        await _dbSet.AddAsync(entity);
-        await SaveChangesAsync();
+            if (!string.IsNullOrWhiteSpace(estado))
+                query = query.Where(p => p.Estado == estado);
 
-        // Recargar con todas las relaciones después de crear
-        return await GetPropuestaFullAsync(entity.Id) ?? entity;
-    }
+            if (profesorId.HasValue)
+                query = query.Where(p => p.ProfesorId == profesorId);
 
-    /// <summary>
-    /// Cambia el estado de una propuesta
-    /// </summary>
-    public async Task<Propuesta?> CambiarEstadoAsync(int id, string nuevoEstado)
-    {
-        var propuesta = await _dbSet.FindAsync(id);
-        if (propuesta == null)
-            return null;
+            return await query
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ToListAsync();
+        }
 
-        // Validar que el nuevo estado sea válido
-        var estadosValidos = new[] { "BORRADOR", "PENDIENTE", "OBSERVADA", "APROBADA", "RECHAZADA" };
-        if (!estadosValidos.Contains(nuevoEstado))
-            throw new ArgumentException($"Estado inválido: {nuevoEstado}");
+        public async Task<Propuesta?> GetPropuestaFullAsync(int id)
+        {
+            return await _context.Propuestas
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .ThenInclude(pa => pa.Asignatura)
+                .Include(p => p.Observaciones)
+                .Include(p => p.AprobacionCpgic)
+                .Include(p => p.Componentes)
+                .ThenInclude(c => c.Estudiante)
+                .Include(p => p.Componentes)
+                .ThenInclude(c => c.Actividades)
+                .Include(p => p.Componentes)
+                .ThenInclude(c => c.ProductosEsperados)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
 
-        propuesta.Estado = nuevoEstado;
-        propuesta.FechaActualizacion = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+        public async Task<IEnumerable<Propuesta>> GetPropuestasPorProfesorAsync(int profesorId)
+        {
+            return await _context.Propuestas
+                .Where(p => p.ProfesorId == profesorId)
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .ThenInclude(pa => pa.Asignatura)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ToListAsync();
+        }
 
-        if (nuevoEstado == "PENDIENTE")
-            propuesta.FechaEnvioRevision = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+        public async Task<Propuesta?> CambiarEstadoAsync(int id, string nuevoEstado)
+        {
+            var propuesta = await GetByIdAsync(id);
+            if (propuesta == null)
+                return null;
 
-        _dbSet.Update(propuesta);
-        await SaveChangesAsync();
-        return propuesta;
-    }
+            propuesta.Estado = nuevoEstado;
+            propuesta.FechaActualizacion = FechaEcuador.Ahora();
 
-    /// <summary>
-    /// Obtiene propuestas filtradas por estado
-    /// </summary>
-    public async Task<IEnumerable<Propuesta>> GetPropuestasPorEstadoAsync(string estado)
-    {
-        return await _dbSet
-            .AsNoTracking()
-            .Where(p => p.Estado == estado)
-            .Include(p => p.Profesor)
-            .OrderByDescending(p => p.FechaCreacion)
-            .ToListAsync();
+            _context.Propuestas.Update(propuesta);
+            await SaveChangesAsync();
+            return propuesta;
+        }
+
+        public async Task<IEnumerable<Propuesta>> GetPropuestasPorEstadoAsync(string estado)
+        {
+            return await _context.Propuestas
+                .Where(p => p.Estado == estado)
+                .Include(p => p.Profesor)
+                .Include(p => p.PropuestasAsignaturas)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ToListAsync();
+        }
     }
 }

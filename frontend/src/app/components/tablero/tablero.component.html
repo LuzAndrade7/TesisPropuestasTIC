@@ -1,12 +1,12 @@
-<!--
+﻿<!--
 T05: Template Tablero - Visualizar propuestas (HU02)
-Ubicación: src/app/components/tablero/tablero.component.html
+UbicaciÃ³n: src/app/components/tablero/tablero.component.html
 
 Estructura del prototipo:
-- Encabezado con título y botón "Nueva propuesta"
-- Estadísticas por estado (6 botones: TODOS + 5 estados)
-- Tabla con propuestas (N°, Título, Estado, Actualización, Acciones)
-- Mensaje vacío si no hay propuestas
+- Encabezado con tÃ­tulo y botÃ³n "Nueva propuesta"
+- EstadÃ­sticas por estado (6 botones: TODOS + 5 estados)
+- Tabla con propuestas (NÂ°, TÃ­tulo, Estado, ActualizaciÃ³n, Acciones)
+- Mensaje vacÃ­o si no hay propuestas
 -->
 
 <div class="tablero-container">
@@ -22,11 +22,12 @@ Estructura del prototipo:
     </button>
   </div>
 
-  <!-- ESTADÍSTICAS POR ESTADO -->
+  <!-- ESTADÃSTICAS POR ESTADO -->
   <div class="stats-row">
-    <!-- Botón TODOS -->
+    <!-- BotÃ³n TODOS -->
     <button 
       class="stat-btn"
+      [ngClass]="obtenerClaseFiltro(null)"
       [class.active]="estadoActivo === null"
       (click)="filtrarPorEstado(null)">
       <div class="stat-num">{{ estadisticas.total }}</div>
@@ -37,6 +38,7 @@ Estructura del prototipo:
     <button 
       *ngFor="let estado of estados"
       class="stat-btn"
+      [ngClass]="obtenerClaseFiltro(estado)"
       [class.active]="estadoActivo === estado"
       (click)="filtrarPorEstado(estado)">
       <div class="stat-num">{{ obtenerNumeroEstado(estado) }}</div>
@@ -44,7 +46,7 @@ Estructura del prototipo:
     </button>
   </div>
 
-  <!-- MENSAJE DE ERROR O VACÍO -->
+  <!-- MENSAJE DE ERROR O VACÃO -->
   <div *ngIf="mensaje" class="mensaje-alerta">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 9v2m0 4v2m8.364-15.536a9 9 0 11-12.728 0"></path>
@@ -72,12 +74,12 @@ Estructura del prototipo:
       </thead>
       <tbody>
         <tr *ngFor="let propuesta of propuestasFiltradas; let i = index">
-          <!-- Número -->
+          <!-- NÃºmero -->
           <td class="col-numero">
             <span class="numero">{{ i + 1 }}</span>
           </td>
 
-          <!-- Título del proyecto -->
+          <!-- TÃ­tulo del proyecto -->
           <td class="col-titulo">
             <div class="titulo-contenedor">
               <div class="titulo-texto">{{ propuesta.nombreProyecto }}</div>
@@ -89,23 +91,29 @@ Estructura del prototipo:
 
           <!-- Estado (Badge coloreado) -->
           <td class="col-estado">
-            <span [class]="'badge ' + obtenerClaseBadge(propuesta.estado)">
-              <span class="badge-punto"></span>
-              {{ obtenerEtiquetaEstado(propuesta.estado) }}
-            </span>
+            <!-- Badge con color segun estado actual -->
+            <div class="estado-cell">
+              <span [class]="'badge ' + obtenerClaseBadge(propuesta.estado)">
+                <span class="badge-punto"></span>
+                {{ obtenerEtiquetaEstado(propuesta.estado) }}
+              </span>
+
+            </div>
           </td>
 
-          <!-- Fecha de Actualización -->
+          <!-- Fecha de ActualizaciÃ³n -->
           <td class="col-fecha">
             <span class="fecha">{{ formatearFecha(propuesta.fechaActualizacion) }}</span>
           </td>
 
           <!-- Acciones -->
           <td class="col-acciones">
+            <!-- Acciones disponibles segun estado de la propuesta -->
             <div class="acciones-group">
               <button 
                 class="btn-accion btn-ver"
-                title="Ver detalle"
+                title="Ver propuesta"
+                aria-label="Ver propuesta"
                 (click)="verDetalle(propuesta.id)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -113,6 +121,7 @@ Estructura del prototipo:
                 </svg>
               </button>
               <button 
+                *ngIf="puedeEditar(propuesta.estado)"
                 class="btn-accion btn-editar"
                 title="Editar"
                 (click)="editarPropuesta(propuesta.id)">
@@ -121,6 +130,17 @@ Estructura del prototipo:
                 </svg>
               </button>
               <button 
+                *ngIf="puedeAsignarEstudiantes(propuesta.estado)"
+                class="btn-accion btn-asignar"
+                title="Asignar estudiantes"
+                (click)="asignarEstudiantes(propuesta.id)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </button>
+              <button 
+                *ngIf="puedeEliminar(propuesta.estado)"
                 class="btn-accion btn-eliminar"
                 title="Eliminar"
                 (click)="eliminarPropuesta(propuesta.id)">
@@ -138,7 +158,7 @@ Estructura del prototipo:
     </table>
   </div>
 
-  <!-- TABLA VACÍA (sin propuestas) -->
+  <!-- TABLA VACÃA (sin propuestas) -->
   <div *ngIf="!cargando && propuestasFiltradas.length === 0" class="tabla-vacia">
     <div class="vacia-icono">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -155,4 +175,27 @@ Estructura del prototipo:
     </button>
   </div>
 
+  <!-- Modal de eliminaciÃ³n de propuesta. -->
+  <div *ngIf="mostrarModalEliminar" class="tablero-modal">
+    <section class="tablero-modal__contenido">
+      <div class="tablero-modal__icono">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4h8v2"></path>
+          <path d="M19 6l-1 14H6L5 6"></path>
+          <path d="M10 11v5"></path>
+          <path d="M14 11v5"></path>
+        </svg>
+      </div>
+      <h3>Eliminar propuesta</h3>
+      <strong>"{{ propuestaAEliminar?.nombreProyecto }}"</strong>
+      <p>Esta acción es permanente y no se puede deshacer. ¿Está seguro de que desea eliminar esta propuesta?</p>
+      <footer>
+        <button type="button" class="tablero-modal__btn tablero-modal__btn--red" (click)="confirmarEliminacion()">Sí, eliminar definitivamente</button>
+        <button type="button" class="tablero-modal__btn tablero-modal__btn--light" (click)="cancelarEliminacion()">Cancelar</button>
+      </footer>
+    </section>
+  </div>
+
 </div>
+

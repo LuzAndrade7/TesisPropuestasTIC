@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { FormularioPropuestaComponent } from './components/formulario-propuesta/formulario-propuesta.component';
 import { TableroComponent } from './components/tablero/tablero.component';
 import { DetallePropuestaComponent } from './components/detalle-propuesta/detalle-propuesta.component';
+import { AsignarEstudiantesComponent } from './components/asignar-estudiantes/asignar-estudiantes.component';
 
 /**
  * Rutas principales de la aplicación
@@ -34,5 +35,9 @@ export const routes: Routes = [
   {
     path: 'propuestas/:id/detalle',
     component: DetallePropuestaComponent
+  },
+  {
+    path: 'propuestas/:id/asignar-estudiantes',
+    component: AsignarEstudiantesComponent
   }
 ];

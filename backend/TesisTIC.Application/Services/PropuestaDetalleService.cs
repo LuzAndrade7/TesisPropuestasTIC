@@ -57,8 +57,20 @@ namespace TesisTIC.Application.Services
             if (propuesta == null)
                 throw new KeyNotFoundException($"Propuesta con ID {propuestaId} no encontrada");
 
-            // 2. Mapear datos básicos
-            var detalle = _mapper.Map<PropuestaDetalleDto>(propuesta);
+            // 2. Mapear datos basicos
+            var detalle = new PropuestaDetalleDto
+            {
+                Id = propuesta.Id,
+                NombreProyecto = propuesta.NombreProyecto,
+                Descripcion = propuesta.Descripcion,
+                Objetivo = propuesta.Objetivo,
+                Alcance = propuesta.Alcance,
+                Estado = propuesta.Estado,
+                FechaCreacion = propuesta.FechaCreacion,
+                FechaActualizacion = propuesta.FechaActualizacion,
+                FechaEnvioRevision = propuesta.FechaEnvioRevision,
+                NumeroParticipantes = propuesta.NumeroParticipantes
+            };
 
             // 3. Mapear profesor (participante)
             if (propuesta.ProfesorId > 0)
@@ -91,6 +103,57 @@ namespace TesisTIC.Application.Services
                     .ToList();
             }
 
+            // 4.1. Mapear componentes o modulos del proyecto
+            if (propuesta.Componentes != null && propuesta.Componentes.Any())
+            {
+                detalle.Componentes = propuesta.Componentes
+                    .OrderBy(c => c.Orden)
+                    .Select(c => new ComponenteDto
+                    {
+                        Id = c.Id,
+                        PropuestaId = c.PropuestaId,
+                        EstudianteId = c.EstudianteId,
+                        Nombre = c.Nombre,
+                        Descripcion = c.Descripcion,
+                        Orden = c.Orden,
+                        Estudiante = c.Estudiante == null ? null : new EstudianteDto
+                        {
+                            Id = c.Estudiante.Id,
+                            NombresEstudiante = c.Estudiante.NombresEstudiante,
+                            FechaCreacion = c.Estudiante.FechaCreacion
+                        },
+                        Actividades = c.Actividades
+                            .OrderBy(a => a.Numero)
+                            .Select(a => new ActividadDto
+                            {
+                                Id = a.Id,
+                                ComponenteId = a.ComponenteId,
+                                Numero = a.Numero,
+                                Descripcion = a.Descripcion,
+                                Horas = a.Horas
+                            })
+                            .ToList(),
+                        ProductosEsperados = c.ProductosEsperados
+                            .Select(pe => new ProductoEsperadoDto
+                            {
+                                Id = pe.Id,
+                                ComponenteId = pe.ComponenteId,
+                                Descripcion = pe.Descripcion
+                            })
+                            .ToList()
+                    })
+                    .ToList();
+            }
+
+            // 4.2. Mapear informacion de aprobacion cuando exista
+            if (propuesta.AprobacionCpgic != null)
+            {
+                detalle.ResolucionCpgic = propuesta.AprobacionCpgic.Resolucion;
+                detalle.MiembroCpgic = propuesta.AprobacionCpgic.PresidenteCpgic;
+                detalle.FechaAprobacion = propuesta.AprobacionCpgic.FechaAprobacion;
+                detalle.EstadoAprobacion = propuesta.AprobacionCpgic.EstadoAprobacion;
+            }
+
             // 5. Obtener observaciones
             var observaciones = await _observacionesRepository.GetByPropuestaIdAsync(propuestaId);
             if (observaciones != null && observaciones.Any())
@@ -110,23 +173,31 @@ namespace TesisTIC.Application.Services
                 detalle.UltimaObservacion = detalle.Observaciones.FirstOrDefault()?.FechaObservacion;
             }
 
-            // 6. Obtener histórico de estados
-            var historial = await _historialRepository.GetByPropuestaIdAsync(propuestaId);
-            if (historial != null && historial.Any())
+            // 6. Obtener historico de estados si la tabla existe en la base actual
+            try
             {
-                detalle.Historial = historial
-                    .Select(h => new HistorialEstadoDto
-                    {
-                        Id = h.Id,
-                        EstadoAnterior = h.EstadoAnterior,
-                        EstadoNuevo = h.EstadoNuevo,
-                        Motivo = h.Motivo,
-                        RealizadoPor = h.RealizadoPor,
-                        FechaCambio = h.FechaCambio
-                    })
-                    .ToList();
+                var historial = await _historialRepository.GetByPropuestaIdAsync(propuestaId);
+                if (historial != null && historial.Any())
+                {
+                    detalle.Historial = historial
+                        .Select(h => new HistorialEstadoDto
+                        {
+                            Id = h.Id,
+                            EstadoAnterior = h.EstadoAnterior,
+                            EstadoNuevo = h.EstadoNuevo,
+                            Motivo = h.Motivo,
+                            RealizadoPor = h.RealizadoPor,
+                            FechaCambio = h.FechaCambio
+                        })
+                        .ToList();
 
-                detalle.TotalCambiosEstado = detalle.Historial.Count;
+                    detalle.TotalCambiosEstado = detalle.Historial.Count;
+                }
+            }
+            catch
+            {
+                detalle.Historial = new List<HistorialEstadoDto>();
+                detalle.TotalCambiosEstado = 0;
             }
 
             // 7. Calcular permisos de acciones según estado

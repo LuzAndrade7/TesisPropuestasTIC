@@ -1,8 +1,32 @@
-<div class="app-container">
-  <header class="app-header">
-    <h1>Sistema de Gestión de Propuestas TIC - EPN</h1>
+<!-- Contenedor principal de la aplicacion -->
+<div class="app-shell">
+  <!-- Header institucional segun prototipo F_AA_233A -->
+  <header class="app-header" role="banner">
+    <!-- Bloque izquierdo con acento dorado y textos institucionales -->
+    <section class="app-header__brand" aria-label="Modulo actual">
+      <!-- Barra vertical dorada del prototipo -->
+      <span class="app-header__accent" aria-hidden="true"></span>
+
+      <!-- Titulos del modulo visible -->
+      <div class="app-header__copy">
+        <h1 class="app-header__title">{{ tituloInstitucional }}</h1>
+        <p class="app-header__subtitle">{{ subtituloModulo }}</p>
+      </div>
+    </section>
+
+    <!-- Bloque derecho con docente activo e iniciales -->
+    <section class="app-header__profile" aria-label="Profesor activo">
+      <!-- Nombre del docente obtenido desde el backend -->
+      <span class="app-header__teacher">{{ nombreDocente() }}</span>
+
+      <!-- Avatar temporal con iniciales del docente -->
+      <span class="app-header__avatar" aria-label="Iniciales del profesor">
+        {{ inicialesDocente() }}
+      </span>
+    </section>
   </header>
-  
+
+  <!-- Area donde se renderizan las rutas de Angular -->
   <main class="app-main">
     <router-outlet></router-outlet>
   </main>

@@ -25,7 +25,6 @@
 
     <!-- AutoMapper para mapeos DTO -->
     <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 
     <!-- Logging -->
     <PackageReference Include="Serilog" Version="3.1.1" />

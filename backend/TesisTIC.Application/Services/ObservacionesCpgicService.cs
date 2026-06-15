@@ -49,7 +49,7 @@ public class ObservacionesCpgicService : IObservacionesCpgicService
             PropuestaId = dto.PropuestaId,
             Observacion = dto.Observacion.Trim(),
             RealizadoPor = dto.RealizadoPor?.Trim(),
-            FechaObservacion = DateTime.UtcNow
+            FechaObservacion = FechaEcuador.Ahora()
         };
 
         var creada = await _repository.CreateAsync(observacion);
@@ -59,7 +59,7 @@ public class ObservacionesCpgicService : IObservacionesCpgicService
         if (propuesta.Estado == "PENDIENTE")
         {
             propuesta.Estado = "OBSERVADA";
-            propuesta.FechaActualizacion = DateTime.UtcNow;
+            propuesta.FechaActualizacion = FechaEcuador.Ahora();
             await _propuestaRepository.UpdateAsync(propuesta);
         }
 
@@ -123,7 +123,7 @@ public class ObservacionesCpgicService : IObservacionesCpgicService
         if (eliminadas > 0 && propuesta.Estado == "OBSERVADA")
         {
             propuesta.Estado = "PENDIENTE";
-            propuesta.FechaActualizacion = DateTime.UtcNow;
+            propuesta.FechaActualizacion = FechaEcuador.Ahora();
             await _propuestaRepository.UpdateAsync(propuesta);
             return true;
         }

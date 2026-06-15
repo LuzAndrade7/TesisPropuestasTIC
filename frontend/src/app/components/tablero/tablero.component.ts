@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -7,14 +7,14 @@ import { PropuestaResumen, EstadisticasTablero } from '../../models/tablero.mode
 
 /**
  * T05: Componente Tablero - Visualizar propuestas (HU02)
- * Ubicación: src/app/components/tablero/tablero.component.ts
+ * UbicaciÃ³n: src/app/components/tablero/tablero.component.ts
  * 
  * Funcionalidades:
  * - Mostrar tabla de propuestas
  * - Filtrar por estado
  * - Mostrar badges con colores por estado
  * - Botones para ver/editar/eliminar
- * - Estadísticas por estado
+ * - EstadÃ­sticas por estado
  */
 @Component({
   selector: 'app-tablero',
@@ -40,6 +40,8 @@ export class TableroComponent implements OnInit, OnDestroy {
   cargando = false;
   mensaje = '';
   estadoActivo: string | null = null;
+  mostrarModalEliminar = false;
+  propuestaAEliminar: PropuestaResumen | null = null;
 
   // Estados disponibles
   estados = ['BORRADOR', 'PENDIENTE', 'OBSERVADA', 'APROBADA', 'RECHAZADA'];
@@ -53,7 +55,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('✅ T05: Componente Tablero iniciado');
+    console.log(' T05: Componente Tablero iniciado');
     this.cargarPropuestas();
   }
 
@@ -69,13 +71,13 @@ export class TableroComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.mensaje = '';
     
-    console.log('✅ T06: Cargando propuestas del API...');
+    console.log(' T06: Cargando propuestas del API...');
     
     this.propuestaService.obtenerPropuestas()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (propuestas) => {
-          console.log('✅ T06: Propuestas recibidas:', propuestas.length);
+          console.log(' T06: Propuestas recibidas:', propuestas.length);
           
           // Asegurar que las fechas sean Date objects
           this.propuestas = propuestas.map(p => ({
@@ -91,11 +93,11 @@ export class TableroComponent implements OnInit, OnDestroy {
           this.cargando = false;
 
           if (this.propuestas.length === 0) {
-            this.mensaje = 'No hay propuestas aún. Crea una nueva propuesta para comenzar.';
+            this.mensaje = 'No hay propuestas aÃºn. Crea una nueva propuesta para comenzar.';
           }
         },
         error: (error) => {
-          console.error('❌ T06: Error cargando propuestas:', error);
+          console.error(' T06: Error cargando propuestas:', error);
           this.mensaje = 'Error al cargar propuestas del servidor';
           this.cargando = false;
         }
@@ -103,7 +105,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * T05: Calcular estadísticas por estado
+   * T05: Calcular estadÃ­sticas por estado
    */
   private calcularEstadisticas(): void {
     this.estadisticas = {
@@ -121,7 +123,7 @@ export class TableroComponent implements OnInit, OnDestroy {
    * Si estado es null, mostrar todas
    */
   filtrarPorEstado(estado: string | null): void {
-    console.log('✅ T05: Filtrando por estado:', estado || 'TODAS');
+    console.log(' T05: Filtrando por estado:', estado || 'TODAS');
     
     this.estadoActivo = estado;
     
@@ -155,6 +157,17 @@ export class TableroComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * T05: Obtener clase visual del filtro por estado.
+   */
+  obtenerClaseFiltro(estado: string | null): string {
+    if (estado === null) {
+      return 'stat-btn--todos';
+    }
+
+    return `stat-btn--${estado.toLowerCase()}`;
+  }
+
+  /**
    * T05: Obtener etiqueta legible del estado
    */
   obtenerEtiquetaEstado(estado: string): string {
@@ -169,7 +182,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * T05: Obtener número en botón estadísticas
+   * T05: Obtener nÃºmero en botÃ³n estadÃ­sticas
    */
   obtenerNumeroEstado(estado: string): number {
     switch (estado) {
@@ -187,38 +200,91 @@ export class TableroComponent implements OnInit, OnDestroy {
    * HU06 T19: Navega a la vista detalle completo
    */
   verDetalle(id: number): void {
-    console.log('✅ HU06 T19: Ver detalle propuesta:', id);
+    console.log(' HU06 T19: Ver detalle propuesta:', id);
     this.router.navigate(['/propuestas', id, 'detalle']);
+  }
+
+  /**
+   * T05: Indica si la propuesta puede editarse segun su estado.
+   */
+  puedeEditar(estado: string): boolean {
+    return estado === 'BORRADOR' || estado === 'OBSERVADA';
+  }
+
+  /**
+   * HU07: Indica si la propuesta puede asignar estudiantes segun su estado.
+   */
+  puedeAsignarEstudiantes(estado: string): boolean {
+    return estado === 'PENDIENTE' || estado === 'APROBADA';
+  }
+
+  /**
+   * T05: Indica si la propuesta puede eliminarse segun su estado.
+   */
+  puedeEliminar(estado: string): boolean {
+    return estado === 'BORRADOR';
   }
 
   /**
    * T05: Editar propuesta
    */
   editarPropuesta(id: number): void {
-    console.log('✅ T05: Editar propuesta:', id);
+    console.log(' T05: Editar propuesta:', id);
     this.router.navigate(['/propuestas', id, 'editar']);
+  }
+
+  /**
+   * HU07: Asignar estudiantes a propuesta
+   */
+  asignarEstudiantes(id: number): void {
+    console.log(' HU07: Asignar estudiantes a propuesta:', id);
+    this.router.navigate(['/propuestas', id, 'asignar-estudiantes']);
   }
 
   /**
    * T05: Eliminar propuesta
    */
   eliminarPropuesta(id: number): void {
-    if (!confirm('¿Estás seguro que deseas eliminar esta propuesta?')) {
+    const propuesta = this.propuestas.find(item => item.id === id) || null;
+
+    if (!propuesta) {
       return;
     }
 
-    console.log('✅ T05: Eliminando propuesta:', id);
-    
+    this.propuestaAEliminar = propuesta;
+    this.mostrarModalEliminar = true;
+  }
+
+  /**
+   * Cierra el modal de eliminacion de propuesta.
+   */
+  cancelarEliminacion(): void {
+    this.mostrarModalEliminar = false;
+    this.propuestaAEliminar = null;
+  }
+
+  /**
+   * Confirma la eliminacion definitiva de una propuesta.
+   */
+  confirmarEliminacion(): void {
+    if (!this.propuestaAEliminar) {
+      return;
+    }
+
+    const id = this.propuestaAEliminar.id;
+    console.log(' T05: Eliminando propuesta:', id);
+
     this.propuestaService.eliminarPropuesta(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('✅ T05: Propuesta eliminada');
-          // Recargar tabla
+          console.log(' T05: Propuesta eliminada');
+          this.cancelarEliminacion();
           this.cargarPropuestas();
         },
         error: (error) => {
-          console.error('❌ T05: Error eliminando propuesta:', error);
+          console.error(' T05: Error eliminando propuesta:', error);
+          this.cancelarEliminacion();
           alert('Error al eliminar la propuesta: ' + (error.message || 'Error desconocido'));
         }
       });
@@ -228,7 +294,7 @@ export class TableroComponent implements OnInit, OnDestroy {
    * T05: Ir a crear nueva propuesta
    */
   crearNuevaPropuesta(): void {
-    console.log('✅ T05: Ir a crear nueva propuesta');
+    console.log(' T05: Ir a crear nueva propuesta');
     this.router.navigate(['/propuestas/nueva']);
   }
 
@@ -244,3 +310,4 @@ export class TableroComponent implements OnInit, OnDestroy {
     return `${dia}/${mes}/${anio}`;
   }
 }
+

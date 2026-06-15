@@ -41,6 +41,28 @@ export interface Propuesta {
   fechaEnvioRevision?: Date;
   profesor?: Docente;
   asignaturas: Asignatura[];
+  componentes?: ComponentePropuesta[];
+}
+
+export interface ActividadPropuesta {
+  id?: number;
+  numero: number;
+  descripcion: string;
+  horas: number;
+}
+
+export interface ProductoEsperadoPropuesta {
+  id?: number;
+  descripcion: string;
+}
+
+export interface ComponentePropuesta {
+  id?: number;
+  nombre?: string;
+  descripcion: string;
+  orden: number;
+  actividades: ActividadPropuesta[];
+  productosEsperados: ProductoEsperadoPropuesta[];
 }
 
 /**
@@ -55,6 +77,7 @@ export interface CreatePropuestaRequest {
   objetivo: string;
   alcance: string;
   asignaturaIds?: number[];
+  componentes?: ComponentePropuesta[];
 }
 
 /**
@@ -67,6 +90,7 @@ export interface UpdatePropuestaRequest {
   objetivo?: string;
   alcance?: string;
   asignaturaIds?: number[];
+  componentes?: ComponentePropuesta[];
 }
 
 /**

@@ -76,6 +76,15 @@ namespace TesisTIC.Application.DTOs
         // Asignaturas Relacionadas
         public List<AsignaturaDetalleDto> Asignaturas { get; set; } = new();
 
+        // Módulos o componentes del proyecto
+        public List<ComponenteDto> Componentes { get; set; } = new();
+
+        // Datos de aprobación CPGIC
+        public string? ResolucionCpgic { get; set; }
+        public string? MiembroCpgic { get; set; }
+        public DateTime? FechaAprobacion { get; set; }
+        public string? EstadoAprobacion { get; set; }
+
         // Observaciones CPGIC (si las hay)
         public List<ObservacionesCpgicResumidaDto> Observaciones { get; set; } = new();
 

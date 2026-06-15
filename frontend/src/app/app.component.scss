@@ -1,11 +1,126 @@
-/* App Component Styles */
+/* Variables locales del header institucional */
+$navy: #0e2240;
+$gold: #f3bd46;
+$blue: #77a4dc;
+$white: #ffffff;
 
 :host {
   display: block;
 }
 
-.container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+.app-shell {
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+.app-header {
+  align-items: center;
+  background: $navy;
+  color: $white;
+  display: flex;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 10px 24px;
+  width: 100%;
+
+  &__brand {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  &__accent {
+    background: $gold;
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+    height: 24px;
+    width: 4px;
+  }
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    color: $white;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.15;
+    margin: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  &__subtitle {
+    color: $blue;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.1;
+    margin: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  &__profile {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 12px;
+    margin-left: 20px;
+  }
+
+  &__teacher {
+    color: rgba($white, 0.82);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  &__avatar {
+    align-items: center;
+    background: $gold;
+    border-radius: 50%;
+    color: $navy;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    height: 32px;
+    justify-content: center;
+    line-height: 1;
+    text-transform: uppercase;
+    width: 32px;
+  }
+}
+
+.app-main {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+
+    &__title,
+    &__subtitle {
+      white-space: normal;
+    }
+
+    &__profile {
+      justify-content: flex-end;
+      margin-left: 0;
+      width: 100%;
+    }
+  }
 }

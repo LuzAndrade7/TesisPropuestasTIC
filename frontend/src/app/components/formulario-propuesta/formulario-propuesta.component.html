@@ -1,377 +1,418 @@
-<!--
-T02: Template del Formulario de Propuesta
-Ubicación: src/app/components/formulario-propuesta/formulario-propuesta.component.html
+﻿<!-- Contenedor principal del formulario F_AA_233A. -->
+<main class="propuesta-form">
+  <!-- Encabezado del formulario y acciones principales. -->
+  <section class="propuesta-form__hero">
+    <span class="propuesta-form__marca"></span>
+    <h1 class="propuesta-form__titulo">{{ esNuevo() ? 'Nueva propuesta' : 'Editar propuesta' }}</h1>
 
-Estructura:
-- Título
-- Alertas (error/éxito)
-- Formulario con validaciones
-- Botones (Guardar borrador, Enviar, Cancelar)
--->
+    <!-- Botones superiores del flujo del docente. -->
+    <div class="propuesta-form__acciones-superiores">
+      <button type="button" class="propuesta-form__btn propuesta-form__btn--gold" (click)="guardarBorrador()" [disabled]="guardando || enviando || formulario.disabled">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Z"/><path d="M8 4v6h8"/><path d="M8 17h8"/></svg>
+        <span>{{ guardando ? 'Guardando...' : 'Guardar borrador' }}</span>
+      </button>
 
-<div class="contenedor-formulario">
-  <div class="cabecera">
-    <h2>{{ esNuevo() ? 'Nueva Propuesta TIC' : 'Editar Propuesta TIC' }}</h2>
-    <p class="subtitulo">Registra tu propuesta para la Escuela Politécnica Nacional</p>
-  </div>
+      <button type="button" class="propuesta-form__btn propuesta-form__btn--navy" (click)="enviarPropuesta()" [disabled]="formulario.invalid || guardando || enviando || formulario.disabled">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+        <span>{{ enviando ? 'Enviando...' : 'Enviar propuesta' }}</span>
+      </button>
 
-  <!-- Mensajes de error -->
-  <div *ngIf="mensajeError" class="alerta alerta-error">
-    <span class="icono">✗</span>
-    <span class="texto">{{ mensajeError }}</span>
-  </div>
-
-  <!-- Mensajes de éxito -->
-  <div *ngIf="mensajeExito" class="alerta alerta-exito">
-    <span class="icono">✓</span>
-    <span class="texto">{{ mensajeExito }}</span>
-  </div>
-
-  <!-- HU05 T15: Advertencia si no se puede editar -->
-  <div *ngIf="noEditable" class="alerta alerta-no-editable">
-    <span class="icono">🔒</span>
-    <span class="texto">
-      Esta propuesta está en estado <strong>{{ estadoPropuesta }}</strong> y no se puede editar. 
-      Solo se pueden editar propuestas en estado BORRADOR u OBSERVADA.
-    </span>
-  </div>
-
-  <!-- HU04 T11: Banner de observaciones CPGIC -->
-  <div *ngIf="tieneObservaciones" class="alerta alerta-observaciones">
-    <span class="icono">⚠️</span>
-    <span class="texto">
-      Esta propuesta tiene <strong>{{ observaciones.length }}</strong> observación(es) de CPGIC que requieren corrección
-    </span>
-  </div>
-
-  <!-- HU04 T11: Tarjetas de observaciones en diseño amarillo -->
-  <div *ngIf="tieneObservaciones" class="seccion-observaciones">
-    <h3 class="titulo-observaciones">📋 Observaciones CPGIC</h3>
-    
-    <div *ngFor="let obs of observaciones" class="tarjeta-observacion">
-      <div class="cabecera-obs">
-        <span class="realizador">{{ obs.realizadoPor || 'CPGIC' }}</span>
-        <span class="fecha">{{ obs.fechaObservacion | date: 'dd/MM/yyyy HH:mm' }}</span>
-      </div>
-      <div class="contenido-obs">
-        <p>{{ obs.observacion }}</p>
-      </div>
+      <button type="button" class="propuesta-form__btn propuesta-form__btn--light" (click)="cancelar()" [disabled]="guardando || enviando">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>
+        <span>Cancelar</span>
+      </button>
     </div>
-  </div>
+  </section>
 
-  <!-- Indicador de carga -->
-  <div *ngIf="cargando" class="indicador-carga">
-    <div class="spinner"></div>
+  <!-- Alertas operativas del formulario. -->
+  <section class="propuesta-form__mensajes" *ngIf="mensajeError || mensajeExito || noEditable || tieneObservaciones">
+    <div *ngIf="mensajeError" class="propuesta-form__alerta propuesta-form__alerta--error">{{ mensajeError }}</div>
+    <div *ngIf="mensajeExito" class="propuesta-form__alerta propuesta-form__alerta--exito">{{ mensajeExito }}</div>
+    <div *ngIf="noEditable" class="propuesta-form__alerta propuesta-form__alerta--obs">
+      Esta propuesta está en estado <strong>{{ estadoPropuesta }}</strong> y no se puede editar.
+    </div>
+    <div *ngIf="tieneObservaciones" class="propuesta-form__alerta propuesta-form__alerta--obs">
+      Esta propuesta tiene <strong>{{ observaciones.length }}</strong> observación(es) de CPGIC que requieren corrección.
+    </div>
+  </section>
+
+    <!-- Indicador mientras se cargan catálogos o propuesta existente. -->
+  <section *ngIf="cargando" class="propuesta-form__carga">
+    <div class="propuesta-form__spinner"></div>
     <p>Cargando datos...</p>
-  </div>
+  </section>
 
-  <!-- Formulario -->
-  <form [formGroup]="formulario" class="formulario" *ngIf="!cargando">
-    
-    <!-- Sección 1: Información Básica -->
-    <fieldset class="seccion">
-      <legend>Información Básica</legend>
+  <!-- Formulario reactivo principal. -->
+  <form [formGroup]="formulario" class="propuesta-form__documento" *ngIf="!cargando">
+    <!-- Etiquetas institucionales fijas del formulario. -->
+    <div class="propuesta-form__chips">
+      <span>Facultad de Ingeniería de Sistemas</span>
+      <span>Ingeniería de Software</span>
+    </div>
 
-      <!-- Nombre del Proyecto -->
-      <div class="grupo-campo">
-        <label for="nombreProyecto" class="etiqueta">
-          Nombre del Proyecto *
-          <span class="requerido">(mínimo 10 caracteres, máximo 250)</span>
+    <!-- Aviso principal para correcciÃ³n de propuestas observadas. -->
+    <aside *ngIf="estadoPropuesta === 'OBSERVADA' && tieneObservaciones" class="propuesta-form__aviso-observada">
+      <strong>Esta propuesta tiene observaciones del director</strong>
+      <span>Revise los recuadros amarillos en cada sección y corrija lo indicado antes de reenviar.</span>
+    </aside>
+
+    <!-- Sección de datos generales. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Datos generales</h2>
+
+      <div class="propuesta-form__grid">
+        <label class="propuesta-form__campo">
+          <span>Unidad académica</span>
+          <input value="Facultad de Ingeniería de Sistemas" disabled>
         </label>
-        <input
-          type="text"
-          id="nombreProyecto"
-          formControlName="nombreProyecto"
-          class="campo"
-          [class.campo-invalido]="campoInvalido('nombreProyecto')"
-          placeholder="Ej: Sistema de Gestión de Propuestas TIC"
-          maxlength="250">
-        <div *ngIf="campoInvalido('nombreProyecto')" class="error-mensaje">
-          {{ obtenerErrorCampo('nombreProyecto') }}
+
+        <label class="propuesta-form__campo">
+          <span>Carrera</span>
+          <input value="Ingeniería de Software" disabled>
+        </label>
+
+        <label class="propuesta-form__campo propuesta-form__campo--wide">
+          <span>Proyecto <b>*</b></span>
+          <input formControlName="nombreProyecto" [class.is-invalid]="campoInvalido('nombreProyecto')" maxlength="250" placeholder="Nombre del proyecto de titulación">
+          <small *ngIf="campoInvalido('nombreProyecto')">{{ obtenerErrorCampo('nombreProyecto') }}</small>
+        </label>
+
+        <label class="propuesta-form__campo propuesta-form__campo--small">
+          <span>N° de participantes <b>*</b></span>
+          <input type="number" formControlName="numeroParticipantes" min="1" max="5" [class.is-invalid]="campoInvalido('numeroParticipantes')" placeholder="Ej: 3">
+          <small *ngIf="campoInvalido('numeroParticipantes')">{{ obtenerErrorCampo('numeroParticipantes') }}</small>
+        </label>
+
+        <label class="propuesta-form__campo">
+          <span>Departamento</span>
+          <input value="Departamento de Informática y Ciencias de la Computación" disabled>
+        </label>
+
+        <label class="propuesta-form__campo">
+          <span>Línea de investigación</span>
+          <input value="Ingeniería de Software" disabled>
+        </label>
+
+        <!-- Selector desplegable de asignaturas. -->
+        <div class="propuesta-form__campo propuesta-form__campo--wide">
+          <span>Asignaturas <b>*</b></span>
+          <div class="propuesta-form__asignaturas">
+            <div class="propuesta-form__asignaturas-elegidas" *ngIf="asignaturasSeleccionadas.length">
+              <span *ngFor="let asignatura of asignaturasSeleccionadas" class="propuesta-form__chip-asignatura">
+                <strong>{{ texto(asignatura.codigo) }}</strong>
+                {{ texto(asignatura.nombre) }}
+                <button type="button" (click)="toggleAsignatura(asignatura.id, false)" [disabled]="formulario.disabled" title="Quitar asignatura">×</button>
+              </span>
+            </div>
+
+            <button type="button" class="propuesta-form__select-trigger" (click)="toggleMenuAsignaturas()" [disabled]="formulario.disabled">
+              <span>{{ resumenAsignaturas }}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            <div class="propuesta-form__select-menu" *ngIf="menuAsignaturasAbierto">
+              <div class="propuesta-form__buscador-asignaturas">
+                <input
+                  type="search"
+                  [value]="busquedaAsignaturas"
+                  (input)="buscarAsignaturas($any($event).target.value)"
+                  placeholder="Buscar por código o nombre"
+                  autocomplete="off">
+                <button
+                  type="button"
+                  *ngIf="busquedaAsignaturas"
+                  (click)="limpiarBusquedaAsignaturas()"
+                  title="Limpiar búsqueda"
+                  aria-label="Limpiar búsqueda de asignaturas">
+                  ×
+                </button>
+              </div>
+
+              <label *ngFor="let asignatura of asignaturasFiltradas" class="propuesta-form__select-item" [class.is-selected]="asignaturaSeleccionada(asignatura.id)">
+                <input type="checkbox" [checked]="asignaturaSeleccionada(asignatura.id)" (change)="toggleAsignatura(asignatura.id, $any($event).target.checked)">
+                <span><strong>{{ texto(asignatura.codigo) }}</strong>{{ texto(asignatura.nombre) }}</span>
+              </label>
+              <p class="propuesta-form__sin-resultados" *ngIf="!asignaturasFiltradas.length">
+                No se encontraron asignaturas.
+              </p>
+            </div>
+          </div>
+          <small *ngIf="campoInvalido('asignaturaIds')">{{ obtenerErrorCampo('asignaturaIds') }}</small>
         </div>
-        <div class="contador-caracteres">
-          {{ formulario.get('nombreProyecto')?.value?.length || 0 }} / 250 caracteres
-        </div>
+
+        <label class="propuesta-form__campo propuesta-form__campo--wide">
+          <span>Profesor</span>
+          <input class="propuesta-form__readonly" [value]="nombreDocenteCompletoSeleccionado" readonly>
+          <small *ngIf="campoInvalido('profesorId')">{{ obtenerErrorCampo('profesorId') }}</small>
+        </label>
       </div>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('datos')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
 
-      <!-- Número de Participantes -->
-      <div class="grupo-campo">
-        <label for="numeroParticipantes" class="etiqueta">
-          Número de Participantes *
-          <span class="requerido">(máximo 5 estudiantes)</span>
-        </label>
-        <input
-          type="number"
-          id="numeroParticipantes"
-          formControlName="numeroParticipantes"
-          class="campo"
-          [class.campo-invalido]="campoInvalido('numeroParticipantes')"
-          min="1"
-          max="5">
-        <div *ngIf="campoInvalido('numeroParticipantes')" class="error-mensaje">
-          {{ obtenerErrorCampo('numeroParticipantes') }}
+    <!-- Sección de descripción del proyecto. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Descripción del proyecto <b>*</b></h2>
+      <div class="propuesta-form__editor">
+        <div class="propuesta-form__toolbar">
+          <button type="button" (click)="aplicarFormatoCampo('descripcion', 'negrita', descripcionTexto)" title="Negrita"><strong>N</strong></button>
+          <button type="button" (click)="aplicarFormatoCampo('descripcion', 'cursiva', descripcionTexto)" title="Cursiva"><em>K</em></button>
+          <button type="button" (click)="aplicarFormatoCampo('descripcion', 'numerada', descripcionTexto)" title="Lista numerada">1.</button>
+          <button type="button" (click)="aplicarFormatoCampo('descripcion', 'vineta', descripcionTexto)" title="Viñeta">•</button>
         </div>
+        <textarea #descripcionTexto formControlName="descripcion" (keydown)="manejarEnterCampo($event, 'descripcion', descripcionTexto)" [class.is-invalid]="campoInvalido('descripcion')" placeholder="Describa la problemática actual y la solución propuesta..."></textarea>
       </div>
+      <small *ngIf="campoInvalido('descripcion')" class="propuesta-form__error">{{ obtenerErrorCampo('descripcion') }}</small>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('descripcion')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
 
-      <!-- Profesor -->
-      <div class="grupo-campo">
-        <label for="profesorId" class="etiqueta">
-          Profesor Proponente *
-        </label>
-        <select
-          id="profesorId"
-          formControlName="profesorId"
-          class="campo"
-          [class.campo-invalido]="campoInvalido('profesorId')">
-          <option *ngFor="let docente of docentes" [value]="docente.id" [selected]="docente.id === 1">
-            {{ docente.nombres }} {{ docente.apellidos }}
-            <span *ngIf="docente.tituloAcademico"> ({{ docente.tituloAcademico }})</span>
-          </option>
-        </select>
-        <div *ngIf="campoInvalido('profesorId')" class="error-mensaje">
-          {{ obtenerErrorCampo('profesorId') }}
+    <!-- Sección de objetivo del proyecto. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Objetivo del proyecto <b>*</b></h2>
+      <div class="propuesta-form__editor">
+        <div class="propuesta-form__toolbar">
+          <button type="button" (click)="aplicarFormatoCampo('objetivo', 'negrita', objetivoTexto)" title="Negrita"><strong>N</strong></button>
+          <button type="button" (click)="aplicarFormatoCampo('objetivo', 'cursiva', objetivoTexto)" title="Cursiva"><em>K</em></button>
+          <button type="button" (click)="aplicarFormatoCampo('objetivo', 'numerada', objetivoTexto)" title="Lista numerada">1.</button>
+          <button type="button" (click)="aplicarFormatoCampo('objetivo', 'vineta', objetivoTexto)" title="Viñeta">•</button>
         </div>
+        <textarea #objetivoTexto formControlName="objetivo" (keydown)="manejarEnterCampo($event, 'objetivo', objetivoTexto)" [class.is-invalid]="campoInvalido('objetivo')" placeholder="Objetivo principal del proyecto..."></textarea>
       </div>
+      <small *ngIf="campoInvalido('objetivo')" class="propuesta-form__error">{{ obtenerErrorCampo('objetivo') }}</small>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('objetivo')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
 
-    </fieldset>
-
-    <!-- Sección 2: Descripción Detallada -->
-    <fieldset class="seccion">
-      <legend>Descripción Detallada</legend>
-
-      <!-- Descripción -->
-      <div class="grupo-campo">
-        <label for="descripcion" class="etiqueta">
-          Descripción del Proyecto *
-          <span class="requerido">(mínimo 20 caracteres)</span>
-        </label>
-        <textarea
-          id="descripcion"
-          formControlName="descripcion"
-          class="campo campo-textarea"
-          [class.campo-invalido]="campoInvalido('descripcion')"
-          placeholder="Describe brevemente tu propuesta..."
-          rows="4"
-          maxlength="2000"></textarea>
-        <div *ngIf="campoInvalido('descripcion')" class="error-mensaje">
-          {{ obtenerErrorCampo('descripcion') }}
+    <!-- Sección de alcance del proyecto. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Alcance del proyecto <b>*</b></h2>
+      <div class="propuesta-form__editor">
+        <div class="propuesta-form__toolbar">
+          <button type="button" (click)="aplicarFormatoCampo('alcance', 'negrita', alcanceTexto)" title="Negrita"><strong>N</strong></button>
+          <button type="button" (click)="aplicarFormatoCampo('alcance', 'cursiva', alcanceTexto)" title="Cursiva"><em>K</em></button>
+          <button type="button" (click)="aplicarFormatoCampo('alcance', 'numerada', alcanceTexto)" title="Lista numerada">1.</button>
+          <button type="button" (click)="aplicarFormatoCampo('alcance', 'vineta', alcanceTexto)" title="Viñeta">•</button>
         </div>
-        <div class="contador-caracteres">
-          {{ formulario.get('descripcion')?.value?.length || 0 }} / 2000 caracteres
-        </div>
+        <textarea #alcanceTexto formControlName="alcance" (keydown)="manejarEnterCampo($event, 'alcance', alcanceTexto)" [class.is-invalid]="campoInvalido('alcance')" placeholder="Define el alcance del proyecto..."></textarea>
       </div>
+      <small *ngIf="campoInvalido('alcance')" class="propuesta-form__error">{{ obtenerErrorCampo('alcance') }}</small>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('alcance')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
 
-      <!-- Objetivo -->
-      <div class="grupo-campo">
-        <label for="objetivo" class="etiqueta">
-          Objetivo Principal *
-          <span class="requerido">(mínimo 20 caracteres)</span>
-        </label>
-        <textarea
-          id="objetivo"
-          formControlName="objetivo"
-          class="campo campo-textarea"
-          [class.campo-invalido]="campoInvalido('objetivo')"
-          placeholder="¿Cuál es el objetivo principal de tu propuesta?"
-          rows="4"
-          maxlength="2000"></textarea>
-        <div *ngIf="campoInvalido('objetivo')" class="error-mensaje">
-          {{ obtenerErrorCampo('objetivo') }}
+    <!-- Sección visual de componentes, actividades y productos. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Componentes, actividades y productos</h2>
+
+      <article *ngFor="let modulo of modulos; let i = index; trackBy: trackByIndex" class="propuesta-form__modulo">
+        <div class="propuesta-form__modulo-header">
+          <label>
+            <strong>Módulo {{ i + 1 }}:</strong>
+            <input [value]="modulo.nombre" (input)="actualizarModulo(i, 'nombre', $any($event).target.value)" placeholder="Nombre del módulo">
+          </label>
+          <button type="button" class="propuesta-form__btn propuesta-form__btn--red" (click)="eliminarModulo(i)" [disabled]="modulos.length === 1">Eliminar</button>
         </div>
-        <div class="contador-caracteres">
-          {{ formulario.get('objetivo')?.value?.length || 0 }} / 2000 caracteres
-        </div>
-      </div>
 
-      <!-- Alcance -->
-      <div class="grupo-campo">
-        <label for="alcance" class="etiqueta">
-          Alcance del Proyecto *
-          <span class="requerido">(mínimo 20 caracteres)</span>
-        </label>
-        <textarea
-          id="alcance"
-          formControlName="alcance"
-          class="campo campo-textarea"
-          [class.campo-invalido]="campoInvalido('alcance')"
-          placeholder="Define el alcance del proyecto..."
-          rows="4"
-          maxlength="2000"></textarea>
-        <div *ngIf="campoInvalido('alcance')" class="error-mensaje">
-          {{ obtenerErrorCampo('alcance') }}
-        </div>
-        <div class="contador-caracteres">
-          {{ formulario.get('alcance')?.value?.length || 0 }} / 2000 caracteres
-        </div>
-      </div>
-
-    </fieldset>
-
-    <!-- Sección 3: Asignaturas Relacionadas -->
-    <fieldset class="seccion">
-      <legend>Asignaturas Relacionadas</legend>
-
-      <div class="grupo-campo">
-        <label class="etiqueta">
-          Selecciona una o más asignaturas *
-        </label>
-        <div class="lista-asignaturas">
-          <div *ngFor="let asignatura of asignaturas" class="item-asignatura">
-            <input
-              type="checkbox"
-              [id]="'asignatura-' + asignatura.id"
-              [value]="asignatura.id"
-              (change)="toggleAsignatura(asignatura.id, $any($event).target.checked)"
-              [checked]="formulario.get('asignaturaIds')?.value?.includes(asignatura.id)">
-            <label [for]="'asignatura-' + asignatura.id" class="etiqueta-check">
-              <strong>{{ asignatura.codigo }}</strong> - {{ asignatura.nombre }}
-            </label>
+        <div class="propuesta-form__subbloque">
+          <h3>Descripción del módulo <b>*</b></h3>
+          <div class="propuesta-form__editor propuesta-form__editor--compact">
+            <div class="propuesta-form__toolbar">
+              <button type="button" (click)="aplicarFormatoModulo(i, 'descripcion', 'negrita', descripcionModulo)" title="Negrita"><strong>N</strong></button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'descripcion', 'cursiva', descripcionModulo)" title="Cursiva"><em>K</em></button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'descripcion', 'numerada', descripcionModulo)" title="Lista numerada">1.</button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'descripcion', 'vineta', descripcionModulo)" title="Viñeta">•</button>
+            </div>
+            <textarea #descripcionModulo [value]="modulo.descripcion" (input)="actualizarModulo(i, 'descripcion', $any($event).target.value)" (keydown)="manejarEnterModulo($event, i, 'descripcion', descripcionModulo)" placeholder="Describa los objetivos y alcance de este módulo..."></textarea>
           </div>
         </div>
-        <div *ngIf="campoInvalido('asignaturaIds')" class="error-mensaje">
-          {{ obtenerErrorCampo('asignaturaIds') }}
+
+        <div class="propuesta-form__subbloque">
+          <h3>Actividades específicas <b>*</b></h3>
+          <table class="propuesta-form__tabla">
+            <thead>
+              <tr><th>No.</th><th>Actividad</th><th>Horas</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let actividad of modulo.actividades; let j = index; trackBy: trackByIndex">
+                <td>{{ j + 1 }}</td>
+                <td><input [value]="actividad.nombre" (input)="actualizarActividad(i, j, 'nombre', $any($event).target.value)" placeholder="Nombre de la actividad"></td>
+                <td><input type="number" [value]="actividad.horas" (input)="actualizarActividad(i, j, 'horas', $any($event).target.value)" min="0"></td>
+                <td>
+                  <button type="button" class="propuesta-form__icon-btn propuesta-form__icon-btn--red" (click)="eliminarActividad(i, j)" [disabled]="modulo.actividades.length === 1" title="Eliminar actividad">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr class="propuesta-form__tabla-total">
+                <td colspan="2">Total</td>
+                <td>{{ totalHorasModulo(modulo) }}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="button" class="propuesta-form__btn-linea" (click)="agregarActividad(i)">Agregar actividad</button>
         </div>
-        <p class="ayuda-texto">
-          Selecciona las asignaturas a las que está relacionada esta propuesta
-        </p>
-      </div>
 
-    </fieldset>
+        <div class="propuesta-form__subbloque">
+          <h3>Producto(s) esperado(s) <b>*</b></h3>
+          <div class="propuesta-form__editor propuesta-form__editor--compact">
+            <div class="propuesta-form__toolbar">
+              <button type="button" (click)="aplicarFormatoModulo(i, 'productos', 'negrita', productosModulo)" title="Negrita"><strong>N</strong></button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'productos', 'cursiva', productosModulo)" title="Cursiva"><em>K</em></button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'productos', 'numerada', productosModulo)" title="Lista numerada">1.</button>
+              <button type="button" (click)="aplicarFormatoModulo(i, 'productos', 'vineta', productosModulo)" title="Viñeta">•</button>
+            </div>
+            <textarea #productosModulo [value]="modulo.productos" (input)="actualizarModulo(i, 'productos', $any($event).target.value)" (keydown)="manejarEnterModulo($event, i, 'productos', productosModulo)" placeholder="Describa los productos esperados..."></textarea>
+          </div>
+        </div>
 
-    <!-- Botones de acción -->
-    <div class="grupo-botones">
-      <button
-        type="button"
-        class="boton boton-secundario"
-        (click)="cancelar()"
-        [disabled]="guardando || enviando || formulario.disabled">
-        ✕ Cancelar
+        <label class="propuesta-form__campo propuesta-form__campo--student">
+          <span>Nombre del estudiante propuesto</span>
+          <input [value]="modulo.estudiante" (input)="actualizarModulo(i, 'estudiante', $any($event).target.value)" placeholder="Nombre completo del estudiante">
+        </label>
+      </article>
+
+      <button type="button" class="propuesta-form__btn-linea propuesta-form__btn-linea--left" (click)="agregarModulo()">Agregar módulo</button>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('componentes')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
+
+    <!-- Observaciones generales no clasificadas. -->
+    <section class="propuesta-form__seccion" *ngIf="observacionesPorSeccion('general').length">
+      <h2 class="propuesta-form__seccion-titulo">Observaciones generales</h2>
+      <ng-container *ngFor="let obs of observacionesPorSeccion('general')">
+        <article class="propuesta-form__observacion-inline">
+          <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+          <p>{{ textoObservacion(obs) }}</p>
+        </article>
+      </ng-container>
+    </section>
+
+    <!-- SecciÃ³n de recomendaciones y aprobaciones sin controles de firma. -->
+    <section class="propuesta-form__seccion">
+      <h2 class="propuesta-form__seccion-titulo">Recomendaciones y aprobaciones</h2>
+      <table class="propuesta-form__aprobaciones">
+        <tbody>
+          <tr>
+            <td>Presentado por:</td>
+            <td>
+              <strong>{{ nombreProfesorSeleccionado }}</strong><br>
+              <span>{{ tituloProfesorSeleccionado }}</span>
+              <div class="propuesta-form__firma-box"></div>
+            </td>
+          </tr>
+          <tr>
+            <td>Estudiantes propuestos:</td>
+            <td>
+              <ul class="propuesta-form__lista-estudiantes" *ngIf="estudiantesPropuestos.length; else sinEstudiantes">
+                <li *ngFor="let estudiante of estudiantesPropuestos">{{ estudiante }}</li>
+              </ul>
+              <ng-template #sinEstudiantes><span>(sin estudiantes asignados)</span></ng-template>
+            </td>
+          </tr>
+          <tr>
+            <td>Resolución de la CPGIC:</td>
+            <td><span>—</span></td>
+          </tr>
+          <tr>
+            <td>Presidente de la CPGIC:</td>
+            <td><span>—</span></td>
+          </tr>
+          <tr>
+            <td>Fecha de aprobación:</td>
+            <td><span>—</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Estado y reenvío de propuestas observadas. -->
+    <section *ngIf="estadoPropuesta !== 'BORRADOR'" class="propuesta-form__estado">
+      <strong>Estado actual:</strong> {{ estadoPropuesta }}
+    </section>
+
+    <section *ngIf="estadoPropuesta === 'OBSERVADA' && tieneObservaciones" class="propuesta-form__reenvio">
+      <button type="button" class="propuesta-form__btn propuesta-form__btn--gold" (click)="reenviarPropuesta()" [disabled]="reEnviando">
+        {{ reEnviando ? 'Reenviando...' : 'Reenviar propuesta corregida' }}
       </button>
-
-      <button
-        type="button"
-        class="boton boton-principal"
-        (click)="guardarBorrador()"
-        [disabled]="guardando || enviando || formulario.disabled"
-        [class.cargando]="guardando">
-        <span *ngIf="!guardando">💾 Guardar como Borrador</span>
-        <span *ngIf="guardando">Guardando...</span>
-      </button>
-
-      <!-- HU03 T08: Botón Enviar a Revisión mejorado -->
-      <button
-        type="button"
-        class="boton boton-exito"
-        (click)="enviarPropuesta()"
-        [disabled]="formulario.invalid || guardando || enviando || formulario.disabled"
-        [class.cargando]="enviando"
-        [title]="formulario.disabled ? 'Esta propuesta no puede editarse (está en revisión)' : 'Enviar propuesta a revisión'">
-        <span *ngIf="!enviando">📤 Enviar a Revisión</span>
-        <span *ngIf="enviando">Enviando...</span>
-      </button>
-    </div>
-
-    <!-- Estado de la propuesta (HU03 T09) -->
-    <div *ngIf="estadoPropuesta !== 'BORRADOR'" class="estado-propuesta">
-      <p><strong>Estado actual:</strong> {{ estadoPropuesta }}</p>
-      <p class="aviso">⚠️ Esta propuesta está en revisión y no puede editarse</p>
-    </div>
-
-    <!-- HU04 T12: Botón de Reenviar propuesta después de correcciones -->
-    <div *ngIf="estadoPropuesta === 'OBSERVADA' && tieneObservaciones" class="grupo-botones-reenvio">
-      <button
-        type="button"
-        class="boton boton-reenvio"
-        (click)="reenviarPropuesta()"
-        [disabled]="reEnviando"
-        [class.cargando]="reEnviando">
-        <span *ngIf="!reEnviando">📤 Reenviar Propuesta Corregida</span>
-        <span *ngIf="reEnviando">Reenviando...</span>
-      </button>
-      <p class="ayuda-reenvio">Al reenviar se limpiarán las observaciones y la propuesta volverá a estar en revisión</p>
-    </div>
-
+    </section>
   </form>
 
-  <!-- HU03 T08: Modal de confirmación para envío a revisión -->
+  <!-- Modal de confirmación para envío a revisión. -->
   <div *ngIf="mostrarModalConfirmacion" class="modal-overlay">
     <div class="modal-contenido">
-      <div class="modal-header">
-        <h3>Confirmar Envío a Revisión</h3>
-      </div>
-      
-      <div class="modal-body">
-        <p>¿Estás seguro de que deseas enviar esta propuesta a revisión?</p>
-        <p class="advertencia">
-          <strong>⚠️ Advertencia:</strong> Una vez enviada, no podrás editar los campos de la propuesta.
-        </p>
-        <div class="resumen-propuesta">
-          <p><strong>Proyecto:</strong> {{ formulario.get('nombreProyecto')?.value }}</p>
-          <p><strong>Participantes:</strong> {{ formulario.get('numeroParticipantes')?.value }}</p>
-          <p><strong>Asignaturas:</strong> {{ formulario.get('asignaturaIds')?.value?.length || 0 }} seleccionadas</p>
-        </div>
-      </div>
-
+      <h3>Confirmar envío a revisión</h3>
+      <p>¿Estás seguro de que deseas enviar esta propuesta a revisión?</p>
+      <p class="advertencia">Una vez enviada, no podrás editar los campos de la propuesta.</p>
       <div class="modal-footer">
-        <button
-          type="button"
-          class="boton boton-secundario"
-          (click)="cancelarEnvio()"
-          [disabled]="enviando">
-          ✕ Cancelar
-        </button>
-        
-        <button
-          type="button"
-          class="boton boton-exito"
-          (click)="confirmarEnvioRevision()"
-          [disabled]="enviando"
-          [class.cargando]="enviando">
-          <span *ngIf="!enviando">✓ Confirmar Envío</span>
-          <span *ngIf="enviando">Enviando...</span>
-        </button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--light" (click)="cancelarEnvio()" [disabled]="enviando">Cancelar</button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--navy" (click)="confirmarEnvioRevision()" [disabled]="enviando">{{ enviando ? 'Enviando...' : 'Confirmar envío' }}</button>
       </div>
     </div>
   </div>
 
-  <!-- HU04 T12: Modal de confirmación para reenvío después de observaciones -->
+  <!-- Modal de confirmación para reenvío. -->
   <div *ngIf="mostrarModalReenvio" class="modal-overlay">
     <div class="modal-contenido">
-      <div class="modal-header">
-        <h3>Confirmar Reenvío de Propuesta</h3>
-      </div>
-      
-      <div class="modal-body">
-        <p>¿Estás seguro de que deseas reenviar esta propuesta después de las correcciones?</p>
-        <p class="advertencia">
-          <strong>⚠️ Información:</strong> Las observaciones se limpiarán y la propuesta volverá a estar en revisión.
-        </p>
-        <div class="resumen-reenvio">
-          <p><strong>Observaciones a limpiar:</strong> {{ observaciones.length }}</p>
-          <p><strong>Estado actual:</strong> OBSERVADA → PENDIENTE</p>
-        </div>
-      </div>
-
+      <h3>Confirmar reenvío de propuesta</h3>
+      <p>¿Estás seguro de que deseas reenviar esta propuesta después de las correcciones?</p>
+      <p class="advertencia">Las observaciones se limpiarán y la propuesta volverá a estar en revisión.</p>
       <div class="modal-footer">
-        <button
-          type="button"
-          class="boton boton-secundario"
-          (click)="cancelarReenvio()"
-          [disabled]="reEnviando">
-          ✕ Cancelar
-        </button>
-        
-        <button
-          type="button"
-          class="boton boton-reenvio"
-          (click)="confirmarReenvio()"
-          [disabled]="reEnviando"
-          [class.cargando]="reEnviando">
-          <span *ngIf="!reEnviando">✓ Confirmar Reenvío</span>
-          <span *ngIf="reEnviando">Reenviando...</span>
-        </button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--light" (click)="cancelarReenvio()" [disabled]="reEnviando">Cancelar</button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--gold" (click)="confirmarReenvio()" [disabled]="reEnviando">{{ reEnviando ? 'Reenviando...' : 'Confirmar reenvío' }}</button>
       </div>
     </div>
   </div>
 
-</div>
+  <!-- Modal de cancelación de creación o edición. -->
+  <div *ngIf="mostrarModalCancelar" class="modal-overlay">
+    <div class="modal-contenido modal-contenido--centrado">
+      <div class="modal-icono modal-icono--warning">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg>
+      </div>
+      <h3>¿Cancelar y salir?</h3>
+      <p>Los datos ingresados no se guardarán. ¿Desea salir de todos modos?</p>
+      <div class="modal-footer modal-footer--centrado">
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--red" (click)="confirmarCancelar()">Sí, salir sin guardar</button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--gold" (click)="continuarEditando()">No, continuar editando</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de eliminación de elementos internos del formulario. -->
+  <div *ngIf="mostrarModalEliminarElemento" class="modal-overlay">
+    <div class="modal-contenido modal-contenido--centrado">
+      <div class="modal-icono modal-icono--danger">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+      </div>
+      <h3>Eliminar {{ tipoElementoEliminar === 'modulo' ? 'módulo' : 'actividad' }}</h3>
+      <p>Esta acción quitará el elemento del formulario. ¿Está seguro?</p>
+      <div class="modal-footer modal-footer--centrado">
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--red" (click)="confirmarEliminacionElemento()">Sí, eliminar definitivamente</button>
+        <button type="button" class="propuesta-form__btn propuesta-form__btn--light" (click)="cancelarEliminacionElemento()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</main>
+

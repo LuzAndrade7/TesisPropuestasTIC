@@ -22,6 +22,7 @@ namespace TesisTIC.Application.DTOs
     {
         public int PropuestaId { get; set; }
         public List<int> EstudianteIds { get; set; } = new();
+        public List<string> NombresEstudiante { get; set; } = new();
         public string? Motivo { get; set; }
         public string? RealizadoPor { get; set; }
     }

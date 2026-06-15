@@ -20,9 +20,17 @@ public class EstudianteRepository : GenericRepository<Estudiante>, IEstudianteRe
     /// </summary>
     public async Task<Estudiante?> GetByCorreoAsync(string correo)
     {
+        return await Task.FromResult<Estudiante?>(null);
+    }
+
+    /// <summary>
+    /// Obtiene un estudiante por nombre exacto
+    /// </summary>
+    public async Task<Estudiante?> GetByNombreEstudianteAsync(string nombreEstudiante)
+    {
+        var normalizado = nombreEstudiante.Trim().ToLower();
         return await _dbSet
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Correo == correo);
+            .FirstOrDefaultAsync(e => e.NombresEstudiante.ToLower() == normalizado);
     }
 
     /// <summary>
@@ -31,8 +39,7 @@ public class EstudianteRepository : GenericRepository<Estudiante>, IEstudianteRe
     public async Task<List<Estudiante>> GetAllAvailableAsync()
     {
         return await _dbSet
-            .OrderBy(e => e.Apellidos)
-            .ThenBy(e => e.Nombres)
+            .OrderBy(e => e.NombresEstudiante)
             .ToListAsync();
     }
 
@@ -43,11 +50,8 @@ public class EstudianteRepository : GenericRepository<Estudiante>, IEstudianteRe
     {
         var lowerSearch = searchTerm.ToLower();
         return await _dbSet
-            .Where(e => e.Nombres.ToLower().Contains(lowerSearch) ||
-                       e.Apellidos.ToLower().Contains(lowerSearch) ||
-                       (e.Correo != null && e.Correo.ToLower().Contains(lowerSearch)))
-            .OrderBy(e => e.Apellidos)
-            .ThenBy(e => e.Nombres)
+            .Where(e => e.NombresEstudiante.ToLower().Contains(lowerSearch))
+            .OrderBy(e => e.NombresEstudiante)
             .ToListAsync();
     }
 
@@ -58,8 +62,7 @@ public class EstudianteRepository : GenericRepository<Estudiante>, IEstudianteRe
     {
         return await _dbSet
             .Where(e => !e.PropuestaEstudiantes.Any(pe => pe.PropuestaId == propuestaId && pe.Estado == "ACTIVO"))
-            .OrderBy(e => e.Apellidos)
-            .ThenBy(e => e.Nombres)
+            .OrderBy(e => e.NombresEstudiante)
             .ToListAsync();
     }
 
@@ -70,8 +73,7 @@ public class EstudianteRepository : GenericRepository<Estudiante>, IEstudianteRe
     {
         return await _dbSet
             .Where(e => e.PropuestaEstudiantes.Any(pe => pe.PropuestaId == propuestaId && pe.Estado == "ACTIVO"))
-            .OrderBy(e => e.Apellidos)
-            .ThenBy(e => e.Nombres)
+            .OrderBy(e => e.NombresEstudiante)
             .ToListAsync();
     }
 }

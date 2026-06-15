@@ -20,6 +20,7 @@ public class PropuestaDto
     // Relaciones
     public DocenteDto? Profesor { get; set; }
     public List<AsignaturaDto> Asignaturas { get; set; } = new();
+    public List<ComponenteDto> Componentes { get; set; } = new();
 }
 
 /// <summary>
@@ -34,6 +35,7 @@ public class CreatePropuestaDto
     public string Objetivo { get; set; } = string.Empty;
     public string Alcance { get; set; } = string.Empty;
     public List<int>? AsignaturaIds { get; set; } = new();
+    public List<CreateComponenteConDetalleDto>? Componentes { get; set; } = new();
 }
 
 /// <summary>
@@ -47,6 +49,38 @@ public class UpdatePropuestaDto
     public string? Objetivo { get; set; }
     public string? Alcance { get; set; }
     public List<int>? AsignaturaIds { get; set; }
+    public List<CreateComponenteConDetalleDto>? Componentes { get; set; }
+}
+
+/// <summary>
+/// DTO para guardar un componente con sus actividades y productos desde el formulario de propuesta
+/// </summary>
+public class CreateComponenteConDetalleDto
+{
+    public string? Nombre { get; set; }
+    public string Descripcion { get; set; } = string.Empty;
+    public int Orden { get; set; }
+    public string? NombresEstudiante { get; set; }
+    public List<CreateActividadSimpleDto> Actividades { get; set; } = new();
+    public List<CreateProductoSimpleDto> ProductosEsperados { get; set; } = new();
+}
+
+/// <summary>
+/// DTO simple de actividad anidada en una propuesta
+/// </summary>
+public class CreateActividadSimpleDto
+{
+    public int Numero { get; set; }
+    public string Descripcion { get; set; } = string.Empty;
+    public int Horas { get; set; }
+}
+
+/// <summary>
+/// DTO simple de producto esperado anidado en una propuesta
+/// </summary>
+public class CreateProductoSimpleDto
+{
+    public string Descripcion { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -55,4 +89,12 @@ public class UpdatePropuestaDto
 public class UpdateEstadoPropuestaDto
 {
     public string Estado { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// DTO para solicitar una nueva revision de una propuesta que ya fue aprobada.
+/// </summary>
+public class SolicitarNuevaAprobacionDto
+{
+    public string Motivo { get; set; } = string.Empty;
 }

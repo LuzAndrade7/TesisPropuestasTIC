@@ -32,4 +32,9 @@ public interface IEstudianteRepository : IRepository<Estudiante>
     /// Obtiene un estudiante por correo
     /// </summary>
     Task<Estudiante?> GetByCorreoAsync(string correo);
+
+    /// <summary>
+    /// Obtiene un estudiante por su nombre completo normalizado
+    /// </summary>
+    Task<Estudiante?> GetByNombreEstudianteAsync(string nombreEstudiante);
 }

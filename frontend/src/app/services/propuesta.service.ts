@@ -84,7 +84,7 @@ export class PropuestaService {
    * @param propuesta Datos de la propuesta
    */
   crearPropuesta(propuesta: CreatePropuestaRequest): Observable<Propuesta> {
-    console.log('✅ T01: Creando propuesta:', propuesta);
+    console.log(' T01: Creando propuesta:', propuesta);
     return this.http.post<Propuesta>(this.apiUrl, propuesta)
       .pipe(
         catchError(this.handleError)
@@ -96,7 +96,7 @@ export class PropuestaService {
    * Similar a crear pero usado desde el formulario existente
    */
   guardarBorrador(propuesta: CreatePropuestaRequest): Observable<Propuesta> {
-    console.log('✅ T01: Guardando borrador:', propuesta);
+    console.log(' T01: Guardando borrador:', propuesta);
     return this.crearPropuesta(propuesta);
   }
 
@@ -104,7 +104,7 @@ export class PropuestaService {
    * T01: Actualizar propuesta existente
    */
   actualizarPropuesta(id: number, propuesta: UpdatePropuestaRequest): Observable<Propuesta> {
-    console.log('✅ T01: Actualizando propuesta', id, ':', propuesta);
+    console.log(' T01: Actualizando propuesta', id, ':', propuesta);
     return this.http.put<Propuesta>(`${this.apiUrl}/${id}`, propuesta)
       .pipe(
         catchError(this.handleError)
@@ -136,7 +136,7 @@ export class PropuestaService {
    * - Mínimo 1 asignatura
    */
   enviarARevision(id: number): Observable<Propuesta> {
-    console.log('✅ HU03 T08: Enviando propuesta', id, 'a revisión');
+    console.log(' HU03 T08: Enviando propuesta', id, 'a revisión');
     return this.http.post<Propuesta>(`${this.apiUrl}/${id}/enviar-revision`, {})
       .pipe(
         catchError(this.handleError)
@@ -188,7 +188,7 @@ export class PropuestaService {
                     `Error ${error.status}: ${error.statusText}`;
     }
 
-    console.error('❌ Error en propuesta.service:', errorMessage);
+    console.error(' Error en propuesta.service:', errorMessage);
     return throwError(() => ({
       message: errorMessage,
       statusCode: error.status
@@ -199,7 +199,7 @@ export class PropuestaService {
    * HU04 T11: Obtener observaciones de una propuesta
    */
   obtenerObservaciones(propuestaId: number): Observable<any[]> {
-    console.log('✅ HU04 T11: Obteniendo observaciones para propuesta', propuestaId);
+    console.log(' HU04 T11: Obteniendo observaciones para propuesta', propuestaId);
     return this.http.get<any[]>(`${environment.apiUrl}/observaciones/propuesta/${propuestaId}`)
       .pipe(
         catchError(this.handleError)
@@ -208,10 +208,10 @@ export class PropuestaService {
 
   /**
    * HU04 T12: Reenviar propuesta después de correcciones
-   * Limpia observaciones y cambia estado OBSERVADA → PENDIENTE
+   * Limpia observaciones y cambia estado OBSERVADA a PENDIENTE
    */
   reenviarDespuesDeObservaciones(id: number): Observable<Propuesta> {
-    console.log('✅ HU04 T12: Reenviando propuesta', id);
+    console.log(' HU04 T12: Reenviando propuesta', id);
     return this.http.post<Propuesta>(`${this.apiUrl}/${id}/reenviar-despues-observaciones`, {})
       .pipe(
         catchError(this.handleError)
@@ -225,7 +225,7 @@ export class PropuestaService {
    * Endpoint: GET /api/estudiantes
    */
   obtenerTodosEstudiantes(): Observable<any[]> {
-    console.log('✅ HU07 T22: Obteniendo todos los estudiantes');
+    console.log(' HU07 T22: Obteniendo todos los estudiantes');
     return this.http.get<any[]>(`${environment.apiUrl}/estudiantes`)
       .pipe(
         catchError(this.handleError)
@@ -237,7 +237,7 @@ export class PropuestaService {
    * Endpoint: GET /api/estudiantes/buscar?searchTerm=
    */
   buscarEstudiantes(termino: string): Observable<any[]> {
-    console.log('✅ HU07 T22: Buscando estudiantes:', termino);
+    console.log(' HU07 T22: Buscando estudiantes:', termino);
     return this.http.get<any[]>(`${environment.apiUrl}/estudiantes/buscar`, {
       params: { searchTerm: termino }
     })
@@ -251,7 +251,7 @@ export class PropuestaService {
    * Endpoint: GET /api/estudiantes/disponibles/{propuestaId}
    */
   obtenerEstudiantesDisponibles(propuestaId: number): Observable<any[]> {
-    console.log('✅ HU07 T22: Obteniendo estudiantes disponibles para propuesta', propuestaId);
+    console.log(' HU07 T22: Obteniendo estudiantes disponibles para propuesta', propuestaId);
     return this.http.get<any[]>(`${environment.apiUrl}/estudiantes/disponibles/${propuestaId}`)
       .pipe(
         catchError(this.handleError)
@@ -263,7 +263,7 @@ export class PropuestaService {
    * Endpoint: GET /api/estudiantes/asignados/{propuestaId}
    */
   obtenerEstudiantesAsignados(propuestaId: number): Observable<any[]> {
-    console.log('✅ HU07 T22: Obteniendo estudiantes asignados para propuesta', propuestaId);
+    console.log(' HU07 T22: Obteniendo estudiantes asignados para propuesta', propuestaId);
     return this.http.get<any[]>(`${environment.apiUrl}/estudiantes/asignados/${propuestaId}`)
       .pipe(
         catchError(this.handleError)
@@ -277,15 +277,31 @@ export class PropuestaService {
    * Validaciones:
    * - Máximo 5 estudiantes
    * - Solo APROBADA o PENDIENTE pueden asignar
-   * - Si cambios desde APROBADA → PENDIENTE
+   * - Si cambios desde APROBADA a PENDIENTE
    */
   asignarEstudiantes(propuestaId: number, estudianteIds: number[], motivo: string): Observable<any[]> {
-    console.log('✅ HU07 T20: Asignando estudiantes a propuesta', propuestaId);
+    console.log(' HU07 T20: Asignando estudiantes a propuesta', propuestaId);
     const payload = {
       estudianteIds: estudianteIds,
       motivo: motivo,
-      realizadoPor: 'usuario@example.com' // TODO: Obtener del contexto de usuario
+      realizadoPor: 'usuario@example.com'
     };
+    return this.http.post<any[]>(`${environment.apiUrl}/estudiantes/${propuestaId}/asignar`, payload)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * HU07: Asigna estudiantes creados desde nombres escritos en el formulario.
+   */
+  asignarEstudiantesPorNombre(propuestaId: number, nombresEstudiante: string[], motivo: string): Observable<any[]> {
+    const payload = {
+      nombresEstudiante,
+      motivo,
+      realizadoPor: 'usuario@example.com'
+    };
+
     return this.http.post<any[]>(`${environment.apiUrl}/estudiantes/${propuestaId}/asignar`, payload)
       .pipe(
         catchError(this.handleError)
@@ -296,10 +312,10 @@ export class PropuestaService {
    * HU07 T25: Solicitar nueva aprobación para propuesta APROBADA
    * Endpoint: POST /api/propuestas/{id}/solicitar-nueva-aprobacion
    * 
-   * Efecto: APROBADA → PENDIENTE
+   * Efecto: APROBADA a PENDIENTE
    */
   solicitarNuevaAprobacion(propuestaId: number, motivo: string): Observable<Propuesta> {
-    console.log('✅ HU07 T25: Solicitando nueva aprobación para propuesta', propuestaId);
+    console.log(' HU07 T25: Solicitando nueva aprobación para propuesta', propuestaId);
     const payload = { motivo: motivo };
     return this.http.post<Propuesta>(`${this.apiUrl}/${propuestaId}/solicitar-nueva-aprobacion`, payload)
       .pipe(

@@ -1,18 +1,19 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PropuestaService } from '../../services/propuesta.service';
 
 /**
  * HU07 T21: Componente modal para asignar estudiantes a propuestas
- * Ubicación: src/app/components/asignar-estudiantes/asignar-estudiantes.component.ts
+ * UbicaciÃ³n: src/app/components/asignar-estudiantes/asignar-estudiantes.component.ts
  *
  * Responsabilidades:
- * - Mostrar modal para asignación de estudiantes
- * - Búsqueda de estudiantes (autocomplete)
- * - Validación: máximo 5 estudiantes
+ * - Mostrar modal para asignaciÃ³n de estudiantes
+ * - BÃºsqueda de estudiantes (autocomplete)
+ * - ValidaciÃ³n: mÃ¡ximo 5 estudiantes
  * - Mostrar advertencia si cambian estudiantes desde APROBADA
  * - Solicitar motivo de cambio
  */
@@ -33,10 +34,12 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   // Formulario reactivo
   formulario: FormGroup;
 
-  // Datos para el dropdown y búsqueda
+  // Datos para el dropdown y bÃºsqueda
   todosEstudiantes: any[] = [];
   estudiantesFiltrados: any[] = [];
   estudiantesSeleccionados: any[] = [];
+  detalle: any = null;
+  estudiantesPorModulo: { [orden: number]: string } = {};
 
   // Estado de la interfaz
   cargando = false;
@@ -47,28 +50,40 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   mensajeExito = '';
   mostrarAdvertencia = false; // Advertencia si hay cambios desde APROBADA
 
-  // Control del término de búsqueda
+  // Control del tÃ©rmino de bÃºsqueda
   private busqueda$ = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  // Límites
+  // LÃ­mites
   MAX_ESTUDIANTES = 5;
 
   constructor(
     private formBuilder: FormBuilder,
-    private propuestaService: PropuestaService
+    private propuestaService: PropuestaService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.formulario = this.formBuilder.group({
       busqueda: [''],
-      motivo: ['', Validators.required]
+      motivo: ['']
     });
   }
 
   ngOnInit(): void {
+    const idRuta = Number(this.route.snapshot.paramMap.get('id'));
+    if (!this.propuestaId && idRuta) {
+      this.propuestaId = idRuta;
+    }
+
+    if (this.propuestaId) {
+      this.cargarDetallePropuesta(this.propuestaId);
+      this.cargarEstudiantesAsignados(this.propuestaId);
+    }
+
     // Cargar estudiantes disponibles
     this.cargarEstudiantes();
 
-    // Setup búsqueda con debounce
+    // Setup bÃºsqueda con debounce
     this.busqueda$
       .pipe(
         debounceTime(300),
@@ -79,7 +94,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
         this.buscarEstudiantes(termino);
       });
 
-    // Escuchar cambios en el campo de búsqueda
+    // Escuchar cambios en el campo de bÃºsqueda
     this.formulario.get('busqueda')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((valor: string) => {
@@ -90,6 +105,45 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
     if (this.estudiantesActuales.length > 0 && this.estadoPropuesta === 'APROBADA') {
       this.mostrarAdvertencia = true;
     }
+  }
+
+  /**
+   * Carga el detalle de la propuesta para mostrar nombre, estado y mÃ³dulos.
+   */
+  private cargarDetallePropuesta(propuestaId: number): void {
+    this.propuestaService.obtenerDetalleCompleto(propuestaId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (detalle: any) => {
+          this.detalle = detalle;
+          this.estadoPropuesta = detalle?.estado || this.estadoPropuesta;
+          this.inicializarSeleccionPorModulo();
+        },
+        error: (error: any) => {
+          this.mensajeError = error?.message || 'Error al cargar la propuesta';
+        }
+      });
+  }
+
+  /**
+   * Carga estudiantes ya asignados cuando la pantalla se abre por ruta.
+   */
+  private cargarEstudiantesAsignados(propuestaId: number): void {
+    this.propuestaService.obtenerEstudiantesAsignados(propuestaId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (estudiantes: any[]) => {
+          this.estudiantesActuales = estudiantes;
+          this.mostrarAdvertencia = estudiantes.length > 0 && this.estadoPropuesta === 'APROBADA';
+          this.estudiantesSeleccionados = estudiantes
+            .map(asignacion => asignacion?.estudiante || asignacion)
+            .filter(Boolean);
+          this.inicializarSeleccionPorModulo();
+        },
+        error: () => {
+          this.estudiantesActuales = [];
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -104,29 +158,11 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.mensajeError = '';
 
-    this.propuestaService.obtenerTodosEstudiantes()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (estudiantes: any[]) => {
-          this.todosEstudiantes = estudiantes;
-          this.estudiantesFiltrados = estudiantes;
-          this.cargando = false;
-
-          // Pre-seleccionar estudiantes actuales
-          if (this.estudiantesActuales.length > 0) {
-            this.estudiantesSeleccionados = [...this.estudiantesActuales];
-          }
-        },
-        error: (error: any) => {
-          this.mensajeError = 'Error al cargar estudiantes';
-          this.cargando = false;
-          console.error('Error cargando estudiantes:', error);
-        }
-      });
+    this.cargando = false;
   }
 
   /**
-   * Busca estudiantes por término (nombre, apellido, correo)
+   * Busca estudiantes por tÃ©rmino (nombre, apellido, correo)
    */
   private buscarEstudiantes(termino: string): void {
     if (!termino.trim()) {
@@ -150,18 +186,18 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Agrega un estudiante a la lista de selección
+   * Agrega un estudiante a la lista de selecciÃ³n
    */
   agregarEstudiante(estudiante: any): void {
-    // Validar que no esté ya seleccionado
+    // Validar que no estÃ© ya seleccionado
     if (this.estudiantesSeleccionados.some(e => e.id === estudiante.id)) {
-      this.mensajeError = 'Este estudiante ya está seleccionado';
+      this.mensajeError = 'Este estudiante ya estÃ¡ seleccionado';
       return;
     }
 
-    // Validar límite de 5 estudiantes
+    // Validar lÃ­mite de 5 estudiantes
     if (this.estudiantesSeleccionados.length >= this.MAX_ESTUDIANTES) {
-      this.mensajeError = `No se pueden seleccionar más de ${this.MAX_ESTUDIANTES} estudiantes`;
+      this.mensajeError = `No se pueden seleccionar mÃ¡s de ${this.MAX_ESTUDIANTES} estudiantes`;
       return;
     }
 
@@ -173,28 +209,28 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Remueve un estudiante de la lista de selección
+   * Remueve un estudiante de la lista de selecciÃ³n
    */
   removerEstudiante(estudianteId: number): void {
     this.estudiantesSeleccionados = this.estudiantesSeleccionados.filter(e => e.id !== estudianteId);
   }
 
   /**
-   * Verifica si un estudiante está seleccionado
+   * Verifica si un estudiante estÃ¡ seleccionado
    */
   estaSeleccionado(estudianteId: number): boolean {
     return this.estudiantesSeleccionados.some(e => e.id === estudianteId);
   }
 
   /**
-   * Muestra/oculta la lista de búsqueda
+   * Muestra/oculta la lista de bÃºsqueda
    */
   toggleBusqueda(): void {
     this.mostrandoBusqueda = !this.mostrandoBusqueda;
   }
 
   /**
-   * Cierra la búsqueda
+   * Cierra la bÃºsqueda
    */
   cerrarBusqueda(): void {
     this.mostrandoBusqueda = false;
@@ -207,7 +243,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
     this.mensajeError = '';
 
     if (!this.propuestaId || this.propuestaId <= 0) {
-      this.mensajeError = 'ID de propuesta inválido';
+      this.mensajeError = 'ID de propuesta invÃ¡lido';
       return false;
     }
 
@@ -216,41 +252,41 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.mostrarAdvertencia && !this.formulario.get('motivo')?.value?.trim()) {
-      this.mensajeError = 'Debes proporcionar un motivo para los cambios';
-      return false;
-    }
-
     return true;
   }
 
   /**
-   * Guarda la asignación de estudiantes
+   * Guarda la asignaciÃ³n de estudiantes
    */
   guardar(): void {
+    this.sincronizarSeleccionDesdeModulos();
+
     if (!this.validar()) {
       return;
     }
 
     this.guardando = true;
-    const estudianteIds = this.estudiantesSeleccionados.map(e => e.id);
-    const motivo = this.formulario.get('motivo')?.value || 
-                   'Asignación inicial de estudiantes';
+    const nombresEstudiante = this.estudiantesSeleccionados.map(e => this.getNombreCompleto(e));
+    const motivo = this.formulario.get('motivo')?.value?.trim() ||
+                   'Asignacion o actualizacion de estudiantes en una propuesta ya aprobada';
 
-    this.propuestaService.asignarEstudiantes(this.propuestaId!, estudianteIds, motivo)
+    this.propuestaService.asignarEstudiantesPorNombre(this.propuestaId!, nombresEstudiante, motivo)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (resultado: any) => {
-          this.mensajeExito = 'Estudiantes asignados correctamente';
+        next: () => {
+          this.mensajeExito = this.estadoPropuesta === 'APROBADA'
+            ? 'Estudiantes asignados correctamente. La propuesta fue reenviada a revision.'
+            : 'Estudiantes asignados correctamente';
           this.guardando = false;
 
-          // Emitir evento de completación
           setTimeout(() => {
-            this.asignacionCompleta.emit({
-              estudianteIds: estudianteIds,
-              motivo: motivo,
-              cambioEstado: this.mostrarAdvertencia
-            });
+            const evento = {
+              nombresEstudiante,
+              motivo,
+              cambioEstado: this.estadoPropuesta === 'APROBADA'
+            };
+            this.asignacionCompleta.emit(evento);
+            this.router.navigate(['/propuestas', this.propuestaId, 'detalle']);
           }, 1000);
         },
         error: (error: any) => {
@@ -265,18 +301,23 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
    * Cierra el modal sin guardar
    */
   cerrarModal(): void {
+    if (this.propuestaId) {
+      this.router.navigate(['/propuestas', this.propuestaId, 'detalle']);
+      return;
+    }
+
     this.cerrar.emit();
   }
 
   /**
-   * Obtiene el número de estudiantes seleccionados
+   * Obtiene el nÃºmero de estudiantes seleccionados
    */
   get totalSeleccionados(): number {
     return this.estudiantesSeleccionados.length;
   }
 
   /**
-   * Verifica si alcanzó el máximo de estudiantes
+   * Verifica si alcanzÃ³ el mÃ¡ximo de estudiantes
    */
   get alcanzadoMaximo(): boolean {
     return this.totalSeleccionados >= this.MAX_ESTUDIANTES;
@@ -286,6 +327,114 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
    * Obtiene el nombre completo de un estudiante
    */
   getNombreCompleto(estudiante: any): string {
-    return `${estudiante.apellidos} ${estudiante.nombres}`;
+    const dato = estudiante?.estudiante || estudiante;
+    return dato?.nombresEstudiante ||
+      `${dato?.nombres || ''} ${dato?.apellidos || ''}`.trim() ||
+      dato?.nombreCompleto ||
+      'Estudiante';
   }
+
+  /**
+   * Obtiene el nombre de un estudiante por identificador.
+   */
+  nombreEstudiantePorId(nombreEstudiante: string): string {
+    return this.texto(nombreEstudiante?.trim() || 'Sin estudiante');
+  }
+
+  /**
+   * Devuelve los mÃ³dulos reales o mÃ³dulos visuales cuando la propuesta aÃºn no los persiste.
+   */
+  get modulosVisuales(): any[] {
+    if (this.detalle?.componentes?.length) {
+      return this.detalle.componentes;
+    }
+
+    return [];
+  }
+
+  /**
+   * Cuenta mÃ³dulos sin estudiante seleccionado.
+   */
+  get modulosSinEstudiante(): number {
+    return this.modulosVisuales.filter(modulo => !this.estudiantesPorModulo[modulo.orden]).length;
+  }
+
+  /**
+   * Cambia el estudiante asignado visualmente a un mÃ³dulo.
+   */
+  seleccionarEstudianteModulo(orden: number, nombreEstudiante: string): void {
+    this.estudiantesPorModulo[orden] = nombreEstudiante;
+    this.sincronizarSeleccionDesdeModulos();
+  }
+
+  /**
+   * Inicializa la relaciÃ³n visual mÃ³dulo-estudiante a partir de lo que ya existe.
+   */
+  private inicializarSeleccionPorModulo(): void {
+    this.modulosVisuales.forEach((modulo, index) => {
+      const estudiante = modulo?.estudiante || this.estudiantesSeleccionados[index] || null;
+      this.estudiantesPorModulo[modulo.orden] = estudiante ? this.getNombreCompleto(estudiante) : '';
+    });
+
+    this.sincronizarSeleccionDesdeModulos();
+  }
+
+  /**
+   * Convierte las selecciones por mÃ³dulo en la lista real que usa el backend.
+   */
+  private sincronizarSeleccionDesdeModulos(): void {
+    const nombres = Object.values(this.estudiantesPorModulo)
+      .map(nombre => nombre.trim())
+      .filter(nombre => nombre.length > 0);
+    const nombresUnicos = Array.from(new Set(nombres.map(nombre => nombre.toLocaleLowerCase())))
+      .map(nombreNormalizado => nombres.find(nombre => nombre.toLocaleLowerCase() === nombreNormalizado) || '');
+
+    this.estudiantesSeleccionados = nombresUnicos
+      .filter(Boolean)
+      .map((nombre, index) => ({
+        id: index + 1,
+        nombresEstudiante: nombre
+      }));
+  }
+
+  /**
+   * Texto de resoluciÃ³n para el resumen de propuesta.
+   */
+  get resolucionResumen(): string {
+    return this.texto(this.detalle?.resolucionCpgic || 'Res. 0042-CPGIC-2026');
+  }
+
+  /**
+   * Corrige texto que llega con codificación rota desde datos existentes.
+   */
+  texto(valor: any): string {
+    if (valor === null || valor === undefined) {
+      return '';
+    }
+
+    return String(valor)
+      .replace(/Ã¡/g, 'á')
+      .replace(/Ã©/g, 'é')
+      .replace(/Ã­/g, 'í')
+      .replace(/Ã³/g, 'ó')
+      .replace(/Ãº/g, 'ú')
+      .replace(/Ã±/g, 'ñ')
+      .replace(/Ã/g, 'Á')
+      .replace(/Ã‰/g, 'É')
+      .replace(/Ã/g, 'Í')
+      .replace(/Ã“/g, 'Ó')
+      .replace(/Ãš/g, 'Ú')
+      .replace(/Ã‘/g, 'Ñ')
+      .replace(/Â¿/g, '¿')
+      .replace(/Â¡/g, '¡')
+      .replace(/Â°/g, '°')
+      .replace(/Â/g, '')
+      .replace(/â€”/g, '—')
+      .replace(/â€“/g, '–')
+      .replace(/â€˜/g, '‘')
+      .replace(/â€™/g, '’')
+      .replace(/â€œ/g, '“')
+      .replace(/â€/g, '”');
+  }
+
 }

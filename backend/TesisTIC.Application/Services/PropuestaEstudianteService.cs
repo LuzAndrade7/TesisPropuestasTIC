@@ -121,7 +121,7 @@ namespace TesisTIC.Application.Services
             await _propuestaEstudianteRepository.DeleteByPropuestaIdAsync(propuestaId);
 
             // Crear nuevas asignaciones
-            var asignaciones = new List<PropuestaEstudiante>();
+            var asignaciones = new List<(PropuestaEstudiante Asignacion, Estudiante Estudiante)>();
             foreach (var estudianteId in estudianteIds)
             {
                 var estudiante = await _estudianteRepository.GetByIdAsync(estudianteId);
@@ -137,30 +137,29 @@ namespace TesisTIC.Application.Services
                     Estado = "ACTIVO"
                 };
 
-                asignaciones.Add(asignacion);
+                asignaciones.Add((asignacion, estudiante));
             }
 
             // Guardar asignaciones
-            foreach (var asignacion in asignaciones)
+            foreach (var item in asignaciones)
             {
-                await _propuestaEstudianteRepository.CreateAsync(asignacion);
+                await _propuestaEstudianteRepository.CreateAsync(item.Asignacion);
             }
 
             return asignaciones
-                .Select(a => new PropuestaEstudianteDto
+                .Select(item => new PropuestaEstudianteDto
                 {
-                    Id = a.Id,
-                    PropuestaId = a.PropuestaId,
+                    Id = item.Asignacion.Id,
+                    PropuestaId = item.Asignacion.PropuestaId,
                     Estudiante = new EstudianteDto
                     {
-                        Id = a.EstudianteId,
-                        Nombres = asignaciones.FirstOrDefault(x => x.EstudianteId == a.EstudianteId)?.Estudiante?.Nombres ?? "",
-                        Apellidos = asignaciones.FirstOrDefault(x => x.EstudianteId == a.EstudianteId)?.Estudiante?.Apellidos ?? "",
-                        Correo = asignaciones.FirstOrDefault(x => x.EstudianteId == a.EstudianteId)?.Estudiante?.Correo
+                        Id = item.Asignacion.EstudianteId,
+                        NombresEstudiante = item.Estudiante.NombresEstudiante,
+                        FechaCreacion = item.Estudiante.FechaCreacion
                     },
-                    FechaAsignacion = a.FechaAsignacion,
-                    AsignadoPor = a.AsignadoPor,
-                    Estado = a.Estado
+                    FechaAsignacion = item.Asignacion.FechaAsignacion,
+                    AsignadoPor = item.Asignacion.AsignadoPor,
+                    Estado = item.Asignacion.Estado
                 })
                 .ToList();
         }
