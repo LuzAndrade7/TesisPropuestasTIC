@@ -14,29 +14,38 @@
 
   <!-- Documento de detalle. -->
   <section *ngIf="detalle && !cargando" class="detalle-propuesta__contenido">
-    <!-- Botones superiores. -->
-    <div class="detalle-propuesta__acciones">
-      <button *ngIf="puedeAsignarEstudiantes" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAAsignarEstudiantes()">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>{{ estudiantesAsignados.length ? 'Editar estudiantes' : 'Asignar estudiantes' }}</span>
-      </button>
-
-      <button *ngIf="puedeEditar" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAEditar()">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"/></svg>
-        <span>Editar propuesta</span>
-      </button>
-
-      <button type="button" class="detalle-propuesta__btn detalle-propuesta__btn--light" (click)="volverAlTablero()">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-        <span>Volver</span>
-      </button>
-    </div>
-
     <!-- Encabezado visual. -->
     <article class="detalle-propuesta__documento">
+      <div *ngIf="mensajeAccion" class="detalle-propuesta__mensaje-accion">
+        {{ mensajeAccion }}
+      </div>
+
       <header class="detalle-propuesta__hero">
         <span class="detalle-propuesta__marca"></span>
         <h1>Detalle de propuesta</h1>
+
+        <!-- Acciones principales debajo del título. -->
+        <div class="detalle-propuesta__acciones">
+          <button *ngIf="puedeAsignarEstudiantes" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAAsignarEstudiantes()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>{{ estudiantesAsignados.length ? 'Editar estudiantes' : 'Asignar estudiantes' }}</span>
+          </button>
+
+          <button *ngIf="puedeEditar" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAEditar()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"/></svg>
+            <span>Editar propuesta</span>
+          </button>
+
+          <button *ngIf="puedeEnviarRevision" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--navy" (click)="enviarARevision()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+            <span>{{ detalle.estado === 'OBSERVADA' ? 'Reenviar' : 'Enviar' }}</span>
+          </button>
+
+          <button type="button" class="detalle-propuesta__btn detalle-propuesta__btn--light" (click)="volverAlTablero()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            <span>Volver</span>
+          </button>
+        </div>
       </header>
 
       <!-- Estado y fechas principales. -->
@@ -277,6 +286,28 @@
         </table>
       </section>
     </article>
+
+    <div *ngIf="mostrarModalEnvio" class="detalle-propuesta__modal">
+      <section class="detalle-propuesta__modal-contenido">
+        <div class="detalle-propuesta__modal-icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
+            <path d="M22 2 11 13"></path>
+          </svg>
+        </div>
+        <h3>{{ detalle.estado === 'OBSERVADA' ? 'Reenviar propuesta' : 'Enviar propuesta' }}</h3>
+        <strong>"{{ texto(detalle.nombreProyecto) }}"</strong>
+        <p>
+          {{ detalle.estado === 'OBSERVADA'
+            ? 'Revise que las observaciones hayan sido corregidas antes de reenviar a revisión.'
+            : 'Revise que el formulario esté completo antes de enviarlo a revisión.' }}
+        </p>
+        <footer>
+          <button type="button" class="detalle-propuesta__modal-btn detalle-propuesta__modal-btn--gold" (click)="confirmarEnvio()">Sí, continuar</button>
+          <button type="button" class="detalle-propuesta__modal-btn detalle-propuesta__modal-btn--light" (click)="cancelarEnvio()">Cancelar</button>
+        </footer>
+      </section>
+    </div>
   </section>
 </main>
 

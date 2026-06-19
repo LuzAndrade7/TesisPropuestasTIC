@@ -29,7 +29,7 @@ $white: #FFFFFF;
     margin-bottom: 18px;
 
     h1 {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 800;
       margin: 0;
       text-align: center;
@@ -54,13 +54,13 @@ $white: #FFFFFF;
     padding: 12px 14px;
 
     strong {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
     }
 
     small {
       color: $muted;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
     }
   }
@@ -72,7 +72,7 @@ $white: #FFFFFF;
     border-radius: 999px;
     color: #047857;
     display: inline-flex;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 800;
     gap: 5px;
     justify-content: center;
@@ -91,14 +91,14 @@ $white: #FFFFFF;
 
   &__ayuda {
     color: $muted;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.45;
     margin: 0 0 12px;
   }
 
   &__alerta {
     border-radius: 7px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     margin-bottom: 12px;
     padding: 10px 12px;
@@ -152,20 +152,20 @@ $white: #FFFFFF;
     }
 
     strong {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
     }
 
     span {
       color: #8B5E00;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
     }
 
     p {
       color: #475569;
-      font-size: 10px;
+      font-size: 12px;
       line-height: 1.45;
       margin: 0 0 9px;
     }
@@ -173,7 +173,7 @@ $white: #FFFFFF;
     label {
       color: $navy;
       display: grid;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 800;
       gap: 5px;
       letter-spacing: 0.04em;
@@ -186,7 +186,7 @@ $white: #FFFFFF;
       border-radius: 6px;
       color: #334155;
       font-family: inherit;
-      font-size: 11px;
+      font-size: 12px;
       min-height: 34px;
       padding: 8px 10px;
       text-transform: none;
@@ -201,7 +201,7 @@ $white: #FFFFFF;
     small {
       color: #047857;
       display: block;
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       margin-top: 7px;
     }
@@ -219,7 +219,7 @@ $white: #FFFFFF;
   &__motivo {
     color: $navy;
     display: grid;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 800;
     gap: 6px;
     margin-top: 12px;
@@ -229,7 +229,7 @@ $white: #FFFFFF;
       border: 1px solid $line;
       border-radius: 6px;
       font-family: inherit;
-      font-size: 11px;
+      font-size: 12px;
       padding: 9px 10px;
       resize: vertical;
       text-transform: none;
@@ -240,17 +240,31 @@ $white: #FFFFFF;
     display: flex;
     gap: 8px;
     justify-content: center;
-    margin-top: 18px;
+    margin-top: 0;
   }
 
   &__btn {
+    align-items: center;
     border-radius: 7px;
     cursor: pointer;
+    display: inline-flex;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
+    gap: 7px;
+    justify-content: center;
     min-height: 34px;
     padding: 8px 14px;
+
+    svg {
+      fill: none;
+      height: 15px;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2;
+      width: 15px;
+    }
 
     &:disabled {
       cursor: not-allowed;

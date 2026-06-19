@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,15 +22,15 @@ type CampoFormato = 'negrita' | 'cursiva' | 'numerada' | 'vineta';
 
 /**
  * T02: Componente Formulario de Propuesta
- * UbicaciÃ³n: src/app/components/formulario-propuesta/formulario-propuesta.component.ts
+ * Ubicación: src/app/components/formulario-propuesta/formulario-propuesta.component.ts
  * 
  * Responsabilidades:
  * - Mostrar formulario reactivo para crear/editar propuestas
  * - Validar entrada de datos
  * - Guardar como borrador (T01)
- * - Enviar a revisiÃ³n (cambiar estado a PENDIENTE) - HU03 T08
- * - IntegraciÃ³n con PropuestaService (T03)
- * - Deshabilitar ediciÃ³n si estado es PENDIENTE (HU03 T09)
+ * - Enviar a revisión (cambiar estado a PENDIENTE) - HU03 T08
+ * - Integración con PropuestaService (T03)
+ * - Deshabilitar edición si estado es PENDIENTE (HU03 T09)
  */
 @Component({
   selector: 'app-formulario-propuesta',
@@ -73,20 +73,21 @@ export class FormularioPropuestaComponent implements OnInit {
 
   // Propuesta actual (si estamos editando)
   propuestaId: number | null = null;
-  estadoPropuesta: string = 'BORRADOR'; // HU03 T09: Para deshabilitar campos si estÃ¡ PENDIENTE
+  estadoPropuesta: string = 'BORRADOR'; // HU03 T09: Para deshabilitar campos si está PENDIENTE
   puedeEditar = true; // HU05 T15: Indica si se puede editar (BORRADOR u OBSERVADA)
   noEditable = false; // HU05 T15: Indica si NO se puede editar
 
   // HU04 T11-T13: Observaciones CPGIC
   observaciones: any[] = []; // Lista de observaciones
   tieneObservaciones = false; // Indica si hay observaciones
-  reEnviando = false; // Estado de reenvÃ­o
-  mostrarModalReenvio = false; // Modal de confirmaciÃ³n para reenvÃ­o
+  reEnviando = false; // Estado de reenvío
+  mostrarModalReenvio = false; // Modal de confirmación para reenvío
   mostrarModalCancelar = false;
   mostrarModalEliminarElemento = false;
   tipoElementoEliminar: 'modulo' | 'actividad' | null = null;
   indiceModuloEliminar: number | null = null;
   indiceActividadEliminar: number | null = null;
+  private snapshotInicial = '';
 
   // Validaciones
   readonly MAX_PARTICIPANTES = 5;
@@ -163,6 +164,19 @@ export class FormularioPropuestaComponent implements OnInit {
     this.propuestaId = this.route.snapshot.params['id'] || null;
     if (this.propuestaId) {
       this.cargarPropuesta(this.propuestaId);
+    } else {
+      setTimeout(() => this.guardarSnapshotInicial());
+    }
+  }
+
+  /**
+   * Cierra el menú de asignaturas al hacer clic fuera del selector.
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(evento: MouseEvent): void {
+    const destino = evento.target as HTMLElement;
+    if (!destino.closest('.propuesta-form__asignaturas')) {
+      this.menuAsignaturasAbierto = false;
     }
   }
 
@@ -206,8 +220,8 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * T02: Cargar propuesta existente para ediciÃ³n
-   * HU05 T15: Permite ediciÃ³n en estado BORRADOR u OBSERVADA
+   * T02: Cargar propuesta existente para edición
+   * HU05 T15: Permite edición en estado BORRADOR u OBSERVADA
    */
   cargarPropuesta(id: number): void {
     this.cargando = true;
@@ -218,7 +232,7 @@ export class FormularioPropuestaComponent implements OnInit {
         // Guardar estado
         this.estadoPropuesta = propuesta.estado;
         
-        // HU05 T15: Permitir ediciÃ³n solo en BORRADOR u OBSERVADA
+        // HU05 T15: Permitir edición solo en BORRADOR u OBSERVADA
         const estadosEditables = ['BORRADOR', 'OBSERVADA'];
         this.puedeEditar = estadosEditables.includes(propuesta.estado);
         this.noEditable = !this.puedeEditar;
@@ -235,6 +249,7 @@ export class FormularioPropuestaComponent implements OnInit {
         });
 
         this.cargarModulosDesdePropuesta(propuesta);
+        this.guardarSnapshotInicial();
 
         // HU05 T15: Deshabilitar campos si NO se puede editar
         if (!this.puedeEditar) {
@@ -243,7 +258,7 @@ export class FormularioPropuestaComponent implements OnInit {
                              `Solo se pueden editar propuestas en estado BORRADOR u OBSERVADA.`;
         }
 
-        // HU04 T11: Cargar observaciones si propuesta estÃ¡ OBSERVADA
+        // HU04 T11: Cargar observaciones si propuesta está OBSERVADA
         if (propuesta.estado === 'OBSERVADA') {
           this.cargarObservaciones(id);
         }
@@ -278,7 +293,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * HU04 T12: Reenviar propuesta despuÃ©s de correcciones
+   * HU04 T12: Reenviar propuesta después de correcciones
    * Limpia observaciones y cambia estado OBSERVADA a PENDIENTE
    */
   reenviarPropuesta(): void {
@@ -287,12 +302,12 @@ export class FormularioPropuestaComponent implements OnInit {
       return;
     }
 
-    // Mostrar modal de confirmaciÃ³n
+    // Mostrar modal de confirmación
     this.mostrarModalReenvio = true;
   }
 
   /**
-   * HU04 T12: Confirmar reenvÃ­o
+   * HU04 T12: Confirmar reenvío
    */
   confirmarReenvio(): void {
     this.mostrarModalReenvio = false;
@@ -316,19 +331,20 @@ export class FormularioPropuestaComponent implements OnInit {
       error: (error) => {
         console.error(' HU04 T12: Error guardando antes de reenviar:', error);
         this.mensajeError = error.message || 'Error al guardar la propuesta corregida';
-        this.reEnviando = false;
+        this.desbloquearAcciones();
+        this.scrollAlMensaje();
       }
     });
   }
 
   /**
-   * HU04 T12: Ejecuta el reenvÃ­o una vez guardadas las correcciones.
+   * HU04 T12: Ejecuta el reenvío una vez guardadas las correcciones.
    */
   private ejecutarReenvioObservada(propuestaId: number): void {
     this.propuestaService.reenviarDespuesDeObservaciones(propuestaId).subscribe({
       next: (propuesta) => {
         console.log(' HU04 T12: Propuesta reenviada:', propuesta);
-        this.mensajeExito = 'Propuesta corregida reenviada a revisiÃ³n exitosamente';
+        this.mensajeExito = 'Propuesta corregida reenviada a revisión exitosamente';
         this.estadoPropuesta = propuesta.estado;
         
         // Limpiar observaciones y deshabilitar formulario
@@ -336,7 +352,7 @@ export class FormularioPropuestaComponent implements OnInit {
         this.tieneObservaciones = false;
         this.formulario.disable();
         
-        // Redirigir al dashboard despuÃ©s de 1.5 segundos
+        // Redirigir al dashboard después de 1.5 segundos
         setTimeout(() => {
           this.router.navigate(['/tablero']);
         }, 1500);
@@ -344,6 +360,7 @@ export class FormularioPropuestaComponent implements OnInit {
       error: (error) => {
         console.error(' HU04 T12: Error reenviando:', error);
         this.mensajeError = error.message || 'Error al reenviar la propuesta';
+        this.scrollAlMensaje();
       },
       complete: () => {
         this.reEnviando = false;
@@ -352,7 +369,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * HU04 T12: Cancelar modal de reenvÃ­o
+   * HU04 T12: Cancelar modal de reenvío
    */
   cancelarReenvio(): void {
     this.mostrarModalReenvio = false;
@@ -361,12 +378,12 @@ export class FormularioPropuestaComponent implements OnInit {
   /**
    * T01: Guardar como borrador
    * HU05 T16: Guardar cambios de propuesta editada
-   * - NO requiere validaciÃ³n - permite guardar incompleto
+   * - NO requiere validación - permite guardar incompleto
    * - Estado: BORRADOR
-   * - Permite guardar incompleto (puede estar vacÃ­o)
+   * - Permite guardar incompleto (puede estar vacío)
    */
   guardarBorrador(): void {
-    // SIN VALIDACIÃ“N - permitir guardar incompleto en estado BORRADOR
+    // SIN VALIDACIÓN - permitir guardar incompleto en estado BORRADOR
     this.guardando = true;
     this.mensajeError = '';
 
@@ -385,12 +402,13 @@ export class FormularioPropuestaComponent implements OnInit {
           ? ' Cambios guardados exitosamente'
           : ' Propuesta guardada como borrador';
         
-        // Si fue creaciÃ³n, actualizar el ID
+        // Si fue creación, actualizar el ID
         if (!this.propuestaId) {
           this.propuestaId = propuesta.id;
         }
+        this.guardarSnapshotInicial();
 
-        // Redirigir al dashboard despuÃ©s de 1.5 segundos
+        // Redirigir al dashboard después de 1.5 segundos
         setTimeout(() => {
           this.router.navigate(['/tablero']);
         }, 1500);
@@ -398,6 +416,8 @@ export class FormularioPropuestaComponent implements OnInit {
       error: (error) => {
         console.error(' T01/HU05: Error guardando:', error);
         this.mensajeError = error.message || 'Error al guardar la propuesta';
+        this.desbloquearAcciones();
+        this.scrollAlMensaje();
       },
       complete: () => {
         this.guardando = false;
@@ -406,14 +426,14 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * HU03 T08: Enviar propuesta a revisiÃ³n
-   * - Valida que el formulario estÃ© completo
-   * - Muestra modal de confirmaciÃ³n
+   * HU03 T08: Enviar propuesta a revisión
+   * - Valida que el formulario esté completo
+   * - Muestra modal de confirmación
    * - Llama al nuevo endpoint POST /api/propuestas/{id}/enviar-revision
    * - El backend valida completamente antes de cambiar estado
    */
   enviarPropuesta(): void {
-    // ValidaciÃ³n frontend
+    // Validación frontend
     if (this.formulario.invalid) {
       this.mostrarErroresValidacion();
       return;
@@ -424,12 +444,12 @@ export class FormularioPropuestaComponent implements OnInit {
       return;
     }
 
-    // Mostrar modal de confirmaciÃ³n
+    // Mostrar modal de confirmación
     this.mostrarModalConfirmacion = true;
   }
 
   /**
-   * HU03 T09: Confirmar envÃ­o a revisiÃ³n
+   * HU03 T09: Confirmar envío a revisión
    * Luego de confirmar en el modal
    */
   confirmarEnvioRevision(): void {
@@ -446,6 +466,8 @@ export class FormularioPropuestaComponent implements OnInit {
         error: (error) => {
           console.error(' HU03: Error creando propuesta:', error);
           this.mensajeError = error.message || 'Error al crear la propuesta';
+          this.desbloquearAcciones();
+          this.scrollAlMensaje();
         }
       });
     } else {
@@ -455,42 +477,45 @@ export class FormularioPropuestaComponent implements OnInit {
         error: (error) => {
           console.error(' HU03: Error guardando propuesta antes de enviar:', error);
           this.mensajeError = error.message || 'Error al guardar la propuesta antes de enviar';
+          this.desbloquearAcciones();
+          this.scrollAlMensaje();
         }
       });
     }
   }
 
   /**
-   * HU03 T07: Llamar al nuevo endpoint de envÃ­o a revisiÃ³n
+   * HU03 T07: Llamar al nuevo endpoint de envío a revisión
    */
   private enviarARevision(propuestaId: number): void {
     this.enviando = true;
     this.mensajeError = '';
 
-    console.log(' HU03: Enviando propuesta', propuestaId, 'a revisiÃ³n');
+    console.log(' HU03: Enviando propuesta', propuestaId, 'a revisión');
 
     this.propuestaService.enviarARevision(propuestaId).subscribe({
       next: (propuesta) => {
-        console.log(' HU03: Propuesta enviada a revisiÃ³n:', propuesta);
-        this.mensajeExito = ' Propuesta enviada a revisiÃ³n exitosamente';
+        console.log(' HU03: Propuesta enviada a revisión:', propuesta);
+        this.mensajeExito = ' Propuesta enviada a revisión exitosamente';
         this.estadoPropuesta = propuesta.estado;
         
-        // Deshabilitar campos despuÃ©s del envÃ­o
+        // Deshabilitar campos después del envío
         this.formulario.disable();
         
-        // Redirigir al dashboard despuÃ©s de 1.5 segundos
+        // Redirigir al dashboard después de 1.5 segundos
         setTimeout(() => {
           this.router.navigate(['/tablero']);
         }, 1500);
       },
       error: (error) => {
-        console.error(' HU03: Error enviando a revisiÃ³n:', error);
-        this.mensajeError = error.message || 'Error al enviar la propuesta a revisiÃ³n';
+        console.error(' HU03: Error enviando a revisión:', error);
+        this.mensajeError = error.message || 'Error al enviar la propuesta a revisión';
         
-        // Mostrar errores especÃ­ficos del backend
+        // Mostrar errores específicos del backend
         if (error.message) {
           this.mensajeError = error.message;
         }
+        this.scrollAlMensaje();
       },
       complete: () => {
         this.enviando = false;
@@ -499,16 +524,17 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * HU03 T09: Mostrar errores de validaciÃ³n especÃ­ficos
+   * HU03 T09: Mostrar errores de validación específicos
    */
   private mostrarErroresValidacion(): void {
     const errores: string[] = [];
 
     const campos = ['nombreProyecto', 'numeroParticipantes', 'descripcion', 'objetivo', 'alcance', 'asignaturaIds', 'profesorId'];
+    this.formulario.markAllAsTouched();
     
     campos.forEach(campo => {
       const control = this.formulario.get(campo);
-      if (control && control.invalid && control.touched) {
+      if (control && control.invalid) {
         const error = this.obtenerErrorCampo(campo);
         if (error) {
           errores.push(error);
@@ -516,24 +542,27 @@ export class FormularioPropuestaComponent implements OnInit {
       }
     });
 
-    if (errores.length > 0) {
-      this.mensajeError = 'Por favor completa los siguientes campos:\n' + errores.join('\n');
-    } else {
-      this.mensajeError = 'Por favor completa todos los campos requeridos correctamente';
-    }
+    this.mensajeError = 'No se puede enviar la propuesta porque faltan campos por llenar.';
+
+    setTimeout(() => this.scrollAlPrimerProblema());
   }
 
   /**
-   * Cancelar modal de confirmaciÃ³n
+   * Cancelar modal de confirmación
    */
   cancelarEnvio(): void {
     this.mostrarModalConfirmacion = false;
   }
 
   /**
-   * Cancelar ediciÃ³n y volver atrÃ¡s
+   * Cancelar edición y volver atrás
    */
   cancelar(): void {
+    if (!this.tieneCambiosSinGuardar()) {
+      this.router.navigate(['/']);
+      return;
+    }
+
     this.mostrarModalCancelar = true;
   }
 
@@ -556,15 +585,15 @@ export class FormularioPropuestaComponent implements OnInit {
    * Construir objeto propuesta desde formulario
    */
   private construirPropuesta(): CreatePropuestaRequest | Partial<CreatePropuestaRequest> {
-    const valores = this.formulario.value;
+    const valores = this.formulario.getRawValue();
     
     return {
-      nombreProyecto: valores.nombreProyecto.trim(),
-      numeroParticipantes: parseInt(valores.numeroParticipantes, 10),
-      profesorId: parseInt(valores.profesorId, 10),
-      descripcion: valores.descripcion.trim(),
-      objetivo: valores.objetivo.trim(),
-      alcance: valores.alcance.trim(),
+      nombreProyecto: this.valorTexto(valores.nombreProyecto),
+      numeroParticipantes: parseInt(valores.numeroParticipantes, 10) || 1,
+      profesorId: parseInt(valores.profesorId, 10) || 1,
+      descripcion: this.valorTexto(valores.descripcion),
+      objetivo: this.valorTexto(valores.objetivo),
+      alcance: this.valorTexto(valores.alcance),
       asignaturaIds: valores.asignaturaIds || [],
       componentes: this.construirComponentes()
     };
@@ -642,7 +671,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Obtener mensaje de error para campo especÃ­fico
+   * Obtener mensaje de error para campo específico
    */
   obtenerErrorCampo(nombreCampo: string): string {
     const campo = this.formulario.get(nombreCampo);
@@ -655,16 +684,16 @@ export class FormularioPropuestaComponent implements OnInit {
       return `${this.obtenerLabelCampo(nombreCampo)} es requerido`;
     }
     if (campo.errors['minlength']) {
-      return `${this.obtenerLabelCampo(nombreCampo)} debe tener mÃ­nimo ${campo.errors['minlength'].requiredLength} caracteres`;
+      return `${this.obtenerLabelCampo(nombreCampo)} debe tener mínimo ${campo.errors['minlength'].requiredLength} caracteres`;
     }
     if (campo.errors['maxlength']) {
-      return `${this.obtenerLabelCampo(nombreCampo)} debe tener mÃ¡ximo ${campo.errors['maxlength'].requiredLength} caracteres`;
+      return `${this.obtenerLabelCampo(nombreCampo)} debe tener máximo ${campo.errors['maxlength'].requiredLength} caracteres`;
     }
     if (campo.errors['min']) {
-      return `${this.obtenerLabelCampo(nombreCampo)} debe ser mÃ­nimo ${campo.errors['min'].min}`;
+      return `${this.obtenerLabelCampo(nombreCampo)} debe ser mínimo ${campo.errors['min'].min}`;
     }
     if (campo.errors['max']) {
-      return `${this.obtenerLabelCampo(nombreCampo)} debe ser mÃ¡ximo ${campo.errors['max'].max}`;
+      return `${this.obtenerLabelCampo(nombreCampo)} debe ser máximo ${campo.errors['max'].max}`;
     }
 
     return 'Error en este campo';
@@ -676,9 +705,9 @@ export class FormularioPropuestaComponent implements OnInit {
   private obtenerLabelCampo(nombreCampo: string): string {
     const labels: { [key: string]: string } = {
       nombreProyecto: 'Nombre del proyecto',
-      numeroParticipantes: 'NÃºmero de participantes',
+      numeroParticipantes: 'Número de participantes',
       profesorId: 'Profesor',
-      descripcion: 'DescripciÃ³n',
+      descripcion: 'Descripción',
       objetivo: 'Objetivo',
       alcance: 'Alcance',
       asignaturaIds: 'Asignaturas'
@@ -688,7 +717,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Verificar si campo es invÃ¡lido y ha sido tocado
+   * Verificar si campo es inválido y ha sido tocado
    */
   campoInvalido(nombreCampo: string): boolean {
     const campo = this.formulario.get(nombreCampo);
@@ -713,12 +742,12 @@ export class FormularioPropuestaComponent implements OnInit {
     let newValue: number[];
 
     if (isChecked) {
-      // Agregar si no estÃ¡
+      // Agregar si no está
       newValue = currentValue.includes(asignaturaId) 
         ? currentValue 
         : [...currentValue, asignaturaId];
     } else {
-      // Remover si estÃ¡
+      // Remover si está
       newValue = currentValue.filter((id: number) => id !== asignaturaId);
     }
 
@@ -727,7 +756,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Verifica si una asignatura estÃ¡ seleccionada.
+   * Verifica si una asignatura está seleccionada.
    */
   asignaturaSeleccionada(asignaturaId: number): boolean {
     const seleccionadas = this.formulario.get('asignaturaIds')?.value || [];
@@ -735,7 +764,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Mantiene estable el DOM de listas mientras se escribe en mÃ³dulos y actividades.
+   * Mantiene estable el DOM de listas mientras se escribe en módulos y actividades.
    */
   trackByIndex(index: number): number {
     return index;
@@ -830,7 +859,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Obtiene el nombre del profesor para la secciÃ³n Presentado por.
+   * Obtiene el nombre del profesor para la sección Presentado por.
    */
   get nombreProfesorSeleccionado(): string {
     const docente = this.docenteSeleccionado;
@@ -838,7 +867,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Obtiene el nombre completo del profesor con tÃ­tulo acadÃ©mico para el campo de solo lectura.
+   * Obtiene el nombre completo del profesor con título académico para el campo de solo lectura.
    */
   get nombreDocenteCompletoSeleccionado(): string {
     const docente = this.docenteSeleccionado;
@@ -846,21 +875,21 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Obtiene el tÃ­tulo acadÃ©mico del profesor seleccionado.
+   * Obtiene el título académico del profesor seleccionado.
    */
   get tituloProfesorSeleccionado(): string {
     return this.docenteSeleccionado?.tituloAcademico || 'Docente, PhD.';
   }
 
   /**
-   * Resume estudiantes ingresados en los mÃ³dulos visuales.
+   * Resume estudiantes ingresados en los módulos visuales.
    */
   get resumenEstudiantes(): string {
     return this.estudiantesPropuestos.length ? this.estudiantesPropuestos.join(', ') : '(sin estudiantes asignados)';
   }
 
   /**
-   * Obtiene estudiantes propuestos desde los mÃ³dulos visuales para listarlos en aprobaciones.
+   * Obtiene estudiantes propuestos desde los módulos visuales para listarlos en aprobaciones.
    */
   get estudiantesPropuestos(): string[] {
     return this.modulos
@@ -967,7 +996,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Agrega un mÃ³dulo visual al formulario.
+   * Agrega un módulo visual al formulario.
    */
   agregarModulo(): void {
     this.modulos = [
@@ -986,7 +1015,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Elimina un mÃ³dulo visual del formulario.
+   * Elimina un módulo visual del formulario.
    */
   eliminarModulo(index: number): void {
     if (this.modulos.length === 1) {
@@ -1000,21 +1029,21 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Actualiza una propiedad simple de un mÃ³dulo visual.
+   * Actualiza una propiedad simple de un módulo visual.
    */
   actualizarModulo(index: number, campo: 'nombre' | 'descripcion' | 'productos' | 'estudiante', valor: string): void {
     this.modulos[index][campo] = valor;
   }
 
   /**
-   * Agrega una actividad visual dentro de un mÃ³dulo.
+   * Agrega una actividad visual dentro de un módulo.
    */
   agregarActividad(indexModulo: number): void {
     this.modulos[indexModulo].actividades.push({ nombre: '', horas: 0 });
   }
 
   /**
-   * Elimina una actividad visual dentro de un mÃ³dulo.
+   * Elimina una actividad visual dentro de un módulo.
    */
   eliminarActividad(indexModulo: number, indexActividad: number): void {
     const actividades = this.modulos[indexModulo].actividades;
@@ -1059,7 +1088,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Actualiza una actividad visual dentro de un mÃ³dulo.
+   * Actualiza una actividad visual dentro de un módulo.
    */
   actualizarActividad(indexModulo: number, indexActividad: number, campo: 'nombre' | 'horas', valor: string): void {
     const actividad = this.modulos[indexModulo].actividades[indexActividad];
@@ -1073,7 +1102,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Calcula el total de horas de un mÃ³dulo visual.
+   * Calcula el total de horas de un módulo visual.
    */
   totalHorasModulo(modulo: ModuloFormulario): number {
     return modulo.actividades.reduce((total, actividad) => total + Number(actividad.horas || 0), 0);
@@ -1096,7 +1125,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Aplica formato textual a campos visuales de mÃ³dulos.
+   * Aplica formato textual a campos visuales de módulos.
    */
   aplicarFormatoModulo(index: number, campo: 'descripcion' | 'productos', formato: CampoFormato, textarea: HTMLTextAreaElement): void {
     const resultado = this.formatearTexto(textarea, formato);
@@ -1105,7 +1134,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * ContinÃºa listas numeradas o viÃ±etas al presionar Enter en campos principales.
+   * Continúa listas numeradas o viñetas al presionar Enter en campos principales.
    */
   manejarEnterCampo(evento: KeyboardEvent, nombreCampo: string, textarea: HTMLTextAreaElement): void {
     const control = this.formulario.get(nombreCampo);
@@ -1121,7 +1150,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * ContinÃºa listas numeradas o viÃ±etas al presionar Enter en campos de mÃ³dulos.
+   * Continúa listas numeradas o viñetas al presionar Enter en campos de módulos.
    */
   manejarEnterModulo(evento: KeyboardEvent, index: number, campo: 'descripcion' | 'productos', textarea: HTMLTextAreaElement): void {
     const resultado = this.procesarEnterLista(evento, textarea);
@@ -1169,7 +1198,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Devuelve el foco al textarea despuÃ©s de aplicar formato.
+   * Devuelve el foco al textarea después de aplicar formato.
    */
   private restaurarSeleccion(textarea: HTMLTextAreaElement, inicio: number, fin: number): void {
     setTimeout(() => {
@@ -1236,7 +1265,7 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
-   * Calcula el siguiente nÃºmero de lista antes del cursor.
+   * Calcula el siguiente número de lista antes del cursor.
    */
   private obtenerSiguienteNumero(valor: string, posicion: number): number {
     const lineasPrevias = valor.slice(0, posicion).split(/\r?\n/).reverse();
@@ -1249,6 +1278,69 @@ export class FormularioPropuestaComponent implements OnInit {
     }
 
     return 1;
+  }
+
+  /**
+   * Convierte valores del formulario en texto seguro.
+   */
+  private valorTexto(valor: unknown): string {
+    return String(valor ?? '').trim();
+  }
+
+  /**
+   * Guarda el estado actual para detectar si el usuario realmente modificó algo.
+   */
+  private guardarSnapshotInicial(): void {
+    this.snapshotInicial = this.obtenerSnapshotActual();
+    this.formulario.markAsPristine();
+  }
+
+  /**
+   * Construye una huella simple del formulario y módulos visuales.
+   */
+  private obtenerSnapshotActual(): string {
+    return JSON.stringify({
+      formulario: this.formulario.getRawValue(),
+      modulos: this.modulos
+    });
+  }
+
+  /**
+   * Indica si hay cambios locales que todavía no se guardaron.
+   */
+  private tieneCambiosSinGuardar(): boolean {
+    return this.obtenerSnapshotActual() !== this.snapshotInicial;
+  }
+
+  /**
+   * Reactiva banderas de carga para que el usuario pueda corregir sin recargar.
+   */
+  private desbloquearAcciones(): void {
+    this.guardando = false;
+    this.enviando = false;
+    this.reEnviando = false;
+  }
+
+  /**
+   * Lleva la pantalla al mensaje de error.
+   */
+  private scrollAlMensaje(): void {
+    setTimeout(() => {
+      document.querySelector('.propuesta-form__alerta--error')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  /**
+   * Enfoca el primer campo inválido para guiar la corrección.
+   */
+  private scrollAlPrimerProblema(): void {
+    const primerProblema = document.querySelector<HTMLElement>('.is-invalid, .propuesta-form__alerta--error');
+    primerProblema?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    if (primerProblema instanceof HTMLInputElement || primerProblema instanceof HTMLTextAreaElement || primerProblema instanceof HTMLButtonElement) {
+      primerProblema.focus();
+    }
   }
 
   /**
@@ -1266,9 +1358,9 @@ export class FormularioPropuestaComponent implements OnInit {
       .replace(/Ã³/g, 'ó')
       .replace(/Ãº/g, 'ú')
       .replace(/Ã±/g, 'ñ')
-      .replace(/Ã/g, 'Á')
+      .replace(/\u00C3\u0081/g, 'Á')
       .replace(/Ã‰/g, 'É')
-      .replace(/Ã/g, 'Í')
+      .replace(/\u00C3\u008D/g, 'Í')
       .replace(/Ã“/g, 'Ó')
       .replace(/Ãš/g, 'Ú')
       .replace(/Ã‘/g, 'Ñ')
@@ -1287,4 +1379,5 @@ export class FormularioPropuestaComponent implements OnInit {
       .replace(/â€/g, '”');
   }
 }
+
 

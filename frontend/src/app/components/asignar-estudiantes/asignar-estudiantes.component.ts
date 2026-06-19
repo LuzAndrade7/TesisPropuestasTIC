@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,12 +8,12 @@ import { PropuestaService } from '../../services/propuesta.service';
 
 /**
  * HU07 T21: Componente modal para asignar estudiantes a propuestas
- * UbicaciÃ³n: src/app/components/asignar-estudiantes/asignar-estudiantes.component.ts
+ * Ubicación: src/app/components/asignar-estudiantes/asignar-estudiantes.component.ts
  *
  * Responsabilidades:
- * - Mostrar modal para asignaciÃ³n de estudiantes
- * - BÃºsqueda de estudiantes (autocomplete)
- * - ValidaciÃ³n: mÃ¡ximo 5 estudiantes
+ * - Mostrar modal para asignación de estudiantes
+ * - Búsqueda de estudiantes (autocomplete)
+ * - Validación: máximo 5 estudiantes
  * - Mostrar advertencia si cambian estudiantes desde APROBADA
  * - Solicitar motivo de cambio
  */
@@ -34,7 +34,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   // Formulario reactivo
   formulario: FormGroup;
 
-  // Datos para el dropdown y bÃºsqueda
+  // Datos para el dropdown y búsqueda
   todosEstudiantes: any[] = [];
   estudiantesFiltrados: any[] = [];
   estudiantesSeleccionados: any[] = [];
@@ -49,12 +49,13 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   mensajeError = '';
   mensajeExito = '';
   mostrarAdvertencia = false; // Advertencia si hay cambios desde APROBADA
+  returnUrl = '';
 
-  // Control del tÃ©rmino de bÃºsqueda
+  // Control del término de búsqueda
   private busqueda$ = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  // LÃ­mites
+  // Límites
   MAX_ESTUDIANTES = 5;
 
   constructor(
@@ -75,6 +76,8 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
       this.propuestaId = idRuta;
     }
 
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '';
+
     if (this.propuestaId) {
       this.cargarDetallePropuesta(this.propuestaId);
       this.cargarEstudiantesAsignados(this.propuestaId);
@@ -83,7 +86,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
     // Cargar estudiantes disponibles
     this.cargarEstudiantes();
 
-    // Setup bÃºsqueda con debounce
+    // Setup búsqueda con debounce
     this.busqueda$
       .pipe(
         debounceTime(300),
@@ -94,7 +97,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
         this.buscarEstudiantes(termino);
       });
 
-    // Escuchar cambios en el campo de bÃºsqueda
+    // Escuchar cambios en el campo de búsqueda
     this.formulario.get('busqueda')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((valor: string) => {
@@ -108,7 +111,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carga el detalle de la propuesta para mostrar nombre, estado y mÃ³dulos.
+   * Carga el detalle de la propuesta para mostrar nombre, estado y módulos.
    */
   private cargarDetallePropuesta(propuestaId: number): void {
     this.propuestaService.obtenerDetalleCompleto(propuestaId)
@@ -162,7 +165,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Busca estudiantes por tÃ©rmino (nombre, apellido, correo)
+   * Busca estudiantes por término (nombre, apellido, correo)
    */
   private buscarEstudiantes(termino: string): void {
     if (!termino.trim()) {
@@ -186,18 +189,18 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Agrega un estudiante a la lista de selecciÃ³n
+   * Agrega un estudiante a la lista de selección
    */
   agregarEstudiante(estudiante: any): void {
-    // Validar que no estÃ© ya seleccionado
+    // Validar que no esté ya seleccionado
     if (this.estudiantesSeleccionados.some(e => e.id === estudiante.id)) {
-      this.mensajeError = 'Este estudiante ya estÃ¡ seleccionado';
+      this.mensajeError = 'Este estudiante ya está seleccionado';
       return;
     }
 
-    // Validar lÃ­mite de 5 estudiantes
+    // Validar límite de 5 estudiantes
     if (this.estudiantesSeleccionados.length >= this.MAX_ESTUDIANTES) {
-      this.mensajeError = `No se pueden seleccionar mÃ¡s de ${this.MAX_ESTUDIANTES} estudiantes`;
+      this.mensajeError = `No se pueden seleccionar más de ${this.MAX_ESTUDIANTES} estudiantes`;
       return;
     }
 
@@ -209,28 +212,28 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Remueve un estudiante de la lista de selecciÃ³n
+   * Remueve un estudiante de la lista de selección
    */
   removerEstudiante(estudianteId: number): void {
     this.estudiantesSeleccionados = this.estudiantesSeleccionados.filter(e => e.id !== estudianteId);
   }
 
   /**
-   * Verifica si un estudiante estÃ¡ seleccionado
+   * Verifica si un estudiante está seleccionado
    */
   estaSeleccionado(estudianteId: number): boolean {
     return this.estudiantesSeleccionados.some(e => e.id === estudianteId);
   }
 
   /**
-   * Muestra/oculta la lista de bÃºsqueda
+   * Muestra/oculta la lista de búsqueda
    */
   toggleBusqueda(): void {
     this.mostrandoBusqueda = !this.mostrandoBusqueda;
   }
 
   /**
-   * Cierra la bÃºsqueda
+   * Cierra la búsqueda
    */
   cerrarBusqueda(): void {
     this.mostrandoBusqueda = false;
@@ -243,7 +246,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
     this.mensajeError = '';
 
     if (!this.propuestaId || this.propuestaId <= 0) {
-      this.mensajeError = 'ID de propuesta invÃ¡lido';
+      this.mensajeError = 'ID de propuesta inválido';
       return false;
     }
 
@@ -256,7 +259,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Guarda la asignaciÃ³n de estudiantes
+   * Guarda la asignación de estudiantes
    */
   guardar(): void {
     this.sincronizarSeleccionDesdeModulos();
@@ -286,7 +289,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
               cambioEstado: this.estadoPropuesta === 'APROBADA'
             };
             this.asignacionCompleta.emit(evento);
-            this.router.navigate(['/propuestas', this.propuestaId, 'detalle']);
+            this.navegarRetorno();
           }, 1000);
         },
         error: (error: any) => {
@@ -301,6 +304,11 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
    * Cierra el modal sin guardar
    */
   cerrarModal(): void {
+    if (this.returnUrl) {
+      this.navegarRetorno();
+      return;
+    }
+
     if (this.propuestaId) {
       this.router.navigate(['/propuestas', this.propuestaId, 'detalle']);
       return;
@@ -310,14 +318,14 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene el nÃºmero de estudiantes seleccionados
+   * Obtiene el número de estudiantes seleccionados
    */
   get totalSeleccionados(): number {
     return this.estudiantesSeleccionados.length;
   }
 
   /**
-   * Verifica si alcanzÃ³ el mÃ¡ximo de estudiantes
+   * Verifica si alcanzó el máximo de estudiantes
    */
   get alcanzadoMaximo(): boolean {
     return this.totalSeleccionados >= this.MAX_ESTUDIANTES;
@@ -342,7 +350,19 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Devuelve los mÃ³dulos reales o mÃ³dulos visuales cuando la propuesta aÃºn no los persiste.
+   * Regresa al origen desde donde se abrió la pantalla.
+   */
+  private navegarRetorno(): void {
+    if (this.returnUrl) {
+      this.router.navigateByUrl(this.returnUrl);
+      return;
+    }
+
+    this.router.navigate(['/propuestas', this.propuestaId, 'detalle']);
+  }
+
+  /**
+   * Devuelve los módulos reales o módulos visuales cuando la propuesta aún no los persiste.
    */
   get modulosVisuales(): any[] {
     if (this.detalle?.componentes?.length) {
@@ -353,14 +373,14 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cuenta mÃ³dulos sin estudiante seleccionado.
+   * Cuenta módulos sin estudiante seleccionado.
    */
   get modulosSinEstudiante(): number {
     return this.modulosVisuales.filter(modulo => !this.estudiantesPorModulo[modulo.orden]).length;
   }
 
   /**
-   * Cambia el estudiante asignado visualmente a un mÃ³dulo.
+   * Cambia el estudiante asignado visualmente a un módulo.
    */
   seleccionarEstudianteModulo(orden: number, nombreEstudiante: string): void {
     this.estudiantesPorModulo[orden] = nombreEstudiante;
@@ -368,7 +388,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Inicializa la relaciÃ³n visual mÃ³dulo-estudiante a partir de lo que ya existe.
+   * Inicializa la relación visual módulo-estudiante a partir de lo que ya existe.
    */
   private inicializarSeleccionPorModulo(): void {
     this.modulosVisuales.forEach((modulo, index) => {
@@ -380,7 +400,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Convierte las selecciones por mÃ³dulo en la lista real que usa el backend.
+   * Convierte las selecciones por módulo en la lista real que usa el backend.
    */
   private sincronizarSeleccionDesdeModulos(): void {
     const nombres = Object.values(this.estudiantesPorModulo)
@@ -398,7 +418,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Texto de resoluciÃ³n para el resumen de propuesta.
+   * Texto de resolución para el resumen de propuesta.
    */
   get resolucionResumen(): string {
     return this.texto(this.detalle?.resolucionCpgic || 'Res. 0042-CPGIC-2026');
@@ -419,9 +439,9 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
       .replace(/Ã³/g, 'ó')
       .replace(/Ãº/g, 'ú')
       .replace(/Ã±/g, 'ñ')
-      .replace(/Ã/g, 'Á')
+      .replace(/\u00C3\u0081/g, 'Á')
       .replace(/Ã‰/g, 'É')
-      .replace(/Ã/g, 'Í')
+      .replace(/\u00C3\u008D/g, 'Í')
       .replace(/Ã“/g, 'Ó')
       .replace(/Ãš/g, 'Ú')
       .replace(/Ã‘/g, 'Ñ')

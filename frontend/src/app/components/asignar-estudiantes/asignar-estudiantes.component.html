@@ -6,6 +6,16 @@
     <header class="asignar-estudiantes__encabezado">
       <span class="asignar-estudiantes__marca"></span>
       <h1>Asignar / editar estudiantes</h1>
+      <div class="asignar-estudiantes__acciones">
+        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--gold" (click)="guardar()" [disabled]="guardando || totalSeleccionados === 0 || cargando">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Z"></path><path d="M8 4v6h8"></path><path d="M8 17h8"></path></svg>
+          <span>Guardar asignación</span>
+        </button>
+        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--light" (click)="cerrarModal()" [disabled]="guardando">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12"></path><path d="m6 6 12 12"></path></svg>
+          <span>Cancelar</span>
+        </button>
+      </div>
     </header>
 
     <!-- Resumen de la propuesta aprobada. -->
@@ -71,15 +81,6 @@
       Motivo del cambio
       <textarea formControlName="motivo" rows="3" placeholder="Explique brevemente el motivo del cambio de estudiantes."></textarea>
     </label>
-
-    <!-- Acciones inferiores. -->
-    <footer class="asignar-estudiantes__acciones">
-      <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--gold" (click)="guardar()" [disabled]="guardando || totalSeleccionados === 0 || cargando">
-        Guardar asignación
-      </button>
-      <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--light" (click)="cerrarModal()" [disabled]="guardando">
-        Cancelar
-      </button>
-    </footer>
   </section>
 </main>
+

@@ -1,4 +1,4 @@
-﻿<!-- Contenedor principal del formulario F_AA_233A. -->
+<!-- Contenedor principal del formulario F_AA_233A. -->
 <main class="propuesta-form">
   <!-- Encabezado del formulario y acciones principales. -->
   <section class="propuesta-form__hero">
@@ -12,7 +12,7 @@
         <span>{{ guardando ? 'Guardando...' : 'Guardar borrador' }}</span>
       </button>
 
-      <button type="button" class="propuesta-form__btn propuesta-form__btn--navy" (click)="enviarPropuesta()" [disabled]="formulario.invalid || guardando || enviando || formulario.disabled">
+      <button type="button" class="propuesta-form__btn propuesta-form__btn--navy" (click)="enviarPropuesta()" [disabled]="guardando || enviando || formulario.disabled">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
         <span>{{ enviando ? 'Enviando...' : 'Enviar propuesta' }}</span>
       </button>
@@ -50,7 +50,7 @@
       <span>Ingeniería de Software</span>
     </div>
 
-    <!-- Aviso principal para correcciÃ³n de propuestas observadas. -->
+    <!-- Aviso principal para corrección de propuestas observadas. -->
     <aside *ngIf="estadoPropuesta === 'OBSERVADA' && tieneObservaciones" class="propuesta-form__aviso-observada">
       <strong>Esta propuesta tiene observaciones del director</strong>
       <span>Revise los recuadros amarillos en cada sección y corrija lo indicado antes de reenviar.</span>
@@ -309,7 +309,7 @@
       </ng-container>
     </section>
 
-    <!-- SecciÃ³n de recomendaciones y aprobaciones sin controles de firma. -->
+    <!-- Sección de recomendaciones y aprobaciones sin controles de firma. -->
     <section class="propuesta-form__seccion">
       <h2 class="propuesta-form__seccion-titulo">Recomendaciones y aprobaciones</h2>
       <table class="propuesta-form__aprobaciones">

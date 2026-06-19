@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -9,8 +9,8 @@ import { AsignarEstudiantesComponent } from '../asignar-estudiantes/asignar-estu
 
 /**
  * HU06 T18 + HU07 T24-T25: Componente para visualizar detalle completo de propuesta
- * Muestra: datos bÃ¡sicos, profesor, asignaturas, observaciones, histÃ³rico de estados
- * Botones contextuales segÃºn estado
+ * Muestra: datos básicos, profesor, asignaturas, observaciones, histórico de estados
+ * Botones contextuales según estado
  */
 @Component({
   selector: 'app-detalle-propuesta',
@@ -26,8 +26,10 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   // Estados de carga
   cargando = true;
   error: string | null = null;
+  mensajeAccion = '';
+  mostrarModalEnvio = false;
   
-  // HU07 T24-T25: Control del modal de asignaciÃ³n
+  // HU07 T24-T25: Control del modal de asignación
   mostrarModalAsignarEstudiantes = false;
   estudiantesAsignados: any[] = [];
   
@@ -103,7 +105,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene el color para un estado especÃ­fico
+   * Obtiene el color para un estado específico
    */
   getColorEstado(estado: string): string {
     return this.estadoColores[estado] || '#0E2240';
@@ -139,7 +141,14 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * HU07 T25: Verifica si se puede solicitar nueva aprobaciÃ³n
+   * Verifica si la propuesta puede enviarse o reenviarse desde lectura.
+   */
+  get puedeEnviarRevision(): boolean {
+    return this.detalle?.estado === 'BORRADOR' || this.detalle?.estado === 'OBSERVADA';
+  }
+
+  /**
+   * HU07 T25: Verifica si se puede solicitar nueva aprobación
    * Solo APROBADA
    */
   get puedeSolicitarNuevaAprobacion(): boolean {
@@ -160,14 +169,14 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene el tÃ­tulo acadÃ©mico del profesor.
+   * Obtiene el título académico del profesor.
    */
   get tituloProfesorDetalle(): string {
     return this.texto(this.detalle?.profesor?.tituloAcademico || 'Docente, PhD.');
   }
 
   /**
-   * Obtiene tÃ­tulo y nombre del profesor para datos generales.
+   * Obtiene título y nombre del profesor para datos generales.
    */
   get nombreProfesorConTituloDetalle(): string {
     const titulo = this.tituloProfesorDetalle;
@@ -176,7 +185,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Navega a la pÃ¡gina de ediciÃ³n
+   * Navega a la página de edición
    */
   irAEditar(): void {
     if (this.propuestaId) {
@@ -185,59 +194,90 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Navega a la pantalla formal de asignaciÃ³n de estudiantes.
+   * Navega a la pantalla formal de asignación de estudiantes.
    */
   irAAsignarEstudiantes(): void {
     if (this.propuestaId) {
-      this.router.navigate(['/propuestas', this.propuestaId, 'asignar-estudiantes']);
+      this.router.navigate(['/propuestas', this.propuestaId, 'asignar-estudiantes'], {
+        queryParams: { returnUrl: `/propuestas/${this.propuestaId}/detalle` }
+      });
     }
   }
 
   /**
-   * Abre modal de confirmaciÃ³n para envÃ­o a revisiÃ³n
+   * Envía o reenvía la propuesta desde la vista de detalle.
    */
   enviarARevision(): void {
-    if (confirm('Â¿Deseas enviar esta propuesta a revisiÃ³n?\n\nUna vez enviada, no podrÃ¡s editarla hasta que recibas observaciones.')) {
-      // TODO: Implementar envÃ­o a revisiÃ³n en el servicio
-      console.log('Enviar a revisiÃ³n:', this.propuestaId);
+    if (!this.propuestaId || !this.detalle) {
+      return;
     }
+
+    this.mostrarModalEnvio = true;
   }
 
   /**
-   * Abre modal de confirmaciÃ³n para reenvÃ­o
+   * Cierra el modal de envío.
    */
-  reenviarPropuesta(): void {
-    if (confirm('Â¿Deseas reenviar esta propuesta corregida?\n\nSe limpiarÃ¡n todas las observaciones y se marcarÃ¡ como PENDIENTE.')) {
-      // TODO: Implementar reenvÃ­o en el servicio
-      console.log('Reenviar propuesta:', this.propuestaId);
+  cancelarEnvio(): void {
+    this.mostrarModalEnvio = false;
+  }
+
+  /**
+   * Confirma el envío desde el modal formal.
+   */
+  confirmarEnvio(): void {
+    if (!this.propuestaId || !this.detalle) {
+      return;
     }
+
+    this.mensajeAccion = '';
+    const esObservada = this.detalle.estado === 'OBSERVADA';
+    const operacion = esObservada
+      ? this.propuestaService.reenviarDespuesDeObservaciones(this.propuestaId)
+      : this.propuestaService.enviarARevision(this.propuestaId);
+
+    this.cancelarEnvio();
+    operacion
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.mensajeAccion = esObservada
+            ? 'Propuesta reenviada a revisión correctamente.'
+            : 'Propuesta enviada a revisión correctamente.';
+          this.cargarDetalleCompleto(this.propuestaId as number);
+        },
+        error: (error) => {
+          this.mensajeAccion = error?.message || 'No se pudo enviar la propuesta. Revise que los datos estén completos.';
+          setTimeout(() => document.querySelector('.detalle-propuesta__mensaje-accion')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        }
+      });
   }
 
   /**
    * HU08 T26-T28: Elimina propuesta en estado BORRADOR
-   * Solicita confirmaciÃ³n antes de ejecutar
-   * Navega a tablero despuÃ©s de exitoso
+   * Solicita confirmación antes de ejecutar
+   * Navega a tablero después de exitoso
    */
   eliminarPropuesta(): void {
     if (!this.propuestaId) return;
 
-    // Solo permitir eliminaciÃ³n de propuestas BORRADOR
+    // Solo permitir eliminación de propuestas BORRADOR
     if (this.detalle?.estado !== 'BORRADOR') {
       alert(' Error: Solo se pueden eliminar propuestas en estado BORRADOR.\n\nEstado actual: ' + this.detalle?.estado);
       return;
     }
 
-    const nombrePropuesta = this.detalle?.titulo || 'Sin tÃ­tulo';
+    const nombrePropuesta = this.detalle?.titulo || 'Sin título';
     const confirmacion = confirm(
       ` ELIMINAR PROPUESTA\n\n` +
       `Propuesta: ${nombrePropuesta}\n` +
       `Estado: BORRADOR\n\n` +
-      ` ADVERTENCIA: Esta acciÃ³n NO se puede deshacer.\n\n` +
-      `Â¿Deseas continuar?`
+      ` ADVERTENCIA: Esta acción NO se puede deshacer.\n\n` +
+      `¿Deseas continuar?`
     );
 
     if (!confirmacion) {
-      return; // Usuario cancelÃ³
+      return; // Usuario canceló
     }
 
     // Llamar al servicio para eliminar
@@ -246,7 +286,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (respuesta: any) => {
           console.log(' HU08 T28: Propuesta eliminada correctamente', respuesta);
-          alert(' Propuesta eliminada exitosamente.\n\nSerÃ¡s redirigido al tablero.');
+          alert(' Propuesta eliminada exitosamente.\n\nSerás redirigido al tablero.');
           
           // Navegar al tablero
           setTimeout(() => {
@@ -256,13 +296,13 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
         error: (error: any) => {
           console.error(' HU08 T28: Error al eliminar propuesta', error);
           
-          // Manejo de errores especÃ­ficos
+          // Manejo de errores específicos
           if (error?.status === 403) {
             alert(' Error: Solo se pueden eliminar propuestas en estado BORRADOR.');
           } else if (error?.status === 404) {
             alert(' Error: Propuesta no encontrada.');
           } else if (error?.status === 400) {
-            alert(' Error: Datos invÃ¡lidos.');
+            alert(' Error: Datos inválidos.');
           } else {
             const mensaje = error?.error?.message || 'Error al eliminar la propuesta';
             alert(' Error: ' + mensaje);
@@ -279,14 +319,14 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * HU07 T24: Cierra modal de asignaciÃ³n
+   * HU07 T24: Cierra modal de asignación
    */
   cerrarModalAsignarEstudiantes(): void {
     this.mostrarModalAsignarEstudiantes = false;
   }
 
   /**
-   * HU07 T24-T25: Manejador cuando se completa la asignaciÃ³n
+   * HU07 T24-T25: Manejador cuando se completa la asignación
    */
   onAsignacionCompleta(evento: any): void {
     console.log(' HU07: Asignacion completada', evento);
@@ -298,7 +338,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * HU07 T25: Solicita nueva aprobaciÃ³n para propuesta APROBADA
+   * HU07 T25: Solicita nueva aprobación para propuesta APROBADA
    * Cambia estado APROBADA a PENDIENTE
    */
   solicitarNuevaAprobacion(): void {
@@ -306,24 +346,24 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
 
     const motivo = prompt(
       ' Cambios Detectados\n\n' +
-      'Esta propuesta estÃ¡ en estado APROBADA. Al solicitar nueva aprobaciÃ³n, pasarÃ¡ a PENDIENTE.\n\n' +
+      'Esta propuesta está en estado APROBADA. Al solicitar nueva aprobación, pasará a PENDIENTE.\n\n' +
       'Por favor, indica el motivo de la solicitud:'
     );
 
     if (!motivo || !motivo.trim()) {
-      return; // Usuario cancelÃ³
+      return; // Usuario canceló
     }
 
     this.propuestaService.solicitarNuevaAprobacion(this.propuestaId, motivo.trim())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (propuestaActualizada: any) => {
-          console.log(' HU07 T25: Nueva aprobaciÃ³n solicitada');
+          console.log(' HU07 T25: Nueva aprobación solicitada');
           // Actualizar el detalle local
           this.detalle = propuestaActualizada;
-          alert(' Nueva aprobaciÃ³n solicitada correctamente.\n\nLa propuesta cambiÃ³ a estado PENDIENTE.');
+          alert(' Nueva aprobación solicitada correctamente.\n\nLa propuesta cambió a estado PENDIENTE.');
           
-          // Recargar despuÃ©s de 1 segundo
+          // Recargar después de 1 segundo
           setTimeout(() => {
             if (this.propuestaId) {
               this.cargarDetalleCompleto(this.propuestaId);
@@ -331,8 +371,8 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
           }, 1000);
         },
         error: (error: any) => {
-          console.error('Error solicitando nueva aprobaciÃ³n:', error);
-          alert(' Error: ' + (error?.message || 'No se pudo solicitar nueva aprobaciÃ³n'));
+          console.error('Error solicitando nueva aprobación:', error);
+          alert(' Error: ' + (error?.message || 'No se pudo solicitar nueva aprobación'));
         }
       });
   }
@@ -393,21 +433,21 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene la resoluciÃ³n de aprobaciÃ³n para propuestas aprobadas.
+   * Obtiene la resolución de aprobación para propuestas aprobadas.
    */
   get resolucionCpgicDetalle(): string {
     return this.detalle?.resolucionCpgic || 'Res. 0042-CPGIC-2026';
   }
 
   /**
-   * Obtiene la fecha principal de aprobaciÃ³n.
+   * Obtiene la fecha principal de aprobación.
    */
   get fechaAprobacionDetalle(): string | Date {
     return this.detalle?.fechaAprobacion || this.detalle?.fechaActualizacion || this.detalle?.fechaCreacion;
   }
 
   /**
-   * Devuelve mÃ³dulos reales si existen; si no, genera mÃ³dulos visuales para la asignaciÃ³n.
+   * Devuelve módulos reales si existen; si no, genera módulos visuales para la asignación.
    */
   get modulosDetalle(): any[] {
     if (this.detalle?.componentes?.length) {
@@ -418,14 +458,14 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cuenta mÃ³dulos que todavÃ­a no muestran estudiante asignado.
+   * Cuenta módulos que todavía no muestran estudiante asignado.
    */
   get modulosSinEstudiante(): number {
     return this.modulosDetalle.filter(modulo => !this.obtenerEstudianteModulo(modulo)).length;
   }
 
   /**
-   * Obtiene el estudiante asociado visualmente a un mÃ³dulo.
+   * Obtiene el estudiante asociado visualmente a un módulo.
    */
   obtenerEstudianteModulo(modulo: any): any | null {
     if (modulo?.estudiante) {
@@ -450,7 +490,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene observaciones asociadas visualmente a una secciÃ³n del formulario.
+   * Obtiene observaciones asociadas visualmente a una sección del formulario.
    */
   observacionesPorSeccion(seccion: 'datos' | 'descripcion' | 'objetivo' | 'alcance' | 'componentes' | 'general'): any[] {
     const observaciones = this.detalle?.observaciones || [];
@@ -477,7 +517,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Resume quiÃ©n hizo la observaciÃ³n y cuÃ¡ndo.
+   * Resume quién hizo la observación y cuándo.
    */
   resumenObservacion(obs: any): string {
     const quien = this.texto(obs?.realizadoPor || 'Director');
@@ -495,7 +535,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   private obtenerSeccionObservacion(obs: any): 'datos' | 'descripcion' | 'objetivo' | 'alcance' | 'componentes' | 'general' {
     const texto = (obs?.seccion || obs?.campo || obs?.observacion || '').toLowerCase();
 
-    if (/(descripci[oÃ³]n|problem[aÃ¡]tica|problematica)/.test(texto)) {
+    if (/(descripci[oó]n|problem[aá]tica|problematica)/.test(texto)) {
       return 'descripcion';
     }
 
@@ -507,11 +547,11 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
       return 'alcance';
     }
 
-    if (/(actividad|actividades|m[oÃ³]dulo|modulo|producto|productos|hora|horas|componente)/.test(texto)) {
+    if (/(actividad|actividades|m[oó]dulo|modulo|producto|productos|hora|horas|componente)/.test(texto)) {
       return 'componentes';
     }
 
-    if (/(asignatura|participante|participantes|proyecto|t[iÃ­]tulo|titulo|datos generales|departamento|carrera)/.test(texto)) {
+    if (/(asignatura|participante|participantes|proyecto|t[ií]tulo|titulo|datos generales|departamento|carrera)/.test(texto)) {
       return 'datos';
     }
 
@@ -635,7 +675,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Aplica negrita y cursiva en lÃ­nea.
+   * Aplica negrita y cursiva en línea.
    */
   private aplicarMarcasInline(texto: string): string {
     return texto
@@ -666,9 +706,9 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
       .replace(/Ã³/g, 'ó')
       .replace(/Ãº/g, 'ú')
       .replace(/Ã±/g, 'ñ')
-      .replace(/Ã/g, 'Á')
+      .replace(/\u00C3\u0081/g, 'Á')
       .replace(/Ã‰/g, 'É')
-      .replace(/Ã/g, 'Í')
+      .replace(/\u00C3\u008D/g, 'Í')
       .replace(/Ã“/g, 'Ó')
       .replace(/Ãš/g, 'Ú')
       .replace(/Ã‘/g, 'Ñ')

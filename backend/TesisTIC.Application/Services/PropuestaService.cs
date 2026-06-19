@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using TesisTIC.Application.DTOs;
 using TesisTIC.Application.Interfaces;
 using TesisTIC.Domain.Entities;
@@ -7,7 +7,7 @@ namespace TesisTIC.Application.Services;
 
 /// <summary>
 /// Servicio para operaciones de propuestas
-/// Maneja mapeo de DTOs, validaciones y lÃ³gica de negocio
+/// Maneja mapeo de DTOs, validaciones y lógica de negocio
 /// </summary>
 public class PropuestaService : IPropuestaService
 {
@@ -45,7 +45,7 @@ public class PropuestaService : IPropuestaService
     public async Task<PropuestaDto?> GetByIdAsync(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
 
         var propuesta = await _repository.GetPropuestaFullAsync(id);
         return propuesta != null ? _mapper.Map<PropuestaDto>(propuesta) : null;
@@ -57,24 +57,24 @@ public class PropuestaService : IPropuestaService
     public async Task<IEnumerable<PropuestaDto>> GetPorEstadoAsync(string estado)
     {
         if (string.IsNullOrWhiteSpace(estado))
-            throw new ArgumentException("Estado no puede estar vacÃ­o", nameof(estado));
+            throw new ArgumentException("Estado no puede estar vacío", nameof(estado));
 
         // Validar estado
         var estadosValidos = new[] { "BORRADOR", "PENDIENTE", "OBSERVADA", "APROBADA", "RECHAZADA" };
         if (!estadosValidos.Contains(estado))
-            throw new ArgumentException($"Estado invÃ¡lido: {estado}");
+            throw new ArgumentException($"Estado inválido: {estado}");
 
         var propuestas = await _repository.GetPropuestasPorEstadoAsync(estado);
         return _mapper.Map<IEnumerable<PropuestaDto>>(propuestas);
     }
 
     /// <summary>
-    /// Obtiene propuestas de un profesor especÃ­fico
+    /// Obtiene propuestas de un profesor específico
     /// </summary>
     public async Task<IEnumerable<PropuestaDto>> GetPorProfesorAsync(int profesorId)
     {
         if (profesorId <= 0)
-            throw new ArgumentException("ID de profesor invÃ¡lido", nameof(profesorId));
+            throw new ArgumentException("ID de profesor inválido", nameof(profesorId));
 
         var propuestas = await _repository.GetPropuestasPorProfesorAsync(profesorId);
         return _mapper.Map<IEnumerable<PropuestaDto>>(propuestas);
@@ -126,12 +126,12 @@ public class PropuestaService : IPropuestaService
     /// <summary>
     /// HU05 T14: Actualiza una propuesta existente
     /// Solo permite editar si estado es BORRADOR u OBSERVADA
-    /// ActualizaciÃ³n parcial: solo campos no null se actualizan
+    /// Actualización parcial: solo campos no null se actualizan
     /// </summary>
     public async Task<PropuestaDto> UpdateAsync(int id, UpdatePropuestaDto dto)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
         if (dto == null)
             throw new ArgumentNullException(nameof(dto));
 
@@ -160,14 +160,10 @@ public class PropuestaService : IPropuestaService
         // Actualizar asignaturas si se proporcionan
         if (dto.AsignaturaIds != null)
         {
-            // Validar que hay al menos una asignatura
-            if (!dto.AsignaturaIds.Any())
-                throw new ArgumentException("Debe asignar al menos una asignatura a la propuesta");
-
-            // Eliminar asignaturas que ya no estÃ¡n en la lista
+            // En edición de borrador/observada se permite guardar sin asignaturas.
+            // El envío a revisión sigue validando que exista al menos una.
             propuesta.PropuestasAsignaturas.Clear();
 
-            // Agregar las nuevas asignaturas
             foreach (var asignaturaId in dto.AsignaturaIds)
             {
                 propuesta.PropuestasAsignaturas.Add(new PropuestaAsignatura
@@ -277,15 +273,15 @@ public class PropuestaService : IPropuestaService
     }
 
     /// <summary>
-    /// HU08 T26: Elimina una propuesta (solo si estÃ¡ en estado BORRADOR)
-    /// EliminaciÃ³n FÃSICA: Las cascadas en FK garantizan que relaciones se eliminen
+    /// HU08 T26: Elimina una propuesta (solo si está en estado BORRADOR)
+    /// Eliminaci?n F?SICA: Las cascadas en FK garantizan que relaciones se eliminen
     /// 
-    /// ValidaciÃ³n:
+    /// Validación:
     /// - Solo propuestas BORRADOR se pueden eliminar
     /// - PENDIENTE, OBSERVADA, APROBADA, RECHAZADA NO se pueden eliminar
     /// 
     /// Integridad:
-    /// - ON DELETE CASCADE elimina automÃ¡ticamente:
+    /// - ON DELETE CASCADE elimina automáticamente:
     ///   * propuesta_asignaturas
     ///   * propuesta_estudiantes
     ///   * observaciones_cpgic
@@ -294,14 +290,14 @@ public class PropuestaService : IPropuestaService
     public async Task<bool> DeleteAsync(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
 
         // Obtener propuesta para validar estado
         var propuesta = await _repository.GetByIdAsync(id);
         if (propuesta == null)
             throw new KeyNotFoundException($"Propuesta con ID {id} no encontrada");
 
-        // HU08: VALIDACIÃ“N - Solo se pueden eliminar propuestas BORRADOR
+        // HU08: VALIDACIÓN - Solo se pueden eliminar propuestas BORRADOR
         if (propuesta.Estado != "BORRADOR")
             throw new InvalidOperationException(
                 $"No se puede eliminar propuesta en estado {propuesta.Estado}. " +
@@ -316,9 +312,9 @@ public class PropuestaService : IPropuestaService
     public async Task<PropuestaDto> CambiarEstadoAsync(int id, UpdateEstadoPropuestaDto dto)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
         if (dto == null || string.IsNullOrWhiteSpace(dto.Estado))
-            throw new ArgumentException("Estado no puede estar vacÃ­o");
+            throw new ArgumentException("Estado no puede estar vacío");
 
         var propuesta = await _repository.CambiarEstadoAsync(id, dto.Estado);
         if (propuesta == null)
@@ -328,31 +324,31 @@ public class PropuestaService : IPropuestaService
     }
 
     /// <summary>
-    /// HU03 T07: EnvÃ­a una propuesta a revisiÃ³n (cambia estado BORRADOR -> PENDIENTE)
-    /// Realiza validaciones completas antes de permitir el envÃ­o:
+    /// HU03 T07: Envía una propuesta a revisión (cambia estado BORRADOR -> PENDIENTE)
+    /// Realiza validaciones completas antes de permitir el envío:
     /// - Nombre proyecto: 10-250 caracteres
-    /// - NÃºmero participantes: 1-5
-    /// - DescripciÃ³n: mÃ­nimo 20 caracteres
-    /// - Objetivo: no vacÃ­o
-    /// - Alcance: no vacÃ­o
-    /// - MÃ­nimo 1 asignatura asignada
+    /// - Número participantes: 1-5
+    /// - Descripción: mínimo 20 caracteres
+    /// - Objetivo: no vacío
+    /// - Alcance: no vacío
+    /// - Mínimo 1 asignatura asignada
     /// - Estado actual debe ser BORRADOR
     /// </summary>
     public async Task<PropuestaDto> EnviarARevisionAsync(int id, EnviarARevisionDto dto)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
 
         // Obtener propuesta con todas sus relaciones
         var propuesta = await _repository.GetPropuestaFullAsync(id);
         if (propuesta == null)
             throw new InvalidOperationException($"Propuesta con ID {id} no encontrada");
 
-        // ValidaciÃ³n 1: Estado actual debe ser BORRADOR
+        // Validación 1: Estado actual debe ser BORRADOR
         if (propuesta.Estado != "BORRADOR")
-            throw new InvalidOperationException($"La propuesta debe estar en estado BORRADOR para enviarla a revisiÃ³n. Estado actual: {propuesta.Estado}");
+            throw new InvalidOperationException($"La propuesta debe estar en estado BORRADOR para enviarla a revisión. Estado actual: {propuesta.Estado}");
 
-        // ValidaciÃ³n 2: Nombre proyecto
+        // Validación 2: Nombre proyecto
         if (string.IsNullOrWhiteSpace(propuesta.NombreProyecto))
             throw new ArgumentException("El nombre del proyecto es requerido");
         if (propuesta.NombreProyecto.Length < 10)
@@ -360,25 +356,25 @@ public class PropuestaService : IPropuestaService
         if (propuesta.NombreProyecto.Length > 500)
             throw new ArgumentException("El nombre del proyecto no puede exceder 500 caracteres");
 
-        // ValidaciÃ³n 3: NÃºmero de participantes
+        // Validación 3: Número de participantes
         if (propuesta.NumeroParticipantes <= 0 || propuesta.NumeroParticipantes > 5)
-            throw new ArgumentException("El nÃºmero de participantes debe estar entre 1 y 5");
+            throw new ArgumentException("El número de participantes debe estar entre 1 y 5");
 
-        // ValidaciÃ³n 4: DescripciÃ³n
+        // Validación 4: Descripción
         if (string.IsNullOrWhiteSpace(propuesta.Descripcion))
-            throw new ArgumentException("La descripciÃ³n de la propuesta es requerida");
+            throw new ArgumentException("La descripción de la propuesta es requerida");
         if (propuesta.Descripcion.Length < 20)
-            throw new ArgumentException("La descripciÃ³n debe tener al menos 20 caracteres");
+            throw new ArgumentException("La descripción debe tener al menos 20 caracteres");
 
-        // ValidaciÃ³n 5: Objetivo
+        // Validación 5: Objetivo
         if (string.IsNullOrWhiteSpace(propuesta.Objetivo))
             throw new ArgumentException("El objetivo de la propuesta es requerido");
 
-        // ValidaciÃ³n 6: Alcance
+        // Validación 6: Alcance
         if (string.IsNullOrWhiteSpace(propuesta.Alcance))
             throw new ArgumentException("El alcance de la propuesta es requerido");
 
-        // ValidaciÃ³n 7: MÃ­nimo una asignatura
+        // Validación 7: Mínimo una asignatura
         if (propuesta.PropuestasAsignaturas == null || !propuesta.PropuestasAsignaturas.Any())
             throw new ArgumentException("Debe asignar al menos una asignatura a la propuesta");
 
@@ -395,24 +391,24 @@ public class PropuestaService : IPropuestaService
     }
 
     /// <summary>
-    /// HU04 T12: ReenvÃ­a una propuesta despuÃ©s de correcciones
-    /// Limpia TODAS las observaciones y cambia estado OBSERVADA â†’ PENDIENTE
-    /// Solo se puede reenviar si estÃ¡ en estado OBSERVADA
+    /// HU04 T12: Reenvía una propuesta después de correcciones
+    /// Limpia TODAS las observaciones y cambia estado OBSERVADA → PENDIENTE
+    /// Solo se puede reenviar si está en estado OBSERVADA
     /// </summary>
     public async Task<PropuestaDto> ReenviarDespuesDeObservacionesAsync(int id)
     {
         if (id <= 0)
-            throw new ArgumentException("ID invÃ¡lido", nameof(id));
+            throw new ArgumentException("ID inválido", nameof(id));
 
         var propuesta = await _repository.GetPropuestaFullAsync(id);
         if (propuesta == null)
             throw new InvalidOperationException($"Propuesta con ID {id} no encontrada");
 
-        // Validar que estÃ¡ en estado OBSERVADA
+        // Validar que está en estado OBSERVADA
         if (propuesta.Estado != "OBSERVADA")
             throw new InvalidOperationException($"La propuesta debe estar en estado OBSERVADA para reenviarla. Estado actual: {propuesta.Estado}");
 
-        // Cambiar estado OBSERVADA â†’ PENDIENTE
+        // Cambiar estado OBSERVADA → PENDIENTE
         propuesta.Estado = "PENDIENTE";
 
         // Asegurar que todos los DateTime sean UTC antes de guardar (requerido para PostgreSQL)
@@ -442,7 +438,7 @@ public class PropuestaService : IPropuestaService
     public async Task<bool> AsignarAsignaturaAsync(int propuestaId, int asignaturaId)
     {
         if (propuestaId <= 0 || asignaturaId <= 0)
-            throw new ArgumentException("IDs invÃ¡lidos");
+            throw new ArgumentException("IDs inválidos");
 
         // Verificar que propuesta y asignatura existan
         var propuesta = await _repository.GetByIdAsync(propuestaId);
@@ -453,11 +449,11 @@ public class PropuestaService : IPropuestaService
         if (asignatura == null)
             throw new InvalidOperationException($"Asignatura {asignaturaId} no encontrada");
 
-        // Verificar que no estÃ© ya asignada
+        // Verificar que no esté ya asignada
         if (propuesta.PropuestasAsignaturas.Any(pa => pa.AsignaturaId == asignaturaId))
             return false; // Ya asignada
 
-        // Agregar nueva relaciÃ³n
+        // Agregar nueva relación
         propuesta.PropuestasAsignaturas.Add(new PropuestaAsignatura
         {
             PropuestaId = propuestaId,
@@ -475,7 +471,7 @@ public class PropuestaService : IPropuestaService
     public async Task<bool> RemoverAsignaturaAsync(int propuestaId, int asignaturaId)
     {
         if (propuestaId <= 0 || asignaturaId <= 0)
-            throw new ArgumentException("IDs invÃ¡lidos");
+            throw new ArgumentException("IDs inválidos");
 
         var propuesta = await _repository.GetByIdAsync(propuestaId);
         if (propuesta == null)
@@ -494,8 +490,8 @@ public class PropuestaService : IPropuestaService
     }
 
     /// <summary>
-    /// HU07 T23: Solicita una nueva aprobaciÃ³n de propuesta aprobada
-    /// Cambia estado APROBADA â†’ PENDIENTE
+    /// HU07 T23: Solicita una nueva aprobación de propuesta aprobada
+    /// Cambia estado APROBADA → PENDIENTE
     /// Solo se puede hacer desde APROBADA
     /// Registra cambio en historial de estados
     /// </summary>

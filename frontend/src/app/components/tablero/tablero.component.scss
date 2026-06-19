@@ -279,7 +279,7 @@ $color-rechazada-dot: $red;
   background: $white;
   border: 1px solid $g100;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -476,6 +476,64 @@ $color-rechazada-dot: $red;
   justify-content: flex-start;
   align-items: center;
   min-height: 32px;
+}
+
+.acciones-menu {
+  display: inline-flex;
+  position: relative;
+}
+
+.acciones-menu__lista {
+  background: $white;
+  border: 1px solid $g200;
+  border-radius: 7px;
+  box-shadow: 0 12px 26px rgba(14, 34, 64, 0.16);
+  display: grid;
+  min-width: 158px;
+  padding: 5px;
+  position: absolute;
+  right: 0;
+  top: 34px;
+  z-index: 20;
+
+  button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    color: $navy;
+    cursor: pointer;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 16px 1fr;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+
+    svg {
+      fill: none;
+      height: 16px;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2;
+      width: 16px;
+    }
+
+    &:hover {
+      background: #eef3fb;
+    }
+  }
+
+  .is-danger {
+    color: $red;
+
+    &:hover {
+      background: #FEF2F2;
+    }
+  }
 }
 
 .btn-accion {
@@ -746,6 +804,10 @@ $color-rechazada-dot: $red;
     }
   }
 
+  &__icono--navy {
+    color: $navy;
+  }
+
   h3 {
     color: $navy;
     font-size: 18px;
@@ -795,6 +857,17 @@ $color-rechazada-dot: $red;
     &:hover {
       background: #B91512;
       border-color: #8F100E;
+    }
+  }
+
+  &__btn--gold {
+    background: $gold;
+    border: 2px solid #C69018;
+    color: $navy;
+
+    &:hover {
+      background: #DCA92F;
+      border-color: #A77512;
     }
   }
 

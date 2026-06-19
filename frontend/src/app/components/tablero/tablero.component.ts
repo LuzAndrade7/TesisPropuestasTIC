@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -7,14 +7,14 @@ import { PropuestaResumen, EstadisticasTablero } from '../../models/tablero.mode
 
 /**
  * T05: Componente Tablero - Visualizar propuestas (HU02)
- * UbicaciÃ³n: src/app/components/tablero/tablero.component.ts
+ * Ubicación: src/app/components/tablero/tablero.component.ts
  * 
  * Funcionalidades:
  * - Mostrar tabla de propuestas
  * - Filtrar por estado
  * - Mostrar badges con colores por estado
  * - Botones para ver/editar/eliminar
- * - EstadÃ­sticas por estado
+ * - Estadísticas por estado
  */
 @Component({
   selector: 'app-tablero',
@@ -42,6 +42,9 @@ export class TableroComponent implements OnInit, OnDestroy {
   estadoActivo: string | null = null;
   mostrarModalEliminar = false;
   propuestaAEliminar: PropuestaResumen | null = null;
+  menuAccionesId: number | null = null;
+  mostrarModalEnvio = false;
+  propuestaAEnviar: PropuestaResumen | null = null;
 
   // Estados disponibles
   estados = ['BORRADOR', 'PENDIENTE', 'OBSERVADA', 'APROBADA', 'RECHAZADA'];
@@ -62,6 +65,14 @@ export class TableroComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Cierra menús flotantes al hacer clic fuera.
+   */
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.cerrarMenuAcciones();
   }
 
   /**
@@ -93,7 +104,7 @@ export class TableroComponent implements OnInit, OnDestroy {
           this.cargando = false;
 
           if (this.propuestas.length === 0) {
-            this.mensaje = 'No hay propuestas aÃºn. Crea una nueva propuesta para comenzar.';
+            this.mensaje = 'No hay propuestas aún. Crea una nueva propuesta para comenzar.';
           }
         },
         error: (error) => {
@@ -105,7 +116,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * T05: Calcular estadÃ­sticas por estado
+   * T05: Calcular estadísticas por estado
    */
   private calcularEstadisticas(): void {
     this.estadisticas = {
@@ -182,7 +193,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * T05: Obtener nÃºmero en botÃ³n estadÃ­sticas
+   * T05: Obtener número en botón estadísticas
    */
   obtenerNumeroEstado(estado: string): number {
     switch (estado) {
@@ -215,7 +226,14 @@ export class TableroComponent implements OnInit, OnDestroy {
    * HU07: Indica si la propuesta puede asignar estudiantes segun su estado.
    */
   puedeAsignarEstudiantes(estado: string): boolean {
-    return estado === 'PENDIENTE' || estado === 'APROBADA';
+    return estado === 'APROBADA' || estado === 'PENDIENTE';
+  }
+
+  /**
+   * Indica si una propuesta puede enviarse o reenviarse desde el tablero.
+   */
+  puedeEnviar(estado: string): boolean {
+    return estado === 'BORRADOR' || estado === 'OBSERVADA';
   }
 
   /**
@@ -238,13 +256,78 @@ export class TableroComponent implements OnInit, OnDestroy {
    */
   asignarEstudiantes(id: number): void {
     console.log(' HU07: Asignar estudiantes a propuesta:', id);
-    this.router.navigate(['/propuestas', id, 'asignar-estudiantes']);
+    this.router.navigate(['/propuestas', id, 'asignar-estudiantes'], {
+      queryParams: { returnUrl: '/tablero' }
+    });
+  }
+
+  /**
+   * Abre o cierra el menú de acciones de una propuesta.
+   */
+  toggleMenuAcciones(id: number, event: Event): void {
+    event.stopPropagation();
+    this.menuAccionesId = this.menuAccionesId === id ? null : id;
+  }
+
+  /**
+   * Cierra cualquier menú de acciones abierto.
+   */
+  cerrarMenuAcciones(): void {
+    this.menuAccionesId = null;
+  }
+
+  /**
+   * Envía o reenvía una propuesta desde el tablero.
+   */
+  enviarDesdeTablero(propuesta: PropuestaResumen): void {
+    this.cerrarMenuAcciones();
+    this.propuestaAEnviar = propuesta;
+    this.mostrarModalEnvio = true;
+  }
+
+  /**
+   * Cierra el modal de envío.
+   */
+  cancelarEnvio(): void {
+    this.mostrarModalEnvio = false;
+    this.propuestaAEnviar = null;
+  }
+
+  /**
+   * Confirma el envío o reenvío desde el modal formal.
+   */
+  confirmarEnvio(): void {
+    const propuesta = this.propuestaAEnviar;
+    if (!propuesta) {
+      return;
+    }
+
+    const esObservada = propuesta.estado === 'OBSERVADA';
+    const operacion = esObservada
+      ? this.propuestaService.reenviarDespuesDeObservaciones(propuesta.id)
+      : this.propuestaService.enviarARevision(propuesta.id);
+
+    this.cancelarEnvio();
+    operacion
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.mensaje = esObservada
+            ? 'Propuesta reenviada a revisión correctamente'
+            : 'Propuesta enviada a revisión correctamente';
+          this.cargarPropuestas();
+        },
+        error: (error) => {
+          this.mensaje = error?.message || 'No se pudo enviar la propuesta. Revise que los datos estén completos.';
+        }
+      });
   }
 
   /**
    * T05: Eliminar propuesta
    */
   eliminarPropuesta(id: number): void {
+    this.cerrarMenuAcciones();
     const propuesta = this.propuestas.find(item => item.id === id) || null;
 
     if (!propuesta) {
@@ -310,4 +393,5 @@ export class TableroComponent implements OnInit, OnDestroy {
     return `${dia}/${mes}/${anio}`;
   }
 }
+
 

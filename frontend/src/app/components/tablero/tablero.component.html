@@ -1,12 +1,12 @@
-﻿<!--
+<!--
 T05: Template Tablero - Visualizar propuestas (HU02)
-UbicaciÃ³n: src/app/components/tablero/tablero.component.html
+Ubicación: src/app/components/tablero/tablero.component.html
 
 Estructura del prototipo:
-- Encabezado con tÃ­tulo y botÃ³n "Nueva propuesta"
-- EstadÃ­sticas por estado (6 botones: TODOS + 5 estados)
-- Tabla con propuestas (NÂ°, TÃ­tulo, Estado, ActualizaciÃ³n, Acciones)
-- Mensaje vacÃ­o si no hay propuestas
+- Encabezado con título y botón "Nueva propuesta"
+- Estadísticas por estado (6 botones: TODOS + 5 estados)
+- Tabla con propuestas (N°, Título, Estado, Actualización, Acciones)
+- Mensaje vacío si no hay propuestas
 -->
 
 <div class="tablero-container">
@@ -22,9 +22,9 @@ Estructura del prototipo:
     </button>
   </div>
 
-  <!-- ESTADÃSTICAS POR ESTADO -->
+  <!-- ESTAD?STICAS POR ESTADO -->
   <div class="stats-row">
-    <!-- BotÃ³n TODOS -->
+    <!-- Botón TODOS -->
     <button 
       class="stat-btn"
       [ngClass]="obtenerClaseFiltro(null)"
@@ -46,7 +46,7 @@ Estructura del prototipo:
     </button>
   </div>
 
-  <!-- MENSAJE DE ERROR O VACÃO -->
+  <!-- MENSAJE DE ERROR O VAC?O -->
   <div *ngIf="mensaje" class="mensaje-alerta">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 9v2m0 4v2m8.364-15.536a9 9 0 11-12.728 0"></path>
@@ -74,12 +74,12 @@ Estructura del prototipo:
       </thead>
       <tbody>
         <tr *ngFor="let propuesta of propuestasFiltradas; let i = index">
-          <!-- NÃºmero -->
+          <!-- Número -->
           <td class="col-numero">
             <span class="numero">{{ i + 1 }}</span>
           </td>
 
-          <!-- TÃ­tulo del proyecto -->
+          <!-- Título del proyecto -->
           <td class="col-titulo">
             <div class="titulo-contenedor">
               <div class="titulo-texto">{{ propuesta.nombreProyecto }}</div>
@@ -101,56 +101,49 @@ Estructura del prototipo:
             </div>
           </td>
 
-          <!-- Fecha de ActualizaciÃ³n -->
+          <!-- Fecha de Actualización -->
           <td class="col-fecha">
             <span class="fecha">{{ formatearFecha(propuesta.fechaActualizacion) }}</span>
           </td>
 
           <!-- Acciones -->
           <td class="col-acciones">
-            <!-- Acciones disponibles segun estado de la propuesta -->
-            <div class="acciones-group">
-              <button 
-                class="btn-accion btn-ver"
-                title="Ver propuesta"
-                aria-label="Ver propuesta"
-                (click)="verDetalle(propuesta.id)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
+            <!-- Menú de acciones disponibles segun estado de la propuesta -->
+            <div class="acciones-menu">
+              <button
+                class="btn-accion btn-menu"
+                title="Acciones"
+                aria-label="Acciones"
+                (click)="toggleMenuAcciones(propuesta.id, $event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="5" r="1"></circle>
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="12" cy="19" r="1"></circle>
                 </svg>
               </button>
-              <button 
-                *ngIf="puedeEditar(propuesta.estado)"
-                class="btn-accion btn-editar"
-                title="Editar"
-                (click)="editarPropuesta(propuesta.id)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                </svg>
-              </button>
-              <button 
-                *ngIf="puedeAsignarEstudiantes(propuesta.estado)"
-                class="btn-accion btn-asignar"
-                title="Asignar estudiantes"
-                (click)="asignarEstudiantes(propuesta.id)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </button>
-              <button 
-                *ngIf="puedeEliminar(propuesta.estado)"
-                class="btn-accion btn-eliminar"
-                title="Eliminar"
-                (click)="eliminarPropuesta(propuesta.id)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  <line x1="10" y1="11" x2="10" y2="17"></line>
-                  <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-              </button>
+
+              <div *ngIf="menuAccionesId === propuesta.id" class="acciones-menu__lista" (click)="$event.stopPropagation()">
+                <button type="button" (click)="verDetalle(propuesta.id); cerrarMenuAcciones()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <span>Ver propuesta</span>
+                </button>
+                <button *ngIf="puedeEditar(propuesta.estado)" type="button" (click)="editarPropuesta(propuesta.id); cerrarMenuAcciones()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"></path></svg>
+                  <span>Editar</span>
+                </button>
+                <button *ngIf="puedeEnviar(propuesta.estado)" type="button" (click)="enviarDesdeTablero(propuesta)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"></path><path d="M22 2 11 13"></path></svg>
+                  <span>{{ propuesta.estado === 'OBSERVADA' ? 'Reenviar' : 'Enviar' }}</span>
+                </button>
+                <button *ngIf="puedeAsignarEstudiantes(propuesta.estado)" type="button" (click)="asignarEstudiantes(propuesta.id); cerrarMenuAcciones()">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>Asignar estudiantes</span>
+                </button>
+                <button *ngIf="puedeEliminar(propuesta.estado)" type="button" class="is-danger" (click)="eliminarPropuesta(propuesta.id)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg>
+                  <span>Eliminar</span>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -158,7 +151,7 @@ Estructura del prototipo:
     </table>
   </div>
 
-  <!-- TABLA VACÃA (sin propuestas) -->
+  <!-- TABLA VAC?A (sin propuestas) -->
   <div *ngIf="!cargando && propuestasFiltradas.length === 0" class="tabla-vacia">
     <div class="vacia-icono">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -175,7 +168,30 @@ Estructura del prototipo:
     </button>
   </div>
 
-  <!-- Modal de eliminaciÃ³n de propuesta. -->
+  <!-- Modal de envío o reenvío de propuesta. -->
+  <div *ngIf="mostrarModalEnvio" class="tablero-modal">
+    <section class="tablero-modal__contenido">
+      <div class="tablero-modal__icono tablero-modal__icono--navy">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
+          <path d="M22 2 11 13"></path>
+        </svg>
+      </div>
+      <h3>{{ propuestaAEnviar?.estado === 'OBSERVADA' ? 'Reenviar propuesta' : 'Enviar propuesta' }}</h3>
+      <strong>"{{ propuestaAEnviar?.nombreProyecto }}"</strong>
+      <p>
+        {{ propuestaAEnviar?.estado === 'OBSERVADA'
+          ? 'Revise que las observaciones hayan sido corregidas antes de reenviar a revisión.'
+          : 'Revise que el formulario esté completo antes de enviarlo a revisión.' }}
+      </p>
+      <footer>
+        <button type="button" class="tablero-modal__btn tablero-modal__btn--gold" (click)="confirmarEnvio()">Sí, continuar</button>
+        <button type="button" class="tablero-modal__btn tablero-modal__btn--light" (click)="cancelarEnvio()">Cancelar</button>
+      </footer>
+    </section>
+  </div>
+
+  <!-- Modal de eliminación de propuesta. -->
   <div *ngIf="mostrarModalEliminar" class="tablero-modal">
     <section class="tablero-modal__contenido">
       <div class="tablero-modal__icono">

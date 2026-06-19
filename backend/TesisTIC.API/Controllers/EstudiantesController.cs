@@ -311,8 +311,8 @@ public class EstudiantesController : ControllerBase
             if (propuesta == null)
                 return NotFound(new { message = $"Propuesta con ID {propuestaId} no encontrada" });
 
-            if (propuesta.Estado != "APROBADA")
-                return BadRequest(new { message = $"Solo propuestas APROBADAS pueden asignar estudiantes. Estado actual: {propuesta.Estado}" });
+            if (propuesta.Estado != "APROBADA" && propuesta.Estado != "PENDIENTE")
+                return BadRequest(new { message = $"Solo propuestas APROBADAS o PENDIENTES pueden asignar estudiantes. Estado actual: {propuesta.Estado}" });
 
             var estadoAnterior = propuesta.Estado;
 
