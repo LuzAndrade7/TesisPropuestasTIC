@@ -60,6 +60,16 @@ export class FormularioPropuestaComponent implements OnInit {
         { nombre: '', horas: 0 },
         { nombre: '', horas: 0 }
       ]
+    },
+    {
+      nombre: '',
+      descripcion: '',
+      productos: '',
+      estudiante: '',
+      actividades: [
+        { nombre: '', horas: 0 },
+        { nombre: '', horas: 0 }
+      ]
     }
   ];
 
@@ -67,6 +77,7 @@ export class FormularioPropuestaComponent implements OnInit {
   cargando = false;
   guardando = false;
   enviando = false;
+  guardadoEnSesion = false;
   mensajeError = '';
   mensajeExito = '';
   mostrarModalConfirmacion = false;
@@ -84,6 +95,12 @@ export class FormularioPropuestaComponent implements OnInit {
   mostrarModalReenvio = false; // Modal de confirmación para reenvío
   mostrarModalCancelar = false;
   mostrarModalEliminarElemento = false;
+  mostrarModalJustificacionParticipantes = false;
+  mostrarModalMaximoHoras = false;
+  cantidadParticipantesIntentada = 0;
+  moduloMaximoHoras = 0;
+  horasIntentadas = 0;
+  horasDisponiblesModulo = 0;
   tipoElementoEliminar: 'modulo' | 'actividad' | null = null;
   indiceModuloEliminar: number | null = null;
   indiceActividadEliminar: number | null = null;
@@ -91,6 +108,8 @@ export class FormularioPropuestaComponent implements OnInit {
 
   // Validaciones
   readonly MAX_PARTICIPANTES = 5;
+  readonly MIN_PARTICIPANTES = 2;
+  readonly MAX_HORAS_MODULO = 288;
   readonly MIN_NOMBRES_PROYECTO = 10;
   readonly MAX_NOMBRES_PROYECTO = 250;
   readonly MIN_DESCRIPCION = 20;
@@ -114,10 +133,10 @@ export class FormularioPropuestaComponent implements OnInit {
         ]
       ],
       numeroParticipantes: [
-        1,
+        2,
         [
           Validators.required,
-          Validators.min(1),
+          Validators.min(this.MIN_PARTICIPANTES),
           Validators.max(this.MAX_PARTICIPANTES)
         ]
       ],
@@ -303,6 +322,19 @@ export class FormularioPropuestaComponent implements OnInit {
     }
 
     // Mostrar modal de confirmación
+    if (this.formulario.invalid) {
+      this.mostrarErroresValidacion();
+      return;
+    }
+
+    const errorModulos = this.validarModulosParaEnvio();
+    if (errorModulos) {
+      this.mensajeError = errorModulos;
+      setTimeout(() => document.querySelector('.propuesta-form__modulo')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      return;
+    }
+
     this.mostrarModalReenvio = true;
   }
 
@@ -353,9 +385,6 @@ export class FormularioPropuestaComponent implements OnInit {
         this.formulario.disable();
         
         // Redirigir al dashboard después de 1.5 segundos
-        setTimeout(() => {
-          this.router.navigate(['/tablero']);
-        }, 1500);
       },
       error: (error) => {
         console.error(' HU04 T12: Error reenviando:', error);
@@ -405,13 +434,12 @@ export class FormularioPropuestaComponent implements OnInit {
         // Si fue creación, actualizar el ID
         if (!this.propuestaId) {
           this.propuestaId = propuesta.id;
+          window.history.replaceState({}, '', `/propuestas/${propuesta.id}/editar`);
         }
         this.guardarSnapshotInicial();
+        this.guardadoEnSesion = true;
 
         // Redirigir al dashboard después de 1.5 segundos
-        setTimeout(() => {
-          this.router.navigate(['/tablero']);
-        }, 1500);
       },
       error: (error) => {
         console.error(' T01/HU05: Error guardando:', error);
@@ -436,6 +464,16 @@ export class FormularioPropuestaComponent implements OnInit {
     // Validación frontend
     if (this.formulario.invalid) {
       this.mostrarErroresValidacion();
+      return;
+    }
+
+    const errorModulos = this.validarModulosParaEnvio();
+    if (errorModulos) {
+      this.mensajeError = errorModulos;
+      setTimeout(() => {
+        document.querySelector('.propuesta-form__seccion--modulos, .propuesta-form__modulo')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       return;
     }
 
@@ -503,9 +541,6 @@ export class FormularioPropuestaComponent implements OnInit {
         this.formulario.disable();
         
         // Redirigir al dashboard después de 1.5 segundos
-        setTimeout(() => {
-          this.router.navigate(['/tablero']);
-        }, 1500);
       },
       error: (error) => {
         console.error(' HU03: Error enviando a revisión:', error);
@@ -582,6 +617,13 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
+   * Vuelve al dashboard protegiendo los cambios sin guardar.
+   */
+  volverAlDashboard(): void {
+    this.cancelar();
+  }
+
+  /**
    * Construir objeto propuesta desde formulario
    */
   private construirPropuesta(): CreatePropuestaRequest | Partial<CreatePropuestaRequest> {
@@ -636,8 +678,8 @@ export class FormularioPropuestaComponent implements OnInit {
     const componentes = propuesta.componentes || propuesta.componentesDto || [];
 
     if (!componentes.length) {
-      this.modulos = [
-        {
+      const cantidad = Math.min(this.MAX_PARTICIPANTES, Math.max(this.MIN_PARTICIPANTES, Number(propuesta.numeroParticipantes || 2)));
+      this.modulos = Array.from({ length: cantidad }, () => ({
           nombre: '',
           descripcion: '',
           productos: '',
@@ -646,8 +688,7 @@ export class FormularioPropuestaComponent implements OnInit {
             { nombre: '', horas: 0 },
             { nombre: '', horas: 0 }
           ]
-        }
-      ];
+        }));
       return;
     }
 
@@ -911,7 +952,7 @@ export class FormularioPropuestaComponent implements OnInit {
   tituloObservacion(obs: any): string {
     return this.esObservacionNuevaAprobacion(obs)
       ? 'Observación para el miembro de la CPGIC'
-      : 'Observación del director';
+      : 'Observación de un miembro de la CPGIC';
   }
 
   /**
@@ -927,7 +968,7 @@ export class FormularioPropuestaComponent implements OnInit {
    * Resume quien realizo una observacion y cuando.
    */
   resumenObservacion(obs: any): string {
-    const quien = this.texto(obs?.realizadoPor || 'Director');
+    const quien = this.texto(obs?.realizadoPor || 'Miembro de la CPGIC');
     const fecha = obs?.fechaObservacion ? new Date(obs.fechaObservacion).toLocaleDateString('es-EC') : '';
 
     if (quien && fecha) {
@@ -1015,6 +1056,42 @@ export class FormularioPropuestaComponent implements OnInit {
   }
 
   /**
+   * Agrega módulos vacíos al aumentar el número de participantes.
+   */
+  sincronizarCantidadModulos(): void {
+    const cantidadIngresada = Number(this.formulario.get('numeroParticipantes')?.value || 0);
+
+    if (cantidadIngresada < this.MIN_PARTICIPANTES || cantidadIngresada > this.MAX_PARTICIPANTES) {
+      this.cantidadParticipantesIntentada = cantidadIngresada;
+      this.mostrarModalJustificacionParticipantes = true;
+    }
+
+    const participantes = Math.min(
+      this.MAX_PARTICIPANTES,
+      Math.max(this.MIN_PARTICIPANTES, cantidadIngresada || this.MIN_PARTICIPANTES)
+    );
+    this.formulario.get('numeroParticipantes')?.setValue(participantes, { emitEvent: false });
+
+    while (this.modulos.length < participantes) {
+      this.agregarModulo();
+    }
+  }
+
+  /**
+   * Cierra el aviso de justificación excepcional.
+   */
+  cerrarJustificacionParticipantes(): void {
+    this.mostrarModalJustificacionParticipantes = false;
+  }
+
+  /**
+   * Cierra el aviso de maximo de horas por modulo.
+   */
+  cerrarModalMaximoHoras(): void {
+    this.mostrarModalMaximoHoras = false;
+  }
+
+  /**
    * Elimina un módulo visual del formulario.
    */
   eliminarModulo(index: number): void {
@@ -1094,7 +1171,20 @@ export class FormularioPropuestaComponent implements OnInit {
     const actividad = this.modulos[indexModulo].actividades[indexActividad];
 
     if (campo === 'horas') {
-      actividad.horas = Number(valor) || 0;
+      const horasIngresadas = Math.max(0, Number(valor) || 0);
+      const modulo = this.modulos[indexModulo];
+      const horasOtrasActividades = modulo.actividades
+        .filter((_, posicion) => posicion !== indexActividad)
+        .reduce((total, item) => total + Number(item.horas || 0), 0);
+      const horasDisponibles = Math.max(0, this.MAX_HORAS_MODULO - horasOtrasActividades);
+
+      if (horasIngresadas > horasDisponibles) {
+        actividad.horas = horasDisponibles;
+        this.abrirModalMaximoHoras(indexModulo, horasIngresadas, horasDisponibles);
+        return;
+      }
+
+      actividad.horas = horasIngresadas;
       return;
     }
 
@@ -1106,6 +1196,49 @@ export class FormularioPropuestaComponent implements OnInit {
    */
   totalHorasModulo(modulo: ModuloFormulario): number {
     return modulo.actividades.reduce((total, actividad) => total + Number(actividad.horas || 0), 0);
+  }
+
+  /**
+   * Muestra un aviso cuando se intenta superar el maximo de horas del modulo.
+   */
+  private abrirModalMaximoHoras(indexModulo: number, horasIntentadas: number, horasDisponibles: number): void {
+    this.moduloMaximoHoras = indexModulo + 1;
+    this.horasIntentadas = horasIntentadas;
+    this.horasDisponiblesModulo = horasDisponibles;
+    this.mostrarModalMaximoHoras = true;
+  }
+
+  /**
+   * Valida módulos, actividades y horas antes del envío.
+   */
+  private validarModulosParaEnvio(): string {
+    const participantes = Number(this.formulario.get('numeroParticipantes')?.value || 0);
+
+    if (this.modulos.length !== participantes) {
+      return `No se puede enviar: debe registrar exactamente ${participantes} módulo(s), uno por participante.`;
+    }
+
+    for (let indice = 0; indice < this.modulos.length; indice++) {
+      const modulo = this.modulos[indice];
+
+      if (!modulo.nombre.trim() || !modulo.descripcion.trim()) {
+        return `No se puede enviar: complete el nombre y la descripción del módulo ${indice + 1}.`;
+      }
+
+      if (!modulo.actividades.length || modulo.actividades.some(actividad => !actividad.nombre.trim())) {
+        return `No se puede enviar: complete las actividades del módulo ${indice + 1}.`;
+      }
+
+      if (this.totalHorasModulo(modulo) > this.MAX_HORAS_MODULO) {
+        return `No se puede enviar: el módulo ${indice + 1} supera el máximo de ${this.MAX_HORAS_MODULO} horas.`;
+      }
+
+      if (!modulo.productos.trim()) {
+        return `No se puede enviar: complete los productos esperados del módulo ${indice + 1}.`;
+      }
+    }
+
+    return '';
   }
 
   /**
@@ -1379,5 +1512,3 @@ export class FormularioPropuestaComponent implements OnInit {
       .replace(/â€/g, '”');
   }
 }
-
-

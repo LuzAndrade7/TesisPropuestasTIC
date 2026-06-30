@@ -16,7 +16,7 @@
   <section *ngIf="detalle && !cargando" class="detalle-propuesta__contenido">
     <!-- Encabezado visual. -->
     <article class="detalle-propuesta__documento">
-      <div *ngIf="mensajeAccion" class="detalle-propuesta__mensaje-accion">
+      <div *ngIf="mensajeAccion" class="detalle-propuesta__mensaje-accion" [class.detalle-propuesta__mensaje-accion--error]="mensajeAccionError">
         {{ mensajeAccion }}
       </div>
 
@@ -67,7 +67,7 @@
 
       <!-- Aviso principal para propuestas observadas. -->
       <aside *ngIf="detalle.estado === 'OBSERVADA' && detalle.observaciones?.length" class="detalle-propuesta__aviso-observada">
-        <strong>Esta propuesta tiene observaciones del director</strong>
+        <strong>Esta propuesta tiene observaciones de un miembro de la CPGIC</strong>
         <span>Revise los recuadros amarillos en cada sección y corrija lo indicado antes de reenviar.</span>
       </aside>
 

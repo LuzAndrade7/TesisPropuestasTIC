@@ -7,7 +7,7 @@
       <span class="asignar-estudiantes__marca"></span>
       <h1>Asignar / editar estudiantes</h1>
       <div class="asignar-estudiantes__acciones">
-        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--gold" (click)="guardar()" [disabled]="guardando || totalSeleccionados === 0 || cargando">
+        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--gold" (click)="guardar()" [disabled]="guardando || cargando">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Z"></path><path d="M8 4v6h8"></path><path d="M8 17h8"></path></svg>
           <span>Guardar asignación</span>
         </button>
@@ -53,7 +53,8 @@
       <article
         *ngFor="let modulo of modulosVisuales; let i = index"
         class="asignar-estudiantes__modulo"
-        [class.asignar-estudiantes__modulo--asignado]="estudiantesPorModulo[modulo.orden]">
+        [class.asignar-estudiantes__modulo--asignado]="estudiantesPorModulo[modulo.orden]"
+        [class.asignar-estudiantes__modulo--invalido]="intentoGuardar && !(estudiantesPorModulo[modulo.orden] || '').trim()">
         <header>
           <strong>Módulo {{ modulo.orden || i + 1 }}: {{ texto(modulo.nombre || ('Módulo ' + (i + 1))) }}</strong>
           <span>{{ estudiantesPorModulo[modulo.orden] ? 'Estudiante asignado' : 'Sin estudiante asignado' }}</span>
@@ -70,9 +71,6 @@
             placeholder="Nombre completo del estudiante">
         </label>
 
-        <small *ngIf="estudiantesPorModulo[modulo.orden]">
-          Actualmente: {{ nombreEstudiantePorId(estudiantesPorModulo[modulo.orden]) }}
-        </small>
       </article>
     </div>
 
@@ -83,4 +81,3 @@
     </label>
   </section>
 </main>
-

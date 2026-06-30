@@ -496,6 +496,11 @@ $color-rechazada-dot: $red;
   top: 34px;
   z-index: 20;
 
+  &--arriba {
+    bottom: 34px;
+    top: auto;
+  }
+
   button {
     align-items: center;
     background: transparent;
@@ -533,6 +538,16 @@ $color-rechazada-dot: $red;
     &:hover {
       background: #FEF2F2;
     }
+  }
+}
+
+.mensaje-alerta--error {
+  background-color: #FEF2F2;
+  border-color: $red;
+  color: #991B1B;
+
+  svg {
+    color: $red;
   }
 }
 

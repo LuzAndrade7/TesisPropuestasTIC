@@ -50,6 +50,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   mensajeExito = '';
   mostrarAdvertencia = false; // Advertencia si hay cambios desde APROBADA
   returnUrl = '';
+  intentoGuardar = false;
 
   // Control del término de búsqueda
   private busqueda$ = new Subject<string>();
@@ -250,8 +251,20 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.estudiantesSeleccionados.length === 0) {
-      this.mensajeError = 'Debes seleccionar al menos un estudiante';
+    const participantes = Number(this.detalle?.numeroParticipantes || 0);
+
+    if (participantes < 2 || participantes > 5) {
+      this.mensajeError = 'La propuesta debe tener entre 2 y 5 participantes.';
+      return false;
+    }
+
+    if (this.modulosVisuales.length !== participantes) {
+      this.mensajeError = `La propuesta debe tener exactamente ${participantes} módulos, uno por participante.`;
+      return false;
+    }
+
+    if (this.estudiantesSeleccionados.length !== participantes) {
+      this.mensajeError = `Debe asignar exactamente ${participantes} estudiantes, uno por módulo.`;
       return false;
     }
 
@@ -262,9 +275,14 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
    * Guarda la asignación de estudiantes
    */
   guardar(): void {
+    this.intentoGuardar = true;
     this.sincronizarSeleccionDesdeModulos();
 
     if (!this.validar()) {
+      setTimeout(() => {
+        document.querySelector('.asignar-estudiantes__alerta--error, .asignar-estudiantes__modulo--invalido')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
       return;
     }
 
@@ -385,6 +403,7 @@ export class AsignarEstudiantesComponent implements OnInit, OnDestroy {
   seleccionarEstudianteModulo(orden: number, nombreEstudiante: string): void {
     this.estudiantesPorModulo[orden] = nombreEstudiante;
     this.sincronizarSeleccionDesdeModulos();
+    this.mensajeError = '';
   }
 
   /**

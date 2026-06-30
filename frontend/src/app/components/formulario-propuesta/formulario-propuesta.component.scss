@@ -444,6 +444,7 @@ $white: #FFFFFF;
     border-radius: 7px;
     display: grid;
     gap: 6px;
+    isolation: isolate;
     max-height: 190px;
     overflow: auto;
     padding: 8px;
@@ -452,11 +453,14 @@ $white: #FFFFFF;
 
   &__buscador-asignaturas {
     align-items: center;
+    background: $white;
     display: flex;
     gap: 6px;
+    margin: -8px -8px 0;
+    padding: 8px 8px 6px;
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 3;
 
     input {
       background: $soft;
@@ -495,6 +499,7 @@ $white: #FFFFFF;
 
   &__select-item {
     align-items: center;
+    background: $white;
     border: 1px solid #E1E7EF;
     border-radius: 7px;
     color: #384252;
@@ -721,7 +726,19 @@ $white: #FFFFFF;
 
   &__tabla-total td {
     color: $navy;
+    font-size: 12px;
     font-weight: 800;
+  }
+
+  &__horas {
+    background: #F3F7FC;
+
+    input {
+      color: $navy !important;
+      font-size: 13px !important;
+      font-weight: 800;
+      text-align: center;
+    }
   }
 
   &__aprobaciones {
@@ -923,6 +940,27 @@ $white: #FFFFFF;
 .modal-icono--warning { color: #9A6A06; }
 
 .modal-icono--danger { color: $red; }
+
+.modal-justificacion {
+  color: $navy;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 7px;
+  margin-top: 18px;
+  text-align: left;
+
+  textarea {
+    background: #F1F5F9;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    color: #64748B;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 10px 12px;
+    resize: none;
+  }
+}
 
 .modal-footer {
   display: flex;

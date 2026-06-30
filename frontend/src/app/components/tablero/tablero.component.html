@@ -47,7 +47,7 @@ Estructura del prototipo:
   </div>
 
   <!-- MENSAJE DE ERROR O VAC?O -->
-  <div *ngIf="mensaje" class="mensaje-alerta">
+  <div *ngIf="mensaje" class="mensaje-alerta" [class.mensaje-alerta--error]="mensajeEsError">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 9v2m0 4v2m8.364-15.536a9 9 0 11-12.728 0"></path>
     </svg>
@@ -122,7 +122,11 @@ Estructura del prototipo:
                 </svg>
               </button>
 
-              <div *ngIf="menuAccionesId === propuesta.id" class="acciones-menu__lista" (click)="$event.stopPropagation()">
+              <div
+                *ngIf="menuAccionesId === propuesta.id"
+                class="acciones-menu__lista"
+                [class.acciones-menu__lista--arriba]="menuAccionesHaciaArriba"
+                (click)="$event.stopPropagation()">
                 <button type="button" (click)="verDetalle(propuesta.id); cerrarMenuAcciones()">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   <span>Ver propuesta</span>
@@ -214,4 +218,3 @@ Estructura del prototipo:
   </div>
 
 </div>
-

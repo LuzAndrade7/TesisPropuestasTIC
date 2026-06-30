@@ -123,6 +123,12 @@ $white: #FFFFFF;
     padding: 10px 12px;
   }
 
+  &__mensaje-accion--error {
+    background: #FEF2F2;
+    border-color: $red;
+    color: #991B1B;
+  }
+
   &__modal {
     align-items: center;
     background: rgba(14, 34, 64, 0.42);

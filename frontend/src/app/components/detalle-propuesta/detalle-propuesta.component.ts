@@ -27,6 +27,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   cargando = true;
   error: string | null = null;
   mensajeAccion = '';
+  mensajeAccionError = false;
   mostrarModalEnvio = false;
   
   // HU07 T24-T25: Control del modal de asignación
@@ -231,6 +232,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
     }
 
     this.mensajeAccion = '';
+    this.mensajeAccionError = false;
     const esObservada = this.detalle.estado === 'OBSERVADA';
     const operacion = esObservada
       ? this.propuestaService.reenviarDespuesDeObservaciones(this.propuestaId)
@@ -244,10 +246,12 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
           this.mensajeAccion = esObservada
             ? 'Propuesta reenviada a revisión correctamente.'
             : 'Propuesta enviada a revisión correctamente.';
+          this.mensajeAccionError = false;
           this.cargarDetalleCompleto(this.propuestaId as number);
         },
         error: (error) => {
           this.mensajeAccion = error?.message || 'No se pudo enviar la propuesta. Revise que los datos estén completos.';
+          this.mensajeAccionError = true;
           setTimeout(() => document.querySelector('.detalle-propuesta__mensaje-accion')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
         }
       });
@@ -504,7 +508,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
   tituloObservacion(obs: any): string {
     return this.esObservacionNuevaAprobacion(obs)
       ? 'Observación para el miembro de la CPGIC'
-      : 'Observación del director';
+      : 'Observación de un miembro de la CPGIC';
   }
 
   /**
@@ -520,7 +524,7 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
    * Resume quién hizo la observación y cuándo.
    */
   resumenObservacion(obs: any): string {
-    const quien = this.texto(obs?.realizadoPor || 'Director');
+    const quien = this.texto(obs?.realizadoPor || 'Miembro de la CPGIC');
     const fecha = obs?.fechaObservacion ? this.formatearFechaCorta(obs.fechaObservacion) : '';
     if (quien && fecha) {
       return `${quien} - ${fecha}`;
@@ -727,5 +731,3 @@ export class DetallePropuestaComponent implements OnInit, OnDestroy {
       .replace(/â€/g, '”');
   }
 }
-
-

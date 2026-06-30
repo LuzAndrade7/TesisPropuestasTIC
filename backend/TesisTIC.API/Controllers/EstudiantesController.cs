@@ -320,6 +320,21 @@ public class EstudiantesController : ControllerBase
             if (!modulos.Any())
                 return BadRequest(new { message = "La propuesta no tiene modulos registrados para asignar estudiantes" });
 
+            if (propuesta.NumeroParticipantes < 2 || propuesta.NumeroParticipantes > 5)
+                return BadRequest(new { message = "La propuesta debe tener entre 2 y 5 participantes" });
+
+            if (modulos.Count != propuesta.NumeroParticipantes)
+                return BadRequest(new
+                {
+                    message = $"La propuesta debe tener exactamente {propuesta.NumeroParticipantes} módulos, uno por participante"
+                });
+
+            if (estudianteIds.Count != propuesta.NumeroParticipantes)
+                return BadRequest(new
+                {
+                    message = $"Debe asignar exactamente {propuesta.NumeroParticipantes} estudiantes, uno por módulo"
+                });
+
             foreach (var modulo in modulos)
             {
                 modulo.EstudianteId = null;

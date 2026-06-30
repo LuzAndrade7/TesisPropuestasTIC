@@ -216,6 +216,15 @@ $white: #FFFFFF;
     }
   }
 
+  &__modulo--invalido {
+    background: #FEF2F2;
+    border-color: $red;
+
+    input {
+      border-color: $red;
+    }
+  }
+
   &__motivo {
     color: $navy;
     display: grid;

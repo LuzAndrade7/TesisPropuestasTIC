@@ -39,10 +39,12 @@ export class TableroComponent implements OnInit, OnDestroy {
   // Control UI
   cargando = false;
   mensaje = '';
+  mensajeEsError = false;
   estadoActivo: string | null = null;
   mostrarModalEliminar = false;
   propuestaAEliminar: PropuestaResumen | null = null;
   menuAccionesId: number | null = null;
+  menuAccionesHaciaArriba = false;
   mostrarModalEnvio = false;
   propuestaAEnviar: PropuestaResumen | null = null;
 
@@ -81,6 +83,7 @@ export class TableroComponent implements OnInit, OnDestroy {
   cargarPropuestas(): void {
     this.cargando = true;
     this.mensaje = '';
+    this.mensajeEsError = false;
     
     console.log(' T06: Cargando propuestas del API...');
     
@@ -105,11 +108,13 @@ export class TableroComponent implements OnInit, OnDestroy {
 
           if (this.propuestas.length === 0) {
             this.mensaje = 'No hay propuestas aún. Crea una nueva propuesta para comenzar.';
+            this.mensajeEsError = false;
           }
         },
         error: (error) => {
           console.error(' T06: Error cargando propuestas:', error);
           this.mensaje = 'Error al cargar propuestas del servidor';
+          this.mensajeEsError = true;
           this.cargando = false;
         }
       });
@@ -148,8 +153,10 @@ export class TableroComponent implements OnInit, OnDestroy {
 
     if (this.propuestasFiltradas.length === 0 && estado) {
       this.mensaje = `No hay propuestas con estado "${estado}"`;
+      this.mensajeEsError = false;
     } else {
       this.mensaje = '';
+      this.mensajeEsError = false;
     }
   }
 
@@ -266,7 +273,21 @@ export class TableroComponent implements OnInit, OnDestroy {
    */
   toggleMenuAcciones(id: number, event: Event): void {
     event.stopPropagation();
-    this.menuAccionesId = this.menuAccionesId === id ? null : id;
+
+    if (this.menuAccionesId === id) {
+      this.cerrarMenuAcciones();
+      return;
+    }
+
+    const boton = event.currentTarget as HTMLElement;
+    const posicion = boton.getBoundingClientRect();
+    const alturaMenuEstimada = 210;
+    const espacioInferior = window.innerHeight - posicion.bottom;
+    const espacioSuperior = posicion.top;
+
+    this.menuAccionesHaciaArriba =
+      espacioInferior < alturaMenuEstimada && espacioSuperior > espacioInferior;
+    this.menuAccionesId = id;
   }
 
   /**
@@ -274,6 +295,7 @@ export class TableroComponent implements OnInit, OnDestroy {
    */
   cerrarMenuAcciones(): void {
     this.menuAccionesId = null;
+    this.menuAccionesHaciaArriba = false;
   }
 
   /**
@@ -315,10 +337,12 @@ export class TableroComponent implements OnInit, OnDestroy {
           this.mensaje = esObservada
             ? 'Propuesta reenviada a revisión correctamente'
             : 'Propuesta enviada a revisión correctamente';
+          this.mensajeEsError = false;
           this.cargarPropuestas();
         },
         error: (error) => {
           this.mensaje = error?.message || 'No se pudo enviar la propuesta. Revise que los datos estén completos.';
+          this.mensajeEsError = true;
         }
       });
   }
@@ -393,5 +417,3 @@ export class TableroComponent implements OnInit, OnDestroy {
     return `${dia}/${mes}/${anio}`;
   }
 }
-
-

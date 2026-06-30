@@ -334,6 +334,37 @@ public class PropuestaService : IPropuestaService
     /// - Mínimo 1 asignatura asignada
     /// - Estado actual debe ser BORRADOR
     /// </summary>
+    private static void ValidarModulosParaRevision(Propuesta propuesta)
+    {
+        const int maximoHoras = 288;
+        var modulos = propuesta.Componentes?.OrderBy(c => c.Orden).ToList() ?? new List<Componente>();
+
+        if (modulos.Count != propuesta.NumeroParticipantes)
+            throw new ArgumentException(
+                $"Debe registrar exactamente {propuesta.NumeroParticipantes} módulos, uno por participante");
+
+        for (var indice = 0; indice < modulos.Count; indice++)
+        {
+            var modulo = modulos[indice];
+
+            if (string.IsNullOrWhiteSpace(modulo.Nombre) || string.IsNullOrWhiteSpace(modulo.Descripcion))
+                throw new ArgumentException($"Debe completar el nombre y la descripción del módulo {indice + 1}");
+
+            if (modulo.Actividades == null || !modulo.Actividades.Any() ||
+                modulo.Actividades.Any(a => string.IsNullOrWhiteSpace(a.Descripcion)))
+                throw new ArgumentException($"Debe completar las actividades del módulo {indice + 1}");
+
+            if (modulo.Actividades.Any(a => a.Horas < 0 || a.Horas > maximoHoras))
+                throw new ArgumentException($"Cada actividad debe tener entre 0 y {maximoHoras} horas");
+
+            if (modulo.Actividades.Sum(a => a.Horas) > maximoHoras)
+                throw new ArgumentException($"El módulo {indice + 1} supera el máximo de {maximoHoras} horas");
+
+            if (modulo.ProductosEsperados == null || !modulo.ProductosEsperados.Any())
+                throw new ArgumentException($"Debe registrar al menos un producto esperado en el módulo {indice + 1}");
+        }
+    }
+
     public async Task<PropuestaDto> EnviarARevisionAsync(int id, EnviarARevisionDto dto)
     {
         if (id <= 0)
@@ -357,8 +388,8 @@ public class PropuestaService : IPropuestaService
             throw new ArgumentException("El nombre del proyecto no puede exceder 500 caracteres");
 
         // Validación 3: Número de participantes
-        if (propuesta.NumeroParticipantes <= 0 || propuesta.NumeroParticipantes > 5)
-            throw new ArgumentException("El número de participantes debe estar entre 1 y 5");
+        if (propuesta.NumeroParticipantes < 2 || propuesta.NumeroParticipantes > 5)
+            throw new ArgumentException("El número de participantes debe estar entre 2 y 5");
 
         // Validación 4: Descripción
         if (string.IsNullOrWhiteSpace(propuesta.Descripcion))
@@ -377,6 +408,8 @@ public class PropuestaService : IPropuestaService
         // Validación 7: Mínimo una asignatura
         if (propuesta.PropuestasAsignaturas == null || !propuesta.PropuestasAsignaturas.Any())
             throw new ArgumentException("Debe asignar al menos una asignatura a la propuesta");
+
+        ValidarModulosParaRevision(propuesta);
 
         // Si todas las validaciones pasan, cambiar estado a PENDIENTE
         propuesta.Estado = "PENDIENTE";
@@ -403,6 +436,11 @@ public class PropuestaService : IPropuestaService
         var propuesta = await _repository.GetPropuestaFullAsync(id);
         if (propuesta == null)
             throw new InvalidOperationException($"Propuesta con ID {id} no encontrada");
+
+        if (propuesta.NumeroParticipantes < 2 || propuesta.NumeroParticipantes > 5)
+            throw new ArgumentException("El número de participantes debe estar entre 2 y 5");
+
+        ValidarModulosParaRevision(propuesta);
 
         // Validar que está en estado OBSERVADA
         if (propuesta.Estado != "OBSERVADA")
