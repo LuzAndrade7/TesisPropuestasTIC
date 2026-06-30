@@ -128,8 +128,6 @@ Documentos principales:
 - `MANIFEST.md`: estado de entrega y archivos importantes.
 - `documentation/README.md`: indice tecnico.
 - `documentation/GUIA_EJECUCION.md`: pasos para ejecutar.
-- `documentation/RESUMEN_FINAL_COMPLETO.md`: resumen funcional final.
-- `documentation/RESUMEN_SESION.md`: resumen de cambios recientes.
 
 ## Configuracion Segura
 
