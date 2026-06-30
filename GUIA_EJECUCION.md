@@ -104,18 +104,6 @@ Para verificar manualmente con `psql` si esta instalado, usa el valor real de tu
 psql "postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require&channel_binding=require"
 ```
 
-## Scripts SQL
-
-Los scripts se encuentran en `database/`:
-
-- `sprint1_init.sql`
-- `sprint2_observaciones.sql`
-- `sprint3_historial_estados.sql`
-- `sprint4_propuesta_estudiantes.sql`
-- `Setup_Propuesta_Observada.sql`
-
-Ejecutarlos en orden si se necesita reconstruir una base desde cero.
-
 ## Prueba Rapida
 
 1. Abrir frontend en `/tablero`.

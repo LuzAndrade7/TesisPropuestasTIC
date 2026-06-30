@@ -32,7 +32,7 @@ Frontend:
 Base de datos:
 
 - PostgreSQL en Neon
-- Scripts SQL por sprint en `database/`
+- Esquema gestionado desde el backend con Entity Framework Core y la base remota configurada por cadena de conexion local.
 
 ## Funcionalidad Final
 
@@ -72,9 +72,9 @@ TesisPropuestasTIC-1/
     src/app/components/
     src/app/services/
     src/app/models/
-  database/
-  documentation/
-  postman/
+  GUIA_EJECUCION.md
+  README.md
+  MANIFEST.md
 ```
 
 ## Ejecucion
@@ -126,8 +126,9 @@ Resultado:
 Documentos principales:
 
 - `MANIFEST.md`: estado de entrega y archivos importantes.
-- `documentation/README.md`: indice tecnico.
-- `documentation/GUIA_EJECUCION.md`: pasos para ejecutar.
+- `GUIA_EJECUCION.md`: pasos para ejecutar.
+
+La carpeta `documentation/` se deja vacia para no mezclar documentos antiguos con la entrega final.
 
 ## Configuracion Segura
 

@@ -29,8 +29,9 @@ Frontend:
 
 Base de datos:
 
-- Scripts SQL por sprint en `database/`.
-- Tablas para propuestas, componentes, actividades, productos esperados, observaciones, historial y estudiantes.
+- PostgreSQL Neon como base remota.
+- Conexion configurada fuera de Git mediante variable de entorno, user-secrets o `appsettings.Local.json`.
+- Modelo de datos gestionado por Entity Framework Core en el backend.
 
 ## Historias Cubiertas
 
@@ -85,25 +86,13 @@ Frontend:
 - `frontend/src/app/components/asignar-estudiantes/`
 - `frontend/src/environments/`
 
-Base de datos:
-
-- `database/sprint1_init.sql`
-- `database/sprint2_observaciones.sql`
-- `database/sprint3_historial_estados.sql`
-- `database/sprint4_propuesta_estudiantes.sql`
-- `database/Setup_Propuesta_Observada.sql`
-
 Documentacion:
 
 - `README.md`
 - `MANIFEST.md`
-- `documentation/README.md`
-- `documentation/GUIA_EJECUCION.md`
-- `documentation/RESUMEN_FINAL_COMPLETO.md`
-- `documentation/RESUMEN_SESION.md`
-- `documentation/guias/TESTING.md`
-- `documentation/endpoints/README.md`
-- `postman/TesisTIC_Collection.json`
+- `GUIA_EJECUCION.md`
+
+La carpeta `documentation/` queda vacia por decision de entrega.
 
 ## Seguridad de Credenciales
 
@@ -137,4 +126,4 @@ Resultado esperado:
 
 ## Recomendacion Para Main
 
-Para llevar la version final a `main`, incluir codigo fuente backend, frontend, scripts de base de datos, documentacion actualizada y coleccion Postman. No incluir carpetas generadas como `bin/`, `obj/`, `node_modules/` o `dist/`.
+La rama `main` debe contener solo la version final: codigo fuente backend, codigo fuente frontend, `README.md`, `MANIFEST.md` y `GUIA_EJECUCION.md`. No incluir carpetas antiguas de documentacion, scripts SQL sueltos, colecciones Postman ni artefactos generados como `bin/`, `obj/`, `node_modules/` o `dist/`.
