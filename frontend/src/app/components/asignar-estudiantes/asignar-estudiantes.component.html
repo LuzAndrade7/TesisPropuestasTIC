@@ -1,0 +1,83 @@
+<!-- Pantalla formal para asignar o editar estudiantes de una propuesta aprobada. -->
+<main class="asignar-estudiantes">
+  <!-- Contenedor principal de asignación. -->
+  <section class="asignar-estudiantes__panel" [formGroup]="formulario">
+    <!-- Encabezado visual. -->
+    <header class="asignar-estudiantes__encabezado">
+      <span class="asignar-estudiantes__marca"></span>
+      <h1>Asignar / editar estudiantes</h1>
+      <div class="asignar-estudiantes__acciones">
+        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--gold" (click)="guardar()" [disabled]="guardando || cargando">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5V4Z"></path><path d="M8 4v6h8"></path><path d="M8 17h8"></path></svg>
+          <span>Guardar asignación</span>
+        </button>
+        <button type="button" class="asignar-estudiantes__btn asignar-estudiantes__btn--light" (click)="cerrarModal()" [disabled]="guardando">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 6-12 12"></path><path d="m6 6 12 12"></path></svg>
+          <span>Cancelar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Resumen de la propuesta aprobada. -->
+    <article class="asignar-estudiantes__resumen">
+      <strong>{{ texto(detalle?.nombreProyecto || 'Propuesta aprobada') }}</strong>
+      <span class="asignar-estudiantes__badge"><i></i>{{ estadoPropuesta }}</span>
+      <small *ngIf="detalle?.estado === 'APROBADA'">Resolución: {{ resolucionResumen }}</small>
+    </article>
+
+    <!-- Texto contextual. -->
+    <p class="asignar-estudiantes__ayuda">
+      Ingrese o corrija el nombre del estudiante de cada módulo. Los módulos con estudiante ya asignado muestran el valor actual como referencia.
+    </p>
+
+    <!-- Mensajes de estado. -->
+    <div *ngIf="mensajeError" class="asignar-estudiantes__alerta asignar-estudiantes__alerta--error">
+      {{ mensajeError }}
+    </div>
+    <div *ngIf="mensajeExito" class="asignar-estudiantes__alerta asignar-estudiantes__alerta--exito">
+      {{ mensajeExito }}
+    </div>
+
+    <!-- Estado de carga. -->
+    <div *ngIf="cargando" class="asignar-estudiantes__carga">
+      <div class="asignar-estudiantes__spinner"></div>
+      <span>Cargando estudiantes...</span>
+    </div>
+
+    <!-- Tarjetas de módulos. -->
+    <div *ngIf="!cargando && !modulosVisuales.length" class="asignar-estudiantes__alerta asignar-estudiantes__alerta--error">
+      Esta propuesta no tiene módulos guardados. Edite la propuesta, agregue módulos y guarde los cambios antes de asignar estudiantes.
+    </div>
+
+    <div *ngIf="!cargando && modulosVisuales.length" class="asignar-estudiantes__modulos">
+      <article
+        *ngFor="let modulo of modulosVisuales; let i = index"
+        class="asignar-estudiantes__modulo"
+        [class.asignar-estudiantes__modulo--asignado]="estudiantesPorModulo[modulo.orden]"
+        [class.asignar-estudiantes__modulo--invalido]="intentoGuardar && !(estudiantesPorModulo[modulo.orden] || '').trim()">
+        <header>
+          <strong>Módulo {{ modulo.orden || i + 1 }}: {{ texto(modulo.nombre || ('Módulo ' + (i + 1))) }}</strong>
+          <span>{{ estudiantesPorModulo[modulo.orden] ? 'Estudiante asignado' : 'Sin estudiante asignado' }}</span>
+        </header>
+
+        <p>{{ texto(modulo.descripcion) }}</p>
+
+        <label>
+          Nombre del estudiante propuesto
+          <input
+            type="text"
+            [value]="estudiantesPorModulo[modulo.orden] || ''"
+            (input)="seleccionarEstudianteModulo(modulo.orden, $any($event.target).value)"
+            placeholder="Nombre completo del estudiante">
+        </label>
+
+      </article>
+    </div>
+
+    <!-- Motivo si se edita una propuesta ya aprobada con estudiantes previos. -->
+    <label *ngIf="mostrarAdvertencia" class="asignar-estudiantes__motivo">
+      Motivo del cambio
+      <textarea formControlName="motivo" rows="3" placeholder="Explique brevemente el motivo del cambio de estudiantes."></textarea>
+    </label>
+  </section>
+</main>

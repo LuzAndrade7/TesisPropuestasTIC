@@ -1,0 +1,179 @@
+/\*\*
+
+- HU08 T26: Análisis de Eliminación Lógica vs Física
+-
+- CONTEXTO DEL SISTEMA:
+- - Las propuestas en estado BORRADOR aún no han sido aprobadas
+- - No han ingresado al flujo de revisión formal
+- - No tienen datos sensibles de auditoría que requieran conservación
+- - Las propuestas PENDIENTE/OBSERVADA/APROBADA sí deben conservarse para auditoría
+-
+- ============================================================
+- OPCIÓN 1: ELIMINACIÓN LÓGICA (Soft Delete)
+- ============================================================
+-
+- IMPLEMENTACIÓN:
+- - Agregar campo "eliminado" (boolean) o "estado_eliminacion" a tablas
+- - No eliminar registros físicamente
+- - Filtrar en SELECT WHERE eliminado = false
+- - Usar UPDATE propuestas SET eliminado = true
+-
+- VENTAJAS:
+- ✓ Conserva historial completo de datos
+- ✓ Posibilidad de recuperar datos eliminados
+- ✓ Cumple auditoría regulatoria estricta
+- ✓ Rastrea quién y cuándo eliminó algo
+- ✓ No hay problemas de integridad referencial
+- ✓ Reversible: puede "desmarcar" eliminado
+-
+- DESVENTAJAS:
+- ✗ Requiere filtros WHERE en todas las queries
+- ✗ Mayor ocupación de disco
+- ✗ Lógica más compleja en la aplicación
+- ✗ Riesgo de filtros WHERE olvidados
+- ✗ El usuario ve "borrada" pero los datos sigen en BD
+- ✗ No es una "verdadera" eliminación
+-
+- CASOS DE USO:
+- - Sistemas financieros con auditoría estricta
+- - Datos personales protegidos (GDPR)
+- - Propuestas APROBADAS o en revisión
+- - Cuando necesitas reconstruir un historial
+-
+- ============================================================
+- OPCIÓN 2: ELIMINACIÓN FÍSICA (Hard Delete) - ELEGIDA ✓
+- ============================================================
+-
+- IMPLEMENTACIÓN:
+- - DELETE FROM propuestas WHERE id = ?
+- - Cascadas automáticas en FK (ON DELETE CASCADE)
+- - Transacción para garantizar consistencia
+- - Sin campos adicionales en tablas
+-
+- VENTAJAS:
+- ✓ SIMPLIFICA LÓGICA: No hay filtros WHERE adicionales
+- ✓ RENDIMIENTO: Menos filas en la BD
+- ✓ INTUITIVO: "Eliminar" = verdadera eliminación
+- ✓ LIMPIO: No hay registros "fantasma"
+- ✓ CONSISTENCIA: Las cascadas manejan relaciones automáticamente
+- ✓ PostgreSQL CASCADE garantiza integridad
+- ✓ Es lo que el usuario espera ver
+-
+- DESVENTAJAS:
+- ✗ No se pueden recuperar datos (irrecuperable)
+- ✗ No hay historial de auditoría en BD
+- ✗ Requiere cuidado en validación (solo BORRADOR)
+- ✗ Si hay error en relación, falla la cascada
+-
+- CASOS DE USO:
+- - Borradores NO publicados
+- - Datos temporales / de prueba
+- - Cuando la integridad referencial es clara
+- - GDPR "derecho al olvido" para datos no críticos
+- - Este sistema: Propuestas BORRADOR
+-
+- ============================================================
+- DECISIÓN FINAL: ELIMINACIÓN FÍSICA ✓
+- ============================================================
+-
+- JUSTIFICACIÓN PARA ESTE SISTEMA:
+-
+- 1.  SEGURIDAD DEL ESTADO:
+- - SOLO propuestas BORRADOR se pueden eliminar
+- - Las APROBADAS/PENDIENTE nunca se tocan
+- - El validador en servicio previene errores
+-
+- 2.  INTEGRIDAD REFERENCIAL:
+- - Tabla propuesta_estudiantes: ON DELETE CASCADE
+- - Tabla propuesta_asignaturas: ON DELETE CASCADE
+- - Tabla observaciones_cpgic: ON DELETE CASCADE
+- - Tabla historial_estados: ON DELETE CASCADE
+- - PostgreSQL garantiza que TODO se elimina atómicamente
+-
+- 3.  COMPLEJIDAD DE CÓDIGO:
+- - Sin eliminación lógica: Queries simples
+- - Sin campos eliminado/activo: 1 menos columna
+- - Sin WHERE adicionales: Más eficiencia
+- - Sin necesidad de migration posterior
+-
+- 4.  EXPERIENCIA DEL USUARIO:
+- - "Eliminar" debería significar que desaparece
+- - Borradores son datos NO publicados
+- - No es un acta legal o documento financiero
+- - El usuario NO espera recuperar un borrador
+-
+- 5.  CONTEXTO ACADÉMICO:
+- - Propuestas TIC son documentos académicos
+- - Borradores son versiones de trabajo
+- - Una vez APROBADA, entra en sistema de auditoría (historial)
+- - Antes de eso, es seguro eliminar
+-
+- ============================================================
+- IMPLEMENTACIÓN TÉCNICA
+- ============================================================
+-
+- 1.  VALIDACIÓN EN SERVICIO:
+- if (propuesta.Estado != "BORRADOR")
+-      throw new InvalidOperationException(
+-        "Solo se pueden eliminar propuestas en estado BORRADOR");
+-
+- 2.  TRANSACCIÓN EN BASE DE DATOS:
+- BEGIN TRANSACTION;
+- DELETE FROM propuesta_estudiantes WHERE propuesta_id = @id;
+- DELETE FROM propuesta_asignaturas WHERE propuesta_id = @id;
+- DELETE FROM observaciones_cpgic WHERE propuesta_id = @id;
+- DELETE FROM historial_estados WHERE propuesta_id = @id;
+- DELETE FROM propuestas WHERE id = @id;
+- COMMIT;
+-
+- O SIMPLEMENTE:
+- DELETE FROM propuestas WHERE id = @id;
+- (Las cascadas PostgreSQL hacen el resto automáticamente)
+-
+- 3.  MANEJO DE ERRORES:
+- - ArgumentException (400): ID inválido
+- - KeyNotFoundException (404): Propuesta no existe
+- - InvalidOperationException (403): Estado no es BORRADOR
+- - DbUpdateException (500): Error en BD
+-
+- 4.  CONFIRMACIÓN EN FRONTEND:
+- - Modal con advertencia clara
+- - "Esta acción NO se puede deshacer"
+- - Doble confirmación recomendada
+- - Feedback visual durante eliminación
+-
+- ============================================================
+- RELACIONES Y CASCADAS
+- ============================================================
+-
+- Propuesta BORRADOR (estado_propuesta = 'BORRADOR'):
+-
+- ┌─ propuestas ────────────────┐
+- │ id │
+- │ estado = 'BORRADOR' │ ← Será eliminada
+- │ ... otros campos │
+- └─────────────────────────────┘
+-           │
+-       [FK con CASCADE]
+-           │
+- ┌──────┴──────────┬─────────────────┬─────────────────┐
+- │ │ │ │
+- v v v v
+- propuesta* propuesta* observaciones* historial*
+- asignaturas estudiantes cpgic estados
+- ─────────────────────────────────────────────────────────────
+- Elim. auto Elim. auto Elim. auto Elim. auto
+- (CASCADE) (CASCADE) (CASCADE) (CASCADE)
+-
+- ============================================================
+- CONCLUSIÓN
+- ============================================================
+-
+- Para este sistema:
+- - Eliminación FÍSICA es la mejor opción
+- - Validación en servicio previene errores
+- - Cascadas PostgreSQL garantizan integridad
+- - Código más simple y eficiente
+- - Experiencia de usuario más clara
+- - Propuestas APROBADAS/PENDIENTE están protegidas por validación
+- \*/

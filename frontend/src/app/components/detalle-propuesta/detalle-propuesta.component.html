@@ -1,0 +1,313 @@
+﻿<!-- Vista de detalle en modo lectura para el formulario F_AA_233A. -->
+<main class="detalle-propuesta">
+  <!-- Estado de carga. -->
+  <section *ngIf="cargando" class="detalle-propuesta__carga">
+    <div class="detalle-propuesta__spinner"></div>
+    <p>Cargando detalle de propuesta...</p>
+  </section>
+
+  <!-- Estado de error. -->
+  <section *ngIf="error && !cargando" class="detalle-propuesta__alerta">
+    <strong>Error:</strong> {{ error }}
+    <button type="button" (click)="volverAlTablero()">Volver</button>
+  </section>
+
+  <!-- Documento de detalle. -->
+  <section *ngIf="detalle && !cargando" class="detalle-propuesta__contenido">
+    <!-- Encabezado visual. -->
+    <article class="detalle-propuesta__documento">
+      <div *ngIf="mensajeAccion" class="detalle-propuesta__mensaje-accion" [class.detalle-propuesta__mensaje-accion--error]="mensajeAccionError">
+        {{ mensajeAccion }}
+      </div>
+
+      <header class="detalle-propuesta__hero">
+        <span class="detalle-propuesta__marca"></span>
+        <h1>Detalle de propuesta</h1>
+
+        <!-- Acciones principales debajo del título. -->
+        <div class="detalle-propuesta__acciones">
+          <button *ngIf="puedeAsignarEstudiantes" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAAsignarEstudiantes()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>{{ estudiantesAsignados.length ? 'Editar estudiantes' : 'Asignar estudiantes' }}</span>
+          </button>
+
+          <button *ngIf="puedeEditar" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--gold" (click)="irAEditar()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"/></svg>
+            <span>Editar propuesta</span>
+          </button>
+
+          <button *ngIf="puedeEnviarRevision" type="button" class="detalle-propuesta__btn detalle-propuesta__btn--navy" (click)="enviarARevision()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+            <span>{{ detalle.estado === 'OBSERVADA' ? 'Reenviar' : 'Enviar' }}</span>
+          </button>
+
+          <button type="button" class="detalle-propuesta__btn detalle-propuesta__btn--light" (click)="volverAlTablero()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            <span>Volver</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Estado y fechas principales. -->
+      <div class="detalle-propuesta__estado-panel">
+        <span>Estado:</span>
+        <strong class="detalle-propuesta__badge" [ngClass]="claseEstado(detalle.estado)">
+          <i></i>{{ detalle.estado }}
+        </strong>
+        <ng-container *ngIf="detalle.estado === 'APROBADA'; else fechaActualizacion">
+          <span>Aprobación:</span>
+          <strong>{{ formatearFechaCorta(fechaAprobacionDetalle) }}</strong>
+          <span class="detalle-propuesta__estado-extra">{{ modulosSinEstudiante }} módulo{{ modulosSinEstudiante === 1 ? '' : 's' }} sin estudiante asignado</span>
+        </ng-container>
+        <ng-template #fechaActualizacion>
+          <span>Última actualización:</span>
+          <strong>{{ formatearFechaCorta(detalle.fechaActualizacion || detalle.fechaCreacion) }}</strong>
+        </ng-template>
+      </div>
+
+      <!-- Aviso principal para propuestas observadas. -->
+      <aside *ngIf="detalle.estado === 'OBSERVADA' && detalle.observaciones?.length" class="detalle-propuesta__aviso-observada">
+        <strong>Esta propuesta tiene observaciones de un miembro de la CPGIC</strong>
+        <span>Revise los recuadros amarillos en cada sección y corrija lo indicado antes de reenviar.</span>
+      </aside>
+
+      <!-- Aviso principal para propuestas aprobadas. -->
+      <aside *ngIf="detalle.estado === 'APROBADA'" class="detalle-propuesta__aviso-aprobada">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>Propuesta aprobada por la CPGIC. Puede asignar estudiantes a los módulos disponibles.</span>
+      </aside>
+
+      <!-- Datos generales. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Datos generales</h2>
+        <table class="detalle-propuesta__tabla-info">
+          <tbody>
+            <tr>
+              <th>Unidad Académica:</th>
+              <td>Facultad de Ingeniería de Sistemas</td>
+            </tr>
+            <tr>
+              <th>Carrera:</th>
+              <td>Ingeniería de Software</td>
+            </tr>
+            <tr>
+              <th>Proyecto:</th>
+              <td>{{ texto(detalle.nombreProyecto) }}</td>
+            </tr>
+            <tr>
+              <th>Número de participantes:</th>
+              <td>{{ detalle.numeroParticipantes }}</td>
+            </tr>
+            <tr>
+              <th>Departamento:</th>
+              <td>Departamento de Informática y Ciencias de la Computación</td>
+            </tr>
+            <tr>
+              <th>Línea de investigación:</th>
+              <td>Ingeniería de Software</td>
+            </tr>
+            <tr>
+              <th>Asignaturas:</th>
+              <td>
+                <ul class="detalle-propuesta__lista-simple" *ngIf="detalle.asignaturas?.length; else sinAsignaturas">
+                  <li *ngFor="let asignatura of detalle.asignaturas">
+                    {{ texto(asignatura.nombre) }} <span>({{ texto(asignatura.codigo) }})</span>
+                  </li>
+                </ul>
+                <ng-template #sinAsignaturas><span>—</span></ng-template>
+              </td>
+            </tr>
+            <tr>
+              <th>Profesor:</th>
+              <td>{{ texto(nombreProfesorConTituloDetalle) }}</td>
+            </tr>
+            <tr *ngIf="detalle.estado === 'APROBADA'">
+              <th>Resolución CPGIC:</th>
+              <td><strong>{{ resolucionCpgicDetalle }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('datos')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Descripción del proyecto. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Descripción del proyecto</h2>
+        <div class="detalle-propuesta__texto" [innerHTML]="renderizarTexto(detalle.descripcion)"></div>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('descripcion')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Objetivo del proyecto. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Objetivo del proyecto</h2>
+        <div class="detalle-propuesta__texto" [innerHTML]="renderizarTexto(detalle.objetivo)"></div>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('objetivo')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Alcance del proyecto. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Alcance del proyecto</h2>
+        <div class="detalle-propuesta__texto" [innerHTML]="renderizarTexto(detalle.alcance)"></div>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('alcance')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Observaciones de componentes, actividades y productos. -->
+      <section class="detalle-propuesta__seccion" *ngIf="observacionesPorSeccion('componentes').length">
+        <h2>Componentes, actividades y productos</h2>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('componentes')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Módulos del proyecto, visibles en cualquier estado. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Módulos del proyecto</h2>
+        <div class="detalle-propuesta__sin-modulos" *ngIf="!modulosDetalle.length">
+          No hay módulos registrados para esta propuesta.
+        </div>
+        <div class="detalle-propuesta__modulos" *ngIf="modulosDetalle.length">
+          <article *ngFor="let modulo of modulosDetalle; let i = index" class="detalle-propuesta__modulo">
+            <header>
+              <strong>Módulo {{ modulo.orden || i + 1 }}: {{ texto(modulo.nombre || ('Módulo ' + (i + 1))) }}</strong>
+              <span
+                class="detalle-propuesta__modulo-badge"
+                [class.detalle-propuesta__modulo-badge--ok]="obtenerEstudianteModulo(modulo)">
+                {{ obtenerEstudianteModulo(modulo) ? 'Estudiante asignado' : 'Sin estudiante' }}
+              </span>
+            </header>
+            <p>{{ texto(modulo.descripcion) }}</p>
+            <div class="detalle-propuesta__subtabla" *ngIf="modulo.actividades?.length">
+              <strong>Actividades específicas</strong>
+              <table>
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>Actividad</th>
+                    <th>Horas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let actividad of modulo.actividades">
+                    <td>{{ actividad.numero }}</td>
+                    <td>{{ texto(actividad.descripcion) }}</td>
+                    <td>{{ actividad.horas }}</td>
+                  </tr>
+                  <tr class="detalle-propuesta__subtabla-total">
+                    <td colspan="2">Total</td>
+                    <td>{{ totalHorasModulo(modulo) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="detalle-propuesta__productos" *ngIf="modulo.productosEsperados?.length">
+              <strong>Producto(s) esperado(s)</strong>
+              <ul>
+                <li *ngFor="let producto of modulo.productosEsperados">{{ texto(producto.descripcion) }}</li>
+              </ul>
+            </div>
+            <small *ngIf="obtenerEstudianteModulo(modulo)">
+              Asignado a: {{ texto(nombreEstudiante(obtenerEstudianteModulo(modulo))) }}
+            </small>
+            <button *ngIf="detalle.estado === 'APROBADA' && !obtenerEstudianteModulo(modulo)" type="button" class="detalle-propuesta__btn-asignar-inline" (click)="irAAsignarEstudiantes()">
+              Asignar estudiante
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <!-- Observaciones generales no clasificadas. -->
+      <section class="detalle-propuesta__seccion" *ngIf="observacionesPorSeccion('general').length">
+        <h2>Observaciones generales</h2>
+        <ng-container *ngFor="let obs of observacionesPorSeccion('general')">
+          <article class="detalle-propuesta__observacion-inline">
+            <header><strong>{{ tituloObservacion(obs) }}</strong><span>{{ resumenObservacion(obs) }}</span></header>
+            <p>{{ textoObservacion(obs) }}</p>
+          </article>
+        </ng-container>
+      </section>
+
+      <!-- Recomendaciones y aprobaciones. -->
+      <section class="detalle-propuesta__seccion">
+        <h2>Recomendaciones y aprobaciones</h2>
+        <table class="detalle-propuesta__aprobaciones">
+          <tbody>
+            <tr>
+              <td>Presentado por:</td>
+              <td>
+                <strong>{{ nombreProfesorDetalle }}</strong><br>
+                <span>{{ tituloProfesorDetalle }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Estudiantes propuestos:</td>
+              <td>
+                <ul class="detalle-propuesta__lista-simple" *ngIf="estudiantesAsignados.length; else sinEstudiantes">
+                  <li *ngFor="let estudiante of estudiantesAsignados">{{ nombreEstudiante(estudiante) }}</li>
+                </ul>
+                <ng-template #sinEstudiantes><span>(sin estudiantes asignados)</span></ng-template>
+              </td>
+            </tr>
+            <tr>
+              <td>Resolución de la CPGIC:</td>
+              <td><span>{{ detalle.estado === 'APROBADA' ? resolucionCpgicDetalle : '—' }}</span></td>
+            </tr>
+            <tr>
+              <td>Presidente de la CPGIC:</td>
+              <td><span>{{ detalle.estado === 'APROBADA' ? (detalle.miembroCpgic || 'Luis Enrique Mafla Gallegos') : '—' }}</span></td>
+            </tr>
+            <tr>
+              <td>Fecha de aprobación:</td>
+              <td><span>{{ detalle.estado === 'APROBADA' ? formatearFechaCorta(fechaAprobacionDetalle) : '—' }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+
+    <div *ngIf="mostrarModalEnvio" class="detalle-propuesta__modal">
+      <section class="detalle-propuesta__modal-contenido">
+        <div class="detalle-propuesta__modal-icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m22 2-7 20-4-9-9-4 20-7Z"></path>
+            <path d="M22 2 11 13"></path>
+          </svg>
+        </div>
+        <h3>{{ detalle.estado === 'OBSERVADA' ? 'Reenviar propuesta' : 'Enviar propuesta' }}</h3>
+        <strong>"{{ texto(detalle.nombreProyecto) }}"</strong>
+        <p>
+          {{ detalle.estado === 'OBSERVADA'
+            ? 'Revise que las observaciones hayan sido corregidas antes de reenviar a revisión.'
+            : 'Revise que el formulario esté completo antes de enviarlo a revisión.' }}
+        </p>
+        <footer>
+          <button type="button" class="detalle-propuesta__modal-btn detalle-propuesta__modal-btn--gold" (click)="confirmarEnvio()">Sí, continuar</button>
+          <button type="button" class="detalle-propuesta__modal-btn detalle-propuesta__modal-btn--light" (click)="cancelarEnvio()">Cancelar</button>
+        </footer>
+      </section>
+    </div>
+  </section>
+</main>
+
